@@ -85,7 +85,7 @@ def is_git_dirty(repo_path='.'):
 @click.option('--pip-down', '-pd', is_flag=True, help='pip downgrade')
 @click.option('--fmt', '-f', is_flag=True, help='Run format and isort recursively')
 @click.option('--ls-templates', '-lt', is_flag=True, help='List available templates')
-@click.option('--template', '-t', help='List available templates')
+@click.option('--template', '-t', help='Choose template: (-t base4tenants ...)')
 def do(new_service, reset_service, compile_env, compile_yaml, gen, pip_up, pip_down, fmt, ls_templates, template):
 	if not any([new_service, reset_service, compile_env, compile_yaml, pip_up, pip_down, fmt, ls_templates, template]):
 		click.echo('No options selected. Exiting...')
@@ -118,7 +118,7 @@ def do(new_service, reset_service, compile_env, compile_yaml, gen, pip_up, pip_d
 			click.echo('Invalid module choice detected. Exiting...')
 			return
 		for i in selected_modules:
-			print(i, selected_modules[i])
+			print('-', selected_modules[i])
 			
 	if new_service:
 		# reset project logic
@@ -131,20 +131,36 @@ def do(new_service, reset_service, compile_env, compile_yaml, gen, pip_up, pip_d
 			except Exception as e:
 				pass
 			return
+			
+		# check is service already exists
+		directory = Path(project_root + f'/src/services/{new_service}')
+		if directory.is_dir():
+			sys.exit(f'[*] service -> {new_service} already exists')
+		
+		if is_git_dirty():
+			sys.exit(f'[*] please commit previous changes!')
 		
 		if template:
-			pass
+			if template == 'base4tenants':
+				os.system(f'''
+				git clone git+ssh://git@github2/base4services/base4tenants.git > /dev/null 2>&1
+				cp -R base4tenants/* {project_root}/src/services/tenants
+				rmdir base4tenants
+				''')
+			elif template == 'base4ws':
+				os.system(f'''
+				git clone git+ssh://git@github2/base4services/base4tenants.git > /dev/null 2>&1
+				mv base4ws/ws {project_root}/src
+				rmdir base4ws
+				''')
+			elif template == 'base4sendmail':
+				pass
+			else:
+				os.system(f'craft -s {new_service}')
+			# todo generate files from template
 		else:
-			# check is service already exists
-			directory = Path(project_root + f'/src/services/{new_service}')
-			if directory.is_dir():
-				sys.exit(f'[*] service -> {new_service} already exists')
-			
-			if is_git_dirty():
-				sys.exit(f'[*] please commit previous changes!')
-		
-		# compile yaml files
-		os.system(f'craft -s {new_service}')
+			# compile yaml files
+			os.system(f'craft -s {new_service}')
 	
 	if gen:
 		gen = evaluate_gen(gen)
