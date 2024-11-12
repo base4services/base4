@@ -120,7 +120,7 @@ else
   echo "[*] done!"
 fi
 mv base4project/* base4project/.[^.]* ./
-rmdir base4project
+rm -rf  base4project
 
 
 # config files

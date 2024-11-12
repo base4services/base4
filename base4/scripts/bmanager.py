@@ -108,18 +108,10 @@ def do(new_service, reset_service, compile_env, compile_yaml, gen, pip_up, pip_d
 		return
 	
 	if ls_templates:
-		module_mapping = {}
 		for i, j in enumerate(['base4ws', 'base4tenants', 'base4sendmail'], start=1):
-			module_mapping[str(i)] = j
 			print(f'{i}: {j}')
-		module_choices = input('Enter choices (e.g., 1,2,3): ')
-		selected_modules = [module_mapping.get(choice.strip(), 'Invalid choice') for choice in module_choices.split(',')]
-		if 'Invalid choice' in selected_modules:
-			click.echo('Invalid module choice detected. Exiting...')
-			return
-		for i in selected_modules:
-			print('-', selected_modules[i])
-			
+		return
+	
 	if new_service:
 		# reset project logic
 		if reset_service and new_service:
@@ -143,15 +135,16 @@ def do(new_service, reset_service, compile_env, compile_yaml, gen, pip_up, pip_d
 		if template:
 			if template == 'base4tenants':
 				os.system(f'''
+				mkdir -p {project_root}/src/services/{new_service}
 				git clone git+ssh://git@github2/base4services/base4tenants.git > /dev/null 2>&1
 				cp -R base4tenants/* {project_root}/src/services/{new_service}
-				rmdir base4tenants
+				rm -rf base4tenants
 				''')
 			elif template == 'base4ws':
 				os.system(f'''
 				git clone git+ssh://git@github2/base4services/base4tenants.git > /dev/null 2>&1
 				mv base4ws/ws {project_root}/src
-				rmdir base4ws
+				rm -rf base4ws
 				''')
 			elif template == 'base4sendmail':
 				pass
