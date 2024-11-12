@@ -71,9 +71,6 @@ else
     exit 1
 fi
 
-echo "[*] Done!"
-
-
 # Idi u radni direktorijum i napravi folder za aplikaciju
 cd "$workdir" || exit
 mkdir -p "$app"
@@ -93,7 +90,6 @@ echo "$current_folder/src" >> "$current_folder/.venv/lib/$PYTHON/site-packages/p
 # Nadogradi pip
 echo "[*] upgrading pip..."
 pip3 install --upgrade pip -q
-echo "[*] done!"
 
 # Napravi i pređi u folder lib
 mkdir lib
@@ -106,7 +102,6 @@ if ! git clone git+ssh://git@$GITHUB_HOST/base4services/base4.git > /dev/null 2>
   exit 1
 fi
 cd base4 || exit
-echo "[*] done!"
 echo "[*] installing base4 dependencies..."
 pip3 install -e . -q
 cd ../../ || exit
@@ -116,8 +111,7 @@ echo "[*] cloning base4project repository..."
 if ! git clone git+ssh://git@$GITHUB_HOST/base4services/base4project.git > /dev/null 2>&1; then
   echo "check permissions or if the repository exists."
   exit 1
-else
-  echo "[*] done!"
+
 fi
 mv base4project/* base4project/.[^.]* ./
 rm -rf  base4project
@@ -143,11 +137,9 @@ cd .. || exit
 
 echo "[*] generating env file..."
 bmanager -e > /dev/null 2>&1;
-echo "[*] Done!"
 
 echo "[*] generating schemas..."
 bmanager -g models,schemas > /dev/null 2>&1;
-echo "[*] Done!"
 
 echo "[*] allow direnv..."
 direnv allow

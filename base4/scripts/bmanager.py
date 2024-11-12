@@ -147,13 +147,18 @@ def do(new_service, reset_service, compile_env, compile_yaml, gen, pip_up, pip_d
 				rm -rf base4ws
 				''')
 			elif template == 'base4sendmail':
-				pass
-			else:
-				os.system(f'craft -s {new_service}')
-			# todo generate files from template
+				os.system(f'''
+				mkdir -p {project_root}/src/services/sendmail
+				git clone git+ssh://git@github2/base4services/base4sendmail.git > /dev/null 2>&1
+				cp -R sendmail/* {project_root}/src/services/sendmail
+				rm -rf sendmail
+				''')
+				
+			os.system(f'craft -s {new_service} > /dev/null 2>&1')
+			
 		else:
 			# compile yaml files
-			os.system(f'craft -s {new_service}')
+			os.system(f'craft -s {new_service} > /dev/null 2>&1')
 	
 	if gen:
 		gen = evaluate_gen(gen)
