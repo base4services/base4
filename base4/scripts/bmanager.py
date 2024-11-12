@@ -84,8 +84,10 @@ def is_git_dirty(repo_path='.'):
 @click.option('--pip-up', '-pu', is_flag=True, help='pip upgrade')
 @click.option('--pip-down', '-pd', is_flag=True, help='pip downgrade')
 @click.option('--fmt', '-f', is_flag=True, help='Run format and isort recursively')
-def do(new_service, reset_service, compile_env, compile_yaml, gen, pip_up, pip_down, fmt):
-	if not any([new_service, reset_service, compile_env, compile_yaml, pip_up, pip_down, fmt]):
+@click.option('--ls-templates', '-lt', is_flag=True, help='List available templates')
+@click.option('--template', '-t', help='List available templates')
+def do(new_service, reset_service, compile_env, compile_yaml, gen, pip_up, pip_down, fmt, ls_templates, template):
+	if not any([new_service, reset_service, compile_env, compile_yaml, pip_up, pip_down, fmt, ls_templates, template]):
 		click.echo('No options selected. Exiting...')
 		return
 	
@@ -105,6 +107,19 @@ def do(new_service, reset_service, compile_env, compile_yaml, gen, pip_up, pip_d
 		print(f'[*] {project_root}/.env configuration generated!')
 		return
 	
+	if ls_templates:
+		module_mapping = {}
+		for i, j in enumerate(['base4ws', 'base4tenants', 'base4sendmail'], start=1):
+			module_mapping[str(i)] = j
+			print(f'{i}: {j}')
+		module_choices = input('Enter choices (e.g., 1,2,3): ')
+		selected_modules = [module_mapping.get(choice.strip(), 'Invalid choice') for choice in module_choices.split(',')]
+		if 'Invalid choice' in selected_modules:
+			click.echo('Invalid module choice detected. Exiting...')
+			return
+		for i in selected_modules:
+			print(i, selected_modules[i])
+			
 	if new_service:
 		# reset project logic
 		if reset_service and new_service:
@@ -117,13 +132,16 @@ def do(new_service, reset_service, compile_env, compile_yaml, gen, pip_up, pip_d
 				pass
 			return
 		
-		# check is service already exists
-		directory = Path(project_root + f'/src/services/{new_service}')
-		if directory.is_dir():
-			sys.exit(f'[*] service -> {new_service} already exists')
-		
-		if is_git_dirty():
-			sys.exit(f'[*] please commit previous changes!')
+		if template:
+			pass
+		else:
+			# check is service already exists
+			directory = Path(project_root + f'/src/services/{new_service}')
+			if directory.is_dir():
+				sys.exit(f'[*] service -> {new_service} already exists')
+			
+			if is_git_dirty():
+				sys.exit(f'[*] please commit previous changes!')
 		
 		# compile yaml files
 		os.system(f'craft -s {new_service}')
