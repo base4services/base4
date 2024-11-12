@@ -144,7 +144,7 @@ def do(new_service, reset_service, compile_env, compile_yaml, gen, pip_up, pip_d
 			if template == 'base4tenants':
 				os.system(f'''
 				git clone git+ssh://git@github2/base4services/base4tenants.git > /dev/null 2>&1
-				cp -R base4tenants/* {project_root}/src/services/tenants
+				cp -R base4tenants/* {project_root}/src/services/{new_service}
 				rmdir base4tenants
 				''')
 			elif template == 'base4ws':
