@@ -1,0 +1,8 @@
+.idea
+*~
+*.pyc
+__pycache__
+build/**
+base4.egg-info/**
+base4/scripts/pip/requirements*
+base4/config/.env

@@ -1,0 +1,86 @@
+[build-system]
+requires = ["setuptools>=64.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "base4"
+version = "0.1.0"
+description = "Internal backend devl library"
+authors = [
+    { name = "Digital CUBE", email = "info@digitalcube.rs" }
+]
+readme = "README.md"
+requires-python = ">=3.12.6"
+dependencies = [
+	# GENERATED ON: 2024-11-01 16:12:10
+	'isort==5.13.2',
+	'fakeredis==2.26.1', #2.24.1
+	'GitPython==3.1.43',
+	'ujson==5.10.0',
+	'pytest-xdist==3.6.1',
+	'pydash==8.0.3',
+	'lark-parser==0.12.0',
+	'tortoise-orm==0.21.7', #0.21.3
+	'redis==5.2.0', #5.0.8
+	'aerich==0.7.2',
+	'PyJWT==2.9.0',
+	'pytest-asyncio==0.24.0', #0.23.7
+	'fastapi==0.115.4', #0.111.0
+	'pytest-cov==6.0.0', #5.0.0
+	'cryptography==43.0.3', #43.0.0
+	'python-socketio==5.11.4',
+	'uvicorn==0.32.0', #0.30.1
+	'asyncclick==8.1.7.2',
+	'pytest==8.3.3', #8.2.2
+	'aiofiles==24.1.0',
+	'black==24.10.0',
+	'Unidecode==1.3.8',
+	'setuptools==75.3.0', #74.1.2
+	'asyncpg==0.30.0', #0.29.0
+	'bcrypt==4.2.0',
+    'python-dotenv==1.0.1',
+    'httpx==0.27.2',
+    'PyYAML==6.0.2',
+    'python-slugify==8.0.1',
+    'python-multipart==0.0.12',
+    'Jinja2==3.1.4'
+]
+
+[project.urls]
+repository = "https://github.com/digital-cube/base4"
+
+[tool.setuptools.package-data]
+"base4" = ["*.json"]
+
+[project.scripts]
+    gen = "base4.scripts.generator:main"
+    craft = "base4.scripts.servicecrafter.craft:craft"
+    pip_up = "base4.scripts.pip.up:do"
+    pip_down = "base4.scripts.pip.down:do"
+    bmanager = "base4.scripts.bmanager:do"
+    #testall = "base4.scripts.testall:do"
+
+[tool.setuptools]
+packages = [
+    "base4",
+    'base4.scripts',
+    'base4.scripts.pip',
+    "base4.schemas",
+    "base4.models",
+    "base4.service",
+    "base4.ipc",
+    "base4.api",
+    'base4.utilities',
+    'base4.utilities.logging',
+    'base4.utilities.db',
+    'base4.utilities.http',
+    'base4.utilities.parsers',
+    'base4.utilities.security',
+    'base4.utilities.service',
+    'base4.utilities.shared',
+    'base4.scripts.servicecrafter',
+    'base4.scripts.servicecrafter.utils',
+    'base4.scripts.servicecrafter.utils.templates',
+    'base4.ws',
+    'base4.ombis', # TODO: Remove and place into shared on impresa
+]
