@@ -88,8 +88,8 @@ def is_git_dirty(repo_path='.'):
 @click.option('--template', '-t', help='Choose template: (-t base4tenants ...)')
 @click.option('--base-lib-update', '-u', help='Update base4 library')
 def do(new_service, reset_service, compile_env, compile_yaml, gen, pip_up, pip_down, fmt, ls_templates, template, base_lib_update):
-	print(new_service, reset_service, compile_env, compile_yaml, gen, pip_up, pip_down, fmt, ls_templates, template, base_lib_update)
-	if not any([new_service, reset_service, compile_env, compile_yaml, gen, pip_up, pip_down, fmt, ls_templates, template, base_lib_update]):
+	print(new_service, reset_service, compile_env, compile_yaml, pip_up, pip_down, fmt, ls_templates, template, base_lib_update)
+	if not any([new_service, reset_service, compile_env, compile_yaml, pip_up, pip_down, fmt, ls_templates, template, base_lib_update]):
 		click.echo('No options selected. Exiting...')
 		return
 	
