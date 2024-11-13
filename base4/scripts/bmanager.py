@@ -167,8 +167,8 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, 
 			# compile yaml files
 			os.system(f'craft -s {new_service} > /dev/null 2>&1')
 	
-	if not gen:
-		gen = evaluate_gen('gen.yaml')
+	if gen:
+		gen = evaluate_gen(gen)
 	
 	try:
 		yaml_file = (project_root + '/config/' + compile_yaml) if '/' not in compile_yaml else compile_yaml
