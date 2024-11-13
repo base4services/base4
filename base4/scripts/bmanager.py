@@ -162,7 +162,7 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, 
 				rm -rf sendmail
 				''')
 
-			os.system(f'craft -s {new_service} > /dev/null 2>&1')
+			os.system(f'craft -s {new_service}')
 			
 		else:
 			# compile yaml files
