@@ -179,7 +179,7 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, 
 		print(e)
 		return
 
-	for i in data['services']:
+	for i in data.get('services', []):
 		svc_name = i['name']
 		if new_service and svc_name not in new_service:
 			continue
