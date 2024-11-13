@@ -123,7 +123,7 @@ def main(ctx, yaml_file, service: None, gen=None, reset=None, env=None):
 		print(e)
 		return
 	
-	for i in data['services']:
+	for i in data.get('services', []):
 		svc_name = i['name']
 		if service and svc_name not in service:
 			continue
