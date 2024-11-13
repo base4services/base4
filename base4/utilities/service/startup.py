@@ -209,9 +209,6 @@ async def _initialize_tortoise_models(conf: Optional[DatabaseConfig] = None, con
     return
 
 
-service: FastAPI = get_service()
-
-
 class GracefulShutdown:
     def __init__(self):
         self.should_exit = False
@@ -224,10 +221,7 @@ class GracefulShutdown:
         self.should_exit = True
         self.exit_code = signum  # Standard exit code for signals
 
-
 def load_services(single_service=None):
-
-
 
     with open(get_project_config_folder() / 'services.yaml') as f:
 
@@ -245,7 +239,6 @@ def load_services(single_service=None):
                 # ...
                 # importlib.import_module(f"base4services.services.{svc_name}.api")
                 # ...
-
 
 def run_server(config, single_service=None):
     server = uvicorn.Server(config)
@@ -267,3 +260,6 @@ def run_server(config, single_service=None):
     finally:
         print(f"Server has been shut down. Exit code: {shutdown_handler.exit_code}")
         sys.exit(shutdown_handler.exit_code)
+        
+        
+service: FastAPI = get_service()

@@ -62,7 +62,7 @@ def yaml_to_env(yaml_cfg):
                 continue
             env_file.write(f"{key.upper()}={value}\n")
         env_file.write(f"## PROJECT DATABASES:\n")
-        env_file.write("DB_TEST=test_{DB_PREFIX}\n")
+        env_file.write("DB_TEST=test_${DB_PREFIX}\n")
         for p in flat_config['db_postgres_databases'].split(','):
             env_file.write("DB_%s=${DB_PREFIX}\n" % (p.upper(), ))
         
