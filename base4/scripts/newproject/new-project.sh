@@ -104,7 +104,6 @@ fi
 cd base4 || exit
 echo "[*] installing base4 dependencies..."
 pip3 install -e . -q
-rm -rf .git
 cd ../../ || exit
 
 
