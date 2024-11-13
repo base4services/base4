@@ -79,7 +79,7 @@ def is_git_dirty(repo_path='.'):
 @click.option('--new-service', '-s', help='Service name to generate')
 @click.option('--reset-service', '-r', is_flag=True, help='Reset compiled files from newly created service')
 @click.option('--compile-env', '-e', is_flag=True, help=f'Generate .env file from env.yaml')
-@click.option('--compile-yaml', '-y', default='gen.yaml', help='YAML file to use for generation')
+@click.option('--compile-yaml', '-y', help='YAML file to use for generation')
 @click.option('--gen', '-g', help='Components to generate (comma-separated: models,schemas,tables)')
 @click.option('--pip-up', '-pu', is_flag=True, help='pip upgrade')
 @click.option('--pip-down', '-pd', is_flag=True, help='pip downgrade')
@@ -87,10 +87,10 @@ def is_git_dirty(repo_path='.'):
 @click.option('--ls-templates', '-lt', is_flag=True, help='List available templates')
 @click.option('--template', '-t', help='Choose template: (-t base4tenants ...)')
 @click.option('--base-lib-update', '-u', help='Update base4 library')
-def do(new_service, reset_service, compile_env, compile_yaml, gen, pip_up, pip_down, fmt, ls_templates, template, base_lib_update):
-	print(new_service, reset_service, compile_env, compile_yaml, pip_up, pip_down, fmt, ls_templates, template, base_lib_update)
+@click.pass_context
+def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, pip_down, fmt, ls_templates, template, base_lib_update):
 	if not any([new_service, reset_service, compile_env, compile_yaml, pip_up, pip_down, fmt, ls_templates, template, base_lib_update]):
-		click.echo('No options selected. Exiting...')
+		click.echo(ctx.get_help())
 		return
 	
 	if base_lib_update:
@@ -166,8 +166,8 @@ def do(new_service, reset_service, compile_env, compile_yaml, gen, pip_up, pip_d
 			# compile yaml files
 			os.system(f'craft -s {new_service} > /dev/null 2>&1')
 	
-	if gen:
-		gen = evaluate_gen(gen)
+	if not gen:
+		gen = evaluate_gen('gen.yaml')
 	
 	try:
 		yaml_file = (project_root + '/config/' + compile_yaml) if '/' not in compile_yaml else compile_yaml
