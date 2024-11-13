@@ -132,8 +132,12 @@ class ServiceCrafter:
     @staticmethod
     async def craft_services(instructions: dict, service: Path) -> None:
         services: Path = service / 'services'
-        services.mkdir()
-
+        
+        try:
+            services.mkdir()
+        except:
+            pass
+        
         _db_conn: Path = services / '_db_conn.py'
         _db_conn.touch()
 
@@ -149,8 +153,12 @@ class ServiceCrafter:
     async def craft_schemas(instructions: dict, service: Path) -> None:
         name: str = instructions.get('name')
         schemas: Path = service / 'schemas'
-        schemas.mkdir()
-
+        
+        try:
+            schemas.mkdir()
+        except:
+            pass
+        
         __init__: Path = schemas / '__init__.py'
         __init__.touch()
 
@@ -162,7 +170,11 @@ class ServiceCrafter:
     async def craft_models(instructions: dict, service: Path) -> None:
         name: str = instructions.get('name')
         models: Path = service / 'models'
-        models.mkdir()
+        
+        try:
+            models.mkdir()
+        except:
+            pass
 
         __init__: Path = models / '__init__.py'
         __init__.touch()
@@ -175,7 +187,10 @@ class ServiceCrafter:
     async def craft_api(instructions: dict, service: Path) -> None:
 
         api: Path = service / 'api'
-        api.mkdir()
+        try:
+            api.mkdir()
+        except:
+            pass
 
         __init__: Path = api / '__init__.py'
         __init__.touch()
