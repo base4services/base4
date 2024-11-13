@@ -178,8 +178,10 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, 
 		print(f'Error loading {compile_yaml}')
 		print(e)
 		return
-
+	
+	print(data)
 	if data and 'services' in data:
+		
 		for i in data['services']:
 			svc_name = i['name']
 			if new_service and svc_name not in new_service:
