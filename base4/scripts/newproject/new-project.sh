@@ -29,7 +29,7 @@ check_and_add_line() {
 }
 
 
-echo "[*] Installing direnv..."
+echo "[*] installing direnv..."
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
       # Add the line to the appropriate configuration file (.bashrc or .zshrc)
     if [[ -f "$HOME/.bashrc" ]]; then
@@ -40,7 +40,7 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     if command -v apt &> /dev/null; then
         sudo apt update > /dev/null 2>&1
     else
-        echo "Apt package manager not found. Please install direnv manually."
+        echo "apt package manager not found. Please install direnv manually."
         exit 1
     fi
 
@@ -67,12 +67,9 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     fi
 
 else
-    echo "Unsupported OS type: $OSTYPE. Please install direnv manually."
+    echo "unsupported OS type: $OSTYPE. Please install direnv manually."
     exit 1
 fi
-
-echo "[*] Done!"
-
 
 # Idi u radni direktorijum i napravi folder za aplikaciju
 cd "$workdir" || exit
@@ -91,48 +88,33 @@ current_folder=$(pwd)
 echo "$current_folder/src" >> "$current_folder/.venv/lib/$PYTHON/site-packages/pythonpaths.pth"
 
 # Nadogradi pip
-echo "[*] Upgrading pip..."
+echo "[*] upgrading pip..."
 pip3 install --upgrade pip -q
-echo "[*] Done!"
 
 # Napravi i pređi u folder lib
 mkdir lib
 cd lib || exit
 
 
-echo "[*] Cloning base4 repository..."
-if ! git clone git+ssh://git@$GITHUB_HOST/digital-cube/base4.git > /dev/null 2>&1; then
-  echo "Check permissions or if the repository exists."
+echo "[*] cloning base4 repository..."
+if ! git clone git+ssh://git@$GITHUB_HOST/base4services/base4.git > /dev/null 2>&1; then
+  echo "check permissions or if the repository exists."
   exit 1
 fi
 cd base4 || exit
-git checkout dev-update
-echo "[*] Done!"
 echo "[*] installing base4 dependencies..."
 pip3 install -e . -q
-cd ../ || exit
+cd ../../ || exit
 
-echo "[*] Cloning base4services repository..."
-if ! git clone git+ssh://git@$GITHUB_HOST/digital-cube/base4services.git > /dev/null 2>&1; then
-  echo "Check permissions or if the repository exists."
+
+echo "[*] cloning base4project repository..."
+if ! git clone git+ssh://git@$GITHUB_HOST/base4services/base4project.git > /dev/null 2>&1; then
+  echo "check permissions or if the repository exists."
   exit 1
-fi
-cd base4services || exit
-git checkout dev-reorganise-config
-echo "[*] Done!"
 
-pip3 install -e . -q
-cd ../..
-
-echo "[*] Cloning base4project repository..."
-if ! git clone git+ssh://git@$GITHUB_HOST/digital-cube/base4project.git > /dev/null 2>&1; then
-  echo "Check permissions or if the repository exists."
-  exit 1
-else
-  echo "[*] Done!"
 fi
 mv base4project/* base4project/.[^.]* ./
-rmdir base4project
+rm -rf  base4project
 
 
 # config files
@@ -142,26 +124,24 @@ sed -i '' "s/__PROJECT_NAME__/${app}/g" config/services.yaml config/env.yaml
 rm -rf .git
 git init
 git add .  > /dev/null 2>&1;
-git commit -m "Initial commit" > /dev/null 2>&1;
+git commit -m "initial commit" > /dev/null 2>&1;
 
 # todo, sredi ovo
 cp lib/base4/base4/scripts/testall .venv/bin/testall
 
 # security keys
-echo "[*] Generating security keys..."
+echo "[*] generating security keys..."
 cd security || exit
 ./mk_keys.sh > /dev/null 2>&1;
 cd .. || exit
 
-echo "[*] Generating env file..."
+echo "[*] generating env file..."
 bmanager -e > /dev/null 2>&1;
-echo "[*] Done!"
 
-echo "[*] Generating schemas..."
+echo "[*] generating schemas..."
 bmanager -g models,schemas > /dev/null 2>&1;
-echo "[*] Done!"
 
-echo "[*] Allow direnv..."
+echo "[*] allow direnv..."
 direnv allow
 
 echo "================================================================================"
