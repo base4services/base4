@@ -88,17 +88,17 @@ def is_git_dirty(repo_path='.'):
 @click.option('--template', '-t', help='Choose template: (-t base4tenants ...)')
 @click.option('--base-lib-update', '-u', help='Update base4 library')
 def do(new_service, reset_service, compile_env, compile_yaml, gen, pip_up, pip_down, fmt, ls_templates, template, base_lib_update):
-	if not any([new_service, reset_service, compile_env, compile_yaml, pip_up, pip_down, fmt, ls_templates, template, base_lib_update]):
+	if not any([new_service, reset_service, compile_env, compile_yaml, gen, pip_up, pip_down, fmt, ls_templates, template, base_lib_update]):
 		click.echo('No options selected. Exiting...')
 		return
 	
 	if base_lib_update:
-		os.system(f'''cd {get_project_root()}/lib/base4 && git pull''')
+		os.system(f'''cd {project_root}/lib/base4 && git pull''')
 		return
 	
 	if fmt:
-		os.system(f'black --target-version py312 --line-length 160 --skip-string-normalization {get_project_root()}')
-		os.system(f'isort {get_project_root()} --profile black --line-length 160')
+		os.system(f'black --target-version py312 --line-length 160 --skip-string-normalization {project_root}')
+		os.system(f'isort {project_root} --profile black --line-length 160')
 		return
 	
 	if pip_down:
