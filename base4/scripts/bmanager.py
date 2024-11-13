@@ -89,7 +89,8 @@ def is_git_dirty(repo_path='.'):
 @click.option('--base-lib-update', '-u', is_flag=True, help='Update base4 library')
 @click.pass_context
 def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, pip_down, fmt, ls_templates, template, base_lib_update):
-	if not any([new_service, reset_service, compile_env, pip_up, pip_down, fmt, ls_templates, template, base_lib_update]):
+	
+	if not any([new_service, reset_service, compile_env, gen, pip_up, pip_down, fmt, ls_templates, template, base_lib_update]):
 		click.echo(ctx.get_help())
 		return
 	
@@ -179,7 +180,6 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, 
 		print(e)
 		return
 	
-	print(data)
 	if data and 'services' in data and isinstance(data['services'], list):
 		for i in data['services']:
 			svc_name = i['name']
