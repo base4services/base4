@@ -80,7 +80,7 @@ def is_git_dirty(repo_path='.'):
 @click.option('--reset-service', '-r', is_flag=True, help='Reset compiled files from newly created service')
 @click.option('--compile-env', '-e', is_flag=True, help=f'Generate .env file from env.yaml')
 @click.option('--compile-yaml', '-y', help='YAML file to use for generation')
-@click.option('--gen', '-g', help='Components to generate (comma-separated: models,schemas,tables)')
+@click.option('--gen', '-g', default='gen.yaml', help='Components to generate (comma-separated: models,schemas,tables)')
 @click.option('--pip-up', '-pu', is_flag=True, help='pip upgrade')
 @click.option('--pip-down', '-pd', is_flag=True, help='pip downgrade')
 @click.option('--fmt', '-f', is_flag=True, help='Run format and isort recursively')
