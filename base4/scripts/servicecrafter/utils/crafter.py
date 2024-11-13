@@ -20,7 +20,7 @@ class ServiceCrafter:
     async def craft(service_name: str, ) -> bool:
         instructions = {'name': service_name, 'models': [service_name]}
         service: Path = await ServiceCrafter.craft_service(instructions=instructions)
-
+        
         await ServiceCrafter.craft_yaml_sources(instructions=instructions, service=service)
         await ServiceCrafter.craft_schemas(instructions=instructions, service=service)
         await ServiceCrafter.craft_services(instructions=instructions, service=service)
@@ -111,7 +111,10 @@ class ServiceCrafter:
         name: str = instructions.get('name')
 
         yaml_sources: Path = service / 'yaml_sources'
-        yaml_sources.mkdir()
+        try:
+            yaml_sources.mkdir()
+        except:
+            pass
 
         models: Path = yaml_sources / f'{name}_model.yaml'
         schemas: Path = yaml_sources / f'{name}_schema.yaml'
