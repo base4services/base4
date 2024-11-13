@@ -17,13 +17,13 @@ class ServiceCrafter:
     _services: Path = Path(get_project_root()) / 'src' / 'services'
 
     @staticmethod
-    async def craft(service_name: str) -> bool:
+    async def craft(service_name: str, ) -> bool:
         instructions = {'name': service_name, 'models': [service_name]}
         service: Path = await ServiceCrafter.craft_service(instructions=instructions)
 
         await ServiceCrafter.craft_yaml_sources(instructions=instructions, service=service)
-        await ServiceCrafter.craft_services(instructions=instructions, service=service)
         await ServiceCrafter.craft_schemas(instructions=instructions, service=service)
+        await ServiceCrafter.craft_services(instructions=instructions, service=service)
         await ServiceCrafter.craft_models(instructions=instructions, service=service)
         await ServiceCrafter.craft_api(instructions=instructions, service=service)
 
@@ -92,12 +92,14 @@ class ServiceCrafter:
 
         service_dir: Path = ServiceCrafter._services / name
 
-        if service_dir.exists() and test_mode:
-            import shutil
-
-            shutil.rmtree(service_dir)
-
-        service_dir.mkdir()
+        # if service_dir.exists() and test_mode:
+        #     import shutil
+        #     shutil.rmtree(service_dir)
+        
+        try:
+            service_dir.mkdir()
+        except FileExistsError:
+            pass
 
         init_file: Path = service_dir / '__init__.py'
         init_file.touch()

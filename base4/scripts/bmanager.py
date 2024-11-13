@@ -161,8 +161,8 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, 
 				cp -R sendmail/* {project_root}/src/services/sendmail
 				rm -rf sendmail
 				''')
-				
-			#os.system(f'craft -s {new_service} > /dev/null 2>&1')
+
+			os.system(f'craft -s {new_service} > /dev/null 2>&1')
 			
 		else:
 			# compile yaml files
