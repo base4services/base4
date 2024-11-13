@@ -180,8 +180,7 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, 
 		return
 	
 	print(data)
-	if data and 'services' in data:
-		
+	if data and 'services' in data and isinstance(data['services'], list):
 		for i in data['services']:
 			svc_name = i['name']
 			if new_service and svc_name not in new_service:
