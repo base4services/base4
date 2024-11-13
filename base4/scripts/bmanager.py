@@ -89,7 +89,7 @@ def is_git_dirty(repo_path='.'):
 @click.option('--base-lib-update', '-u', is_flag=True, help='Update base4 library')
 @click.pass_context
 def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, pip_down, fmt, ls_templates, template, base_lib_update):
-	print(new_service, reset_service, compile_env, compile_yaml, gen, pip_up, pip_down, fmt, ls_templates, template, base_lib_update)
+	
 	if not any([new_service, reset_service, compile_env, compile_yaml, gen, pip_up, pip_down, fmt, ls_templates, template, base_lib_update]):
 		click.echo(ctx.get_help())
 		return
@@ -162,7 +162,7 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, 
 				rm -rf sendmail
 				''')
 				
-			os.system(f'craft -s {new_service} > /dev/null 2>&1')
+			#os.system(f'craft -s {new_service} > /dev/null 2>&1')
 			
 		else:
 			# compile yaml files
