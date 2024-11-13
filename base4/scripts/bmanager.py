@@ -84,10 +84,8 @@ def is_git_dirty(repo_path='.'):
 @click.option('--pip-up', '-pu', is_flag=True, help='pip upgrade')
 @click.option('--pip-down', '-pd', is_flag=True, help='pip downgrade')
 @click.option('--fmt', '-f', is_flag=True, help='Run format and isort recursively')
-@click.option('--ls-templates', '-lt', is_flag=True, help='List available templates')
-@click.option('--template', '-t', help='Choose template: (-t base4tenants ...)')
-def do(new_service, reset_service, compile_env, compile_yaml, gen, pip_up, pip_down, fmt, ls_templates, template):
-	if not any([new_service, reset_service, compile_env, compile_yaml, pip_up, pip_down, fmt, ls_templates, template]):
+def do(new_service, reset_service, compile_env, compile_yaml, gen, pip_up, pip_down, fmt):
+	if not any([new_service, reset_service, compile_env, compile_yaml, pip_up, pip_down, fmt]):
 		click.echo('No options selected. Exiting...')
 		return
 	
@@ -107,11 +105,6 @@ def do(new_service, reset_service, compile_env, compile_yaml, gen, pip_up, pip_d
 		print(f'[*] {project_root}/.env configuration generated!')
 		return
 	
-	if ls_templates:
-		for i, j in enumerate(['base4ws', 'base4tenants', 'base4sendmail'], start=1):
-			print(f'{i}: {j}')
-		return
-	
 	if new_service:
 		# reset project logic
 		if reset_service and new_service:
@@ -123,7 +116,7 @@ def do(new_service, reset_service, compile_env, compile_yaml, gen, pip_up, pip_d
 			except Exception as e:
 				pass
 			return
-			
+		
 		# check is service already exists
 		directory = Path(project_root + f'/src/services/{new_service}')
 		if directory.is_dir():
@@ -132,33 +125,8 @@ def do(new_service, reset_service, compile_env, compile_yaml, gen, pip_up, pip_d
 		if is_git_dirty():
 			sys.exit(f'[*] please commit previous changes!')
 		
-		if template:
-			if template == 'base4tenants':
-				os.system(f'''
-				mkdir -p {project_root}/src/services/{new_service}
-				git clone git+ssh://git@github2/base4services/base4tenants.git > /dev/null 2>&1
-				cp -R base4tenants/* {project_root}/src/services/{new_service}
-				rm -rf base4tenants
-				''')
-			elif template == 'base4ws':
-				os.system(f'''
-				git clone git+ssh://git@github2/base4services/base4tenants.git > /dev/null 2>&1
-				mv base4ws/ws {project_root}/src
-				rm -rf base4ws
-				''')
-			elif template == 'base4sendmail':
-				os.system(f'''
-				mkdir -p {project_root}/src/services/sendmail
-				git clone git+ssh://git@github2/base4services/base4sendmail.git > /dev/null 2>&1
-				cp -R sendmail/* {project_root}/src/services/sendmail
-				rm -rf sendmail
-				''')
-				
-			os.system(f'craft -s {new_service} > /dev/null 2>&1')
-			
-		else:
-			# compile yaml files
-			os.system(f'craft -s {new_service} > /dev/null 2>&1')
+		# compile yaml files
+		os.system(f'craft -s {new_service}')
 	
 	if gen:
 		gen = evaluate_gen(gen)

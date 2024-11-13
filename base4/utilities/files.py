@@ -31,13 +31,13 @@ def get_project_root():
 
         if os.getenv('APPLICATION_RUN_MODE', 'local') in ('docker','docker-monolith'):
             # we are running in docker
-            return '/app/'
+            return Path('/app/')
 
         #TODO Remove - but change this env in v4 project and then remuve this
 
         if os.getenv('V4INSTALLATION', 'local') in ('docker','docker-monolith'):
             # we are running in docker
-            return '/app/'
+            return Path('/app/')
 
         # local .venv installation
         return Path(sys.executable).parent.parent.parent
@@ -47,9 +47,7 @@ def get_project_root():
 
 def get_project_config_folder():
 
-    #TODO: remove src when structure is changed
-
-    return get_project_root() / 'src' / 'config'
+    return get_project_root() / 'config'
 
 def get_file_path(relative_path):
     """
