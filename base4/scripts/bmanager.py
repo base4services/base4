@@ -179,22 +179,23 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, 
 		print(e)
 		return
 
-	for i in data.get('services', []):
-		svc_name = i['name']
-		if new_service and svc_name not in new_service:
-			continue
-		singular_name = i['singular']
-		
-		location = i['location']
-		
-		if not gen:
-			to_gen = i.get('gen')
-		else:
-			to_gen = gen
-		gen4svc(svc_name, singular_name, location, gen=to_gen)
-		
-		# run test for new service
-		os.system(f'pytest -n 8 --disable-warnings {project_root + f"/tests/test_{new_service}.py"}')
+	if data:
+		for i in data.get('services', []):
+			svc_name = i['name']
+			if new_service and svc_name not in new_service:
+				continue
+			singular_name = i['singular']
+			
+			location = i['location']
+			
+			if not gen:
+				to_gen = i.get('gen')
+			else:
+				to_gen = gen
+			gen4svc(svc_name, singular_name, location, gen=to_gen)
+			
+			# run test for new service
+			os.system(f'pytest -n 8 --disable-warnings {project_root + f"/tests/test_{new_service}.py"}')
 
 
 if __name__ == '__main__':
