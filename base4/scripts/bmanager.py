@@ -171,7 +171,7 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, 
 				mkdir -p {project_root}/src/services/{new_service}
 				git clone git+ssh://git@github2/base4services/base4service_template.git
 				cp -R base4service_template/* {project_root}/src/services/{new_service}
-				rm -rf base4service_template
+				rm -rf base4service_template {new_service}
 				cd {project_root}/src/services/{new_service}
 				bash rename.sh {new_service}
 				rm  {project_root}/src/services/{new_service}/rename.sh
