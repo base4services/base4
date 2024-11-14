@@ -134,7 +134,7 @@ cd .. || exit
 echo "[*] generating env file..."
 bmanager -e > /dev/null 2>&1;
 
-echo "linking docker-compose.yaml..."
+echo "[*] linking docker-compose.yaml..."
 ln -sf infrastructure/docker-compose.yaml docker-compose.yaml
 
 echo "[*] allow direnv..."
