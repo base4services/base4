@@ -119,7 +119,7 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, 
 	
 	if ls_templates:
 		for i, j in enumerate(['base4ws', 'base4tenants', 'base4sendmail'], start=1):
-			print(f'{i}: {j}')
+			print(f'->: {j}')
 		return
 	
 	if new_service:
