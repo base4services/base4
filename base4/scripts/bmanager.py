@@ -172,6 +172,7 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, 
 				rm -rf base4service_template
 				cd {project_root}/src/services/{new_service}
 				bash rename.sh {new_service}
+				echo [*] service -> {new_service} created!
 				''')
 			
 			else:
