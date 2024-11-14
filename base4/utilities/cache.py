@@ -44,8 +44,6 @@ def memoize(ttl):
     return decorator
 
 
-
-
 def hdd_memoize_clear_cache_folder():
     shutil.rmtree(HDD_MEMOIZE_CACHE_FOLDER, ignore_errors=True)
     os.makedirs(HDD_MEMOIZE_CACHE_FOLDER, exist_ok=True)

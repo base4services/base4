@@ -25,8 +25,7 @@ async def init_db():
 
 class BaseServiceDbUtils:
     @staticmethod
-    async def db_operations(base_service_instance, request: Request, body: dict, payload: SchemaType,
-                            logged_user_id: uuid.UUID, m2m_relations: dict, _conn):
+    async def db_operations(base_service_instance, request: Request, body: dict, payload: SchemaType, logged_user_id: uuid.UUID, m2m_relations: dict, _conn):
         """
         Perform database operations for creating an item.
 
@@ -35,8 +34,7 @@ class BaseServiceDbUtils:
         """
         _conn = BaseServiceDbUtils._get_connection(_conn)
 
-        await BaseServiceDbUtils._process_schema_fields(base_service_instance, payload, body, m2m_relations,
-                                                        logged_user_id, request, _conn)
+        await BaseServiceDbUtils._process_schema_fields(base_service_instance, payload, body, m2m_relations, logged_user_id, request, _conn)
 
         item = await BaseServiceDbUtils._create_and_save_item(base_service_instance, body, logged_user_id, _conn)
 
@@ -60,8 +58,7 @@ class BaseServiceDbUtils:
 
     @staticmethod
     async def _process_schema_fields(
-            base_service_instance, payload: SchemaType, body: dict, m2m_relations: dict, logged_user_id: uuid.UUID,
-            request: Request, _conn
+        base_service_instance, payload: SchemaType, body: dict, m2m_relations: dict, logged_user_id: uuid.UUID, request: Request, _conn
     ):
         """Process each field in the schema, handling lists and m2m relations."""
         for key, _value in base_service_instance.model.schema_loc_dict.items():
@@ -70,24 +67,21 @@ class BaseServiceDbUtils:
                 if value == '__NOT_SET__':
                     continue
                 if isinstance(value, List):
-                    await BaseServiceDbUtils._handle_list_field(base_service_instance, key, value, m2m_relations,
-                                                                logged_user_id, request, _conn)
+                    await BaseServiceDbUtils._handle_list_field(base_service_instance, key, value, m2m_relations, logged_user_id, request, _conn)
                 else:
                     body[key] = value
             except Exception:
                 continue
 
     @staticmethod
-    async def _handle_list_field(base_service_instance, key: str, value: List, m2m_relations: dict,
-                                 logged_user_id: uuid.UUID, request: Request, _conn):
+    async def _handle_list_field(base_service_instance, key: str, value: List, m2m_relations: dict, logged_user_id: uuid.UUID, request: Request, _conn):
         """Handle list fields, creating related objects if necessary."""
         service_loc = base_service_instance.model.schema_service_loc()
         for list_item in value:
             if isinstance(list_item, dict):
                 raise NameError("Use Schem Type instead dict in List")
 
-            res = await BaseServiceDbUtils._create_or_update_related_item(base_service_instance, key, list_item,
-                                                                          service_loc, logged_user_id, request, _conn)
+            res = await BaseServiceDbUtils._create_or_update_related_item(base_service_instance, key, list_item, service_loc, logged_user_id, request, _conn)
 
             if key not in m2m_relations:
                 m2m_relations[key] = []
@@ -95,8 +89,7 @@ class BaseServiceDbUtils:
 
     @staticmethod
     async def _create_or_update_related_item(
-            base_service_instance, key: str, list_item: Any, service_loc: Dict, logged_user_id: uuid.UUID,
-            request: Request, _conn
+        base_service_instance, key: str, list_item: Any, service_loc: Dict, logged_user_id: uuid.UUID, request: Request, _conn
     ):
         """Create or update a related item based on existence rules."""
         if key in base_service_instance.schema.check_existence_rules():
@@ -114,8 +107,7 @@ class BaseServiceDbUtils:
                 return_db_object=True,
             )
         else:
-            return await service_loc[key]().create(logged_user_id, list_item, request, **list_item.unq(),
-                                                   return_db_object=True)
+            return await service_loc[key]().create(logged_user_id, list_item, request, **list_item.unq(), return_db_object=True)
 
     @staticmethod
     async def _create_and_save_item(base_service_instance, body: dict, logged_user_id: uuid.UUID, _conn):
@@ -148,18 +140,16 @@ class BaseServiceDbUtils:
         """Execute the post-save hook if it exists."""
         if hasattr(payload, 'post_save') and inspect.ismethod(getattr(payload, 'post_save')):
             try:
-                if not await getattr(payload, 'post_save')(svc=base_service_instance, db_id=body['id'], request=request,
-                                                           body=body, payload=payload):
+                if not await getattr(payload, 'post_save')(svc=base_service_instance, db_id=body['id'], request=request, body=body, payload=payload):
                     raise HTTPException(
-                        status_code=400, detail={"code": "INTERNAL_SERVER_ERROR", "parameter": "post_save",
-                                                 "message": f"post_save method failed"}
+                        status_code=400, detail={"code": "INTERNAL_SERVER_ERROR", "parameter": "post_save", "message": f"post_save method failed"}
                     )
             except Exception as e:
                 raise HTTPException(
                     status_code=400,
-                    detail={"code": "INTERNAL_SERVER_ERROR", "parameter": "post_save",
-                            "message": f"Error in post_save method: {str(e)}"},
+                    detail={"code": "INTERNAL_SERVER_ERROR", "parameter": "post_save", "message": f"Error in post_save method: {str(e)}"},
                 )
+
 
 ##########################################################################################
 # coupled version

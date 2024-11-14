@@ -9,9 +9,10 @@ current_file_folder = os.path.dirname(os.path.realpath(__file__))
 
 from base4.utilities.files import get_file_path
 
-OMBIS_REPO_FOLDER = get_file_path('ombis_repo/') #current_file_folder + '/../../../ombis_repo/'
+OMBIS_REPO_FOLDER = get_file_path('ombis_repo/')  # current_file_folder + '/../../../ombis_repo/'
 
 ...
+
 
 async def get_geoloc():
     if hasattr(get_geoloc, 'result'):

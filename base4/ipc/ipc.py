@@ -12,13 +12,13 @@ logger = get_logger()
 
 
 async def ipc(
-        handler: Request,
-        service: AnyStr,
-        method: Literal['GET', 'POST', 'PUT', 'DELETE'],
-        uri: AnyStr,
-        params: Dict = None,
-        body: Dict | List = None,
-        return_value_for_key: AnyStr = None,
+    handler: Request,
+    service: AnyStr,
+    method: Literal['GET', 'POST', 'PUT', 'DELETE'],
+    uri: AnyStr,
+    params: Dict = None,
+    body: Dict | List = None,
+    return_value_for_key: AnyStr = None,
 ) -> Dict | str:
     test_mode = os.getenv('TEST_MODE', 'False')
     # base_url = 'TODO'
@@ -114,9 +114,7 @@ async def ipc(
 
             except httpx.TimeoutException as e:
                 raise HTTPException(
-                    status_code=response.status_code, detail={"code": "HTTP_TIMEOUT_ERROR",
-                                                              "parameter": "option",
-                                                              "message": f"Timeout occurred: {e}"}
+                    status_code=response.status_code, detail={"code": "HTTP_TIMEOUT_ERROR", "parameter": "option", "message": f"Timeout occurred: {e}"}
                 )
 
             except Exception as e:

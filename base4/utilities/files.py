@@ -29,13 +29,13 @@ def get_project_root():
     if is_installed_package():
         # we are running in a bundle
 
-        if os.getenv('APPLICATION_RUN_MODE', 'local') in ('docker','docker-monolith'):
+        if os.getenv('APPLICATION_RUN_MODE', 'local') in ('docker', 'docker-monolith'):
             # we are running in docker
             return Path('/app/')
 
-        #TODO Remove - but change this env in v4 project and then remuve this
+        # TODO Remove - but change this env in v4 project and then remuve this
 
-        if os.getenv('V4INSTALLATION', 'local') in ('docker','docker-monolith'):
+        if os.getenv('V4INSTALLATION', 'local') in ('docker', 'docker-monolith'):
             # we are running in docker
             return Path('/app/')
 
@@ -45,9 +45,11 @@ def get_project_root():
         # we are running in a normal Python environment
         return Path(__file__).parent.parent.parent.parent.parent
 
+
 def get_project_config_folder():
 
     return get_project_root() / 'config'
+
 
 def get_file_path(relative_path):
     """
@@ -68,6 +70,7 @@ def read_file(relative_path):
     """
     with open(get_file_path(relative_path), 'r') as f:
         return f.read()
+
 
 #
 # # Example usage

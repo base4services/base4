@@ -32,7 +32,6 @@ def list_files_in_directory(search_pattern):
     return [os.path.basename(file) for file in glob.glob(search_pattern) if os.path.isfile(file)]
 
 
-
 nonworking_days = {
     2024: {
         "2024-01-01": {"holiday": {"it": "Capodanno", "de": "Neujahr", "sr": "Nova godina", "en": "New Year's Day", "nonworking": ["it", "de", "sr"]}},

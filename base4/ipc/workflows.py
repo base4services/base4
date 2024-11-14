@@ -27,7 +27,6 @@ deal_field_map = {
     "priority": None,
     "status_id": "deal.status_id",
     "stage_id": "deal.stage_id",
-
 }
 tickets_field_map = {
     "title": "title",
@@ -37,7 +36,6 @@ tickets_field_map = {
     "priority": "priority",
     "status_id": None,
     "stage_id": None,
-
 }
 
 

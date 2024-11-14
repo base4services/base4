@@ -71,14 +71,12 @@ async def get_ombis_users_table(handler):
 
 
 async def get_org_units_and_users(handler):
-    return await ipc(handler, 'tenants', 'GET', '/users/org_units_and_users',
-                     params={'profile': 'org_units_and_users', 'per_page': 999999})
+    return await ipc(handler, 'tenants', 'GET', '/users/org_units_and_users', params={'profile': 'org_units_and_users', 'per_page': 999999})
 
 
 async def get_org_units(handler):
     try:
-        res = await ipc(handler, 'tenants', 'GET', '/org_units',
-                        params={'profile': 'org_units', 'per_page': 999999, 'only_data': True})
+        res = await ipc(handler, 'tenants', 'GET', '/org_units', params={'profile': 'org_units', 'per_page': 999999, 'only_data': True})
     except Exception as e:
         raise
 

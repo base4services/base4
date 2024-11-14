@@ -11,10 +11,7 @@ ModelType = TypeVar('ModelType', bound=tortoise.models.Model)
 
 class BaseServicePreAndPostUtils:
     @staticmethod
-    async def create_pre_save_hook(payload: SchemaType,
-                                   service_instance: Any,
-                                   request: Request,
-                                   body: Dict[str, Any]) -> None:
+    async def create_pre_save_hook(payload: SchemaType, service_instance: Any, request: Request, body: Dict[str, Any]) -> None:
         """
         Execute the pre-save hook for create operation if it exists on the payload.
 
@@ -56,10 +53,7 @@ class BaseServicePreAndPostUtils:
                 )
 
     @staticmethod
-    async def create_post_save_hook(payload: SchemaType,
-                                    service_instance: Any,
-                                    request: Request,
-                                    item: ModelType) -> Dict[str, Any]:
+    async def create_post_save_hook(payload: SchemaType, service_instance: Any, request: Request, item: ModelType) -> Dict[str, Any]:
         """
         Execute the post-save hook for create operation if it exists on the payload.
 
@@ -105,12 +99,7 @@ class BaseServicePreAndPostUtils:
         return post_commit_result
 
     @staticmethod
-    async def update_pre_save_hook(
-            payload: SchemaType,
-            service_instance: Any,
-            request: Request,
-            item: ModelType
-    ) -> None:
+    async def update_pre_save_hook(payload: SchemaType, service_instance: Any, request: Request, item: ModelType) -> None:
         """
         Execute the pre-save update hook if it exists on the payload.
 
@@ -132,41 +121,20 @@ class BaseServicePreAndPostUtils:
         if hasattr(payload, 'pre_save_update') and inspect.ismethod(getattr(payload, 'pre_save_update')):
             try:
                 pre_save_update_method = getattr(payload, 'pre_save_update')
-                if not await pre_save_update_method(
-                        svc=service_instance,
-                        db_id=item.id,
-                        request=request,
-                        body=None,
-                        payload=payload
-                ):
+                if not await pre_save_update_method(svc=service_instance, db_id=item.id, request=request, body=None, payload=payload):
                     raise HTTPException(
-                        status_code=400,
-                        detail={
-                            "code": "INTERNAL_SERVER_ERROR",
-                            "parameter": "pre_save_update",
-                            "message": "pre_save method failed"
-                        }
+                        status_code=400, detail={"code": "INTERNAL_SERVER_ERROR", "parameter": "pre_save_update", "message": "pre_save method failed"}
                     )
             except HTTPException as e:
                 raise e
             except Exception as e:
                 raise HTTPException(
                     status_code=400,
-                    detail={
-                        "code": "INTERNAL_SERVER_ERROR",
-                        "parameter": "pre_save_update",
-                        "message": f"Error in pre_save_update method: {str(e)}"
-                    }
+                    detail={"code": "INTERNAL_SERVER_ERROR", "parameter": "pre_save_update", "message": f"Error in pre_save_update method: {str(e)}"},
                 )
 
     @staticmethod
-    async def update_post_save_hook(
-            payload: SchemaType,
-            service_instance: Any,
-            request: Request,
-            item: ModelType,
-            updated: Dict[str, Any]
-    ) -> dict | None:
+    async def update_post_save_hook(payload: SchemaType, service_instance: Any, request: Request, item: ModelType, updated: Dict[str, Any]) -> dict | None:
         """
         Execute the post-save update hook if it exists on the payload.
 
@@ -189,30 +157,17 @@ class BaseServicePreAndPostUtils:
         if hasattr(payload, 'post_commit_update') and inspect.ismethod(getattr(payload, 'post_commit_update')):
             try:
                 post_commit_update_method = getattr(payload, 'post_commit_update')
-                post_commit_update_result = await post_commit_update_method(
-                    svc=service_instance,
-                    item=item,
-                    updated=updated,
-                    request=request
-                )
+                post_commit_update_result = await post_commit_update_method(svc=service_instance, item=item, updated=updated, request=request)
                 if post_commit_update_result is False:
                     raise HTTPException(
                         status_code=400,
-                        detail={
-                            "code": "INTERNAL_SERVER_ERROR",
-                            "parameter": "post_commit_update",
-                            "message": "post_commit_update method failed"
-                        }
+                        detail={"code": "INTERNAL_SERVER_ERROR", "parameter": "post_commit_update", "message": "post_commit_update method failed"},
                     )
             except HTTPException as e:
                 raise e
             except Exception as e:
                 raise HTTPException(
                     status_code=400,
-                    detail={
-                        "code": "INTERNAL_SERVER_ERROR",
-                        "parameter": "post_commit_update",
-                        "message": f"Error in post_commit_update method: {str(e)}"
-                    }
+                    detail={"code": "INTERNAL_SERVER_ERROR", "parameter": "post_commit_update", "message": f"Error in post_commit_update method: {str(e)}"},
                 )
             return post_commit_update_result

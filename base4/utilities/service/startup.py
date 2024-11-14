@@ -1,20 +1,20 @@
 import asyncio
+import importlib
 import os
+import signal
+import sys
 from contextlib import asynccontextmanager
 from typing import AnyStr, Dict, List, Optional
 
-import sys
 import asyncpg
 import pydash
+import uvicorn
 import yaml
 from fastapi import APIRouter, FastAPI, WebSocket, WebSocketDisconnect
 from tortoise import Tortoise
 
 from base4.schemas import DatabaseConfig
 from base4.utilities.db.base import TORTOISE_ORM
-import uvicorn
-import signal
-import importlib
 from base4.utilities.files import get_project_config_folder
 
 _test: Optional[AnyStr] = os.getenv('TEST_MODE', None)
@@ -66,7 +66,6 @@ async def startup_event(services: List[str] = None) -> None:
     # TODO: ako nemas boljinacin da proguras ovo, ucitaj ih iz services.yaml fajla ako nisu dosli
     if not services:
         services = []
-
 
         with open(get_project_config_folder() / 'services.yaml') as f:
             services = yaml.safe_load(f)['services']
@@ -128,7 +127,13 @@ async def _delete_and_create_test_database(conf: DatabaseConfig) -> None:
     :return:
     """
 
-    _connection: Dict = {'user': conf.db_postgres_user, 'password': conf.db_postgres_password, 'host': conf.db_postgres_host, 'port': int(conf.db_postgres_port), 'database': 'template1'}
+    _connection: Dict = {
+        'user': conf.db_postgres_user,
+        'password': conf.db_postgres_password,
+        'host': conf.db_postgres_host,
+        'port': int(conf.db_postgres_port),
+        'database': 'template1',
+    }
 
     try:
         _conn: asyncpg.connection.Connection = await asyncpg.connect(**_connection)
@@ -182,8 +187,7 @@ async def _initialize_tortoise_models(conf: Optional[DatabaseConfig] = None, con
     _url: AnyStr = f'sqlite://:memory:'
     if conf:
         _url: AnyStr = f'postgres://{conf.db_postgres_user}:{conf.db_postgres_password}@{conf.db_postgres_host}:{conf.db_postgres_port}/{conf.db_name}'
-    
-    
+
     TORTOISE_ORM['connections'][conn] = _url
 
     if services:
@@ -221,6 +225,7 @@ class GracefulShutdown:
         self.should_exit = True
         self.exit_code = signum  # Standard exit code for signals
 
+
 def load_services(single_service=None):
 
     with open(get_project_config_folder() / 'services.yaml') as f:
@@ -239,6 +244,7 @@ def load_services(single_service=None):
                 # ...
                 # importlib.import_module(f"base4services.services.{svc_name}.api")
                 # ...
+
 
 def run_server(config, single_service=None):
     server = uvicorn.Server(config)
@@ -260,6 +266,6 @@ def run_server(config, single_service=None):
     finally:
         print(f"Server has been shut down. Exit code: {shutdown_handler.exit_code}")
         sys.exit(shutdown_handler.exit_code)
-        
-        
+
+
 service: FastAPI = get_service()

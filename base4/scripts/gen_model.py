@@ -127,8 +127,7 @@ def gen_model(tbl, tbl_name, ctable=False, parent_class_name='', parent_types=No
 
     for c in ('cache11', 'cache1n'):
         if f'__{c}' in tbl:
-            res += '\n' + gen_model(tbl[f'__{c}'], cls_name.capitalize() + f'C1{c[-1].upper()}', ctable=True,
-                                    parent_class_name=cls_name, parent_types=types)
+            res += '\n' + gen_model(tbl[f'__{c}'], cls_name.capitalize() + f'C1{c[-1].upper()}', ctable=True, parent_class_name=cls_name, parent_types=types)
 
     return res
 

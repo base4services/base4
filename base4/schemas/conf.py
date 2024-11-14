@@ -21,7 +21,7 @@ class DatabaseConfig(BaseModel):
 
     db_conn: AnyStr
     db_name: AnyStr
-    db_postgres_port:int
+    db_postgres_port: int
     db_postgres_host: AnyStr
     db_postgres_user: AnyStr
     db_postgres_password: AnyStr

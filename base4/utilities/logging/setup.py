@@ -41,10 +41,9 @@ def setup_logging() -> None:
         if not os.path.exists(log_file_path):
             # Create empty file
             open(log_file_path, 'w').close()
-            
+
         rotating_file_handler = RotatingFileHandler(log_file_path, maxBytes=10 * 1024 * 1024, backupCount=1)  # 10 MB
-        formatter = logging.Formatter("%(asctime)s - %(filename)s:%(lineno)d - %(levelname)s - %(message)s",
-                                      "%Y-%m-%d %H:%M:%S")
+        formatter = logging.Formatter("%(asctime)s - %(filename)s:%(lineno)d - %(levelname)s - %(message)s", "%Y-%m-%d %H:%M:%S")
         rotating_file_handler.setFormatter(formatter)
 
         # Set up StreamHandler
@@ -84,8 +83,7 @@ def exception_traceback_logging(logger: logging.Logger) -> Callable:
                 # Re-raise the original HTTPException
                 raise http_exc
             except tortoise.exceptions.IntegrityError as e:
-                raise HTTPException(status_code=406,
-                                    detail={"code": "NOT_ACCEPTABLE", "parameter": None, "message": f"Integrity error"})
+                raise HTTPException(status_code=406, detail={"code": "NOT_ACCEPTABLE", "parameter": None, "message": f"Integrity error"})
 
             except Exception as e:
                 # Log the exception and raise a 500 Internal Server Error

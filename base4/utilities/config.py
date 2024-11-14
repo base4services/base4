@@ -50,13 +50,15 @@ def yaml_to_env(yaml_cfg):
         with open(env_path, 'a') as file:
             with open(env_path, 'w') as file:
                 file.write('')
-    
+
     os.chmod(env_path, 0o666)
     flat_config = yaml_to_obj(load_yaml_config(yaml_cfg))
     with open(env_path, 'w+') as env_file:
-        env_file.write('''# THIS IS AN AUTO-GENERATED AND PROTECTED FILE. PLEASE USE
+        env_file.write(
+            '''# THIS IS AN AUTO-GENERATED AND PROTECTED FILE. PLEASE USE
 # THE 'gen --env' SCRIPT TO GENERATE THIS FILE. DO NOT EDIT DIRECTLY
-# AS IT CAN BE OVERWRITTEN.\n''')
+# AS IT CAN BE OVERWRITTEN.\n'''
+        )
         for key, value in flat_config.items():
             if key == 'db_postgres_databases':
                 continue
@@ -64,8 +66,8 @@ def yaml_to_env(yaml_cfg):
         env_file.write(f"## PROJECT DATABASES:\n")
         env_file.write("DB_TEST=test_${DB_PREFIX}\n")
         for p in flat_config['db_postgres_databases'].split(','):
-            env_file.write("DB_%s=${DB_PREFIX}\n" % (p.upper(), ))
-        
-        env_file.write(f"DATABASES=({' '.join(["$DB_"+i.upper() for i in flat_config['db_postgres_databases'].split(',')])})" )
-        
+            env_file.write("DB_%s=${DB_PREFIX}\n" % (p.upper(),))
+
+        env_file.write(f"DATABASES=({' '.join(["$DB_"+i.upper() for i in flat_config['db_postgres_databases'].split(',')])})")
+
     os.chmod(env_path, 0o444)

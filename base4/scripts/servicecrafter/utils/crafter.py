@@ -17,10 +17,12 @@ class ServiceCrafter:
     _services: Path = Path(get_project_root()) / 'src' / 'services'
 
     @staticmethod
-    async def craft(service_name: str, ) -> bool:
+    async def craft(
+        service_name: str,
+    ) -> bool:
         instructions = {'name': service_name, 'models': [service_name]}
         service: Path = await ServiceCrafter.craft_service(instructions=instructions)
-        
+
         await ServiceCrafter.craft_yaml_sources(instructions=instructions, service=service)
         await ServiceCrafter.craft_schemas(instructions=instructions, service=service)
         await ServiceCrafter.craft_services(instructions=instructions, service=service)
@@ -29,7 +31,7 @@ class ServiceCrafter:
 
         await ServiceCrafter.craft_tests(instructions=instructions, service=service)
         config: Path = Path(get_project_root()) / 'config'
-        
+
         await ServiceCrafter.update_configs(name=service_name, config=config)
         await ServiceCrafter.update_services(name=service_name, config=config)
         await ServiceCrafter.update_gen_yaml_and_gen_models(name=service_name)
@@ -45,7 +47,14 @@ class ServiceCrafter:
         content: list[str] = content.split('\n')
         new_content: list[str] = list()
 
-        gen: list[str] = [f"  - name: {name}", f"    singular: {name}", f"    location: src/services/{name}", f"    gen:", f"      - models", f"      - schemas"]
+        gen: list[str] = [
+            f"  - name: {name}",
+            f"    singular: {name}",
+            f"    location: src/services/{name}",
+            f"    gen:",
+            f"      - models",
+            f"      - schemas",
+        ]
 
         for line in content:
             if line == '  # gen placeholder':
@@ -64,7 +73,7 @@ class ServiceCrafter:
     @staticmethod
     async def update_services(name: str, config: Path) -> None:
         print('s nemanja', config / 'services.yaml')
-        
+
         services_yaml_filepath: Path = config / 'services.yaml'
         if not services_yaml_filepath.exists():
             raise FileNotFoundError('Services yaml not found')
@@ -95,7 +104,7 @@ class ServiceCrafter:
         # if service_dir.exists() and test_mode:
         #     import shutil
         #     shutil.rmtree(service_dir)
-        
+
         try:
             service_dir.mkdir()
         except FileExistsError:
@@ -132,12 +141,12 @@ class ServiceCrafter:
     @staticmethod
     async def craft_services(instructions: dict, service: Path) -> None:
         services: Path = service / 'services'
-        
+
         try:
             services.mkdir()
         except:
             pass
-        
+
         _db_conn: Path = services / '_db_conn.py'
         _db_conn.touch()
 
@@ -153,12 +162,12 @@ class ServiceCrafter:
     async def craft_schemas(instructions: dict, service: Path) -> None:
         name: str = instructions.get('name')
         schemas: Path = service / 'schemas'
-        
+
         try:
             schemas.mkdir()
         except:
             pass
-        
+
         __init__: Path = schemas / '__init__.py'
         __init__.touch()
 
@@ -170,7 +179,7 @@ class ServiceCrafter:
     async def craft_models(instructions: dict, service: Path) -> None:
         name: str = instructions.get('name')
         models: Path = service / 'models'
-        
+
         try:
             models.mkdir()
         except:
@@ -210,8 +219,8 @@ class ServiceCrafter:
         services_config: Path = config / 'services.yaml'
 
         await ServiceCrafter.register_service_in_db_config(db_config_filepath=db_config, name=name)
-        #await ServiceCrafter.register_service_in_environment_files(name=name)
-        #await ServiceCrafter.register_service_in_environment_files(name=name, sample=True)
+        # await ServiceCrafter.register_service_in_environment_files(name=name)
+        # await ServiceCrafter.register_service_in_environment_files(name=name, sample=True)
 
     @staticmethod
     async def register_service_in_environment_files(name: str, sample: bool = False) -> None:

@@ -73,8 +73,8 @@ def decode_token(token: str) -> DecodedToken:
 
 def verify_token(token: str = Depends(oauth2_scheme)) -> DecodedToken:
 
-    #TODO: Treba konsultovati users servis na tenantu, koji je na basd4services/tenants ili services/tenant
-    #TODO: ...
+    # TODO: Treba konsultovati users servis na tenantu, koji je na basd4services/tenants ili services/tenant
+    # TODO: ...
 
     try:
         decoded = decode_token(token)
@@ -82,12 +82,10 @@ def verify_token(token: str = Depends(oauth2_scheme)) -> DecodedToken:
         ...
 
     except Exception as e:
-        raise HTTPException(status_code=401, detail={"code": "INVALID_SESSION", "parameter": "token",
-                                                     "message": f"error decoding token"})
+        raise HTTPException(status_code=401, detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token"})
 
     if decoded.expired:
-        raise HTTPException(status_code=401, detail={"code": "SESSION_EXPIRED", "parameter": "token",
-                                                     "message": f"your session has been expired"})
+        raise HTTPException(status_code=401, detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has been expired"})
     return decoded
 
 

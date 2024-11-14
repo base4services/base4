@@ -13,5 +13,6 @@ async def craft(service_name: str) -> any:
     """Craft a service with instructions in inits"""
     return await ServiceCrafter.craft(service_name)
 
+
 if __name__ == '__main__':
     craft(_anyio_backend="asyncio")

@@ -18,8 +18,8 @@ ModelType = TypeVar('ModelType', bound=tortoise.models.Model)
 class BaseServiceUtils:
     @staticmethod
     def validate_update_if_exists_params(
-            update_if_exists_key_fields: List[str],
-            update_if_exists_value_fields: List[str],
+        update_if_exists_key_fields: List[str],
+        update_if_exists_value_fields: List[str],
     ) -> None:
         """
         Validate the parameters for updating if a record exists.
@@ -49,8 +49,7 @@ class BaseServiceUtils:
         if len(update_if_exists_key_fields) != len(update_if_exists_value_fields):
             raise HTTPException(
                 status_code=500,
-                detail={"code": "INTERNAL_SERVER_ERROR",
-                        "message": "update_if_exists_key_fields and update_if_exists_value_fields must have same length"},
+                detail={"code": "INTERNAL_SERVER_ERROR", "message": "update_if_exists_key_fields and update_if_exists_value_fields must have same length"},
             )
 
     @staticmethod
@@ -81,8 +80,8 @@ class BaseServiceUtils:
 
     @staticmethod
     async def update_payload_with_ids(
-            base_service_instance: Any,
-            payload: SchemaType,
+        base_service_instance: Any,
+        payload: SchemaType,
     ) -> uuid.UUID:
         """
         Update the payload with unique ID and return an ID.
@@ -120,10 +119,10 @@ class BaseServiceUtils:
 
     @staticmethod
     async def generate_unique_id(
-            model: ModelType,
-            uid_prefix: str,
-            uid_alphabet: str,
-            uid_total_length: int,
+        model: ModelType,
+        uid_prefix: str,
+        uid_alphabet: str,
+        uid_total_length: int,
     ) -> str:
         """
         Generate a unique ID for a given model.
@@ -146,8 +145,7 @@ class BaseServiceUtils:
         Note:
             This method attempts to generate a unique ID up to 10 times before giving up.
         """
-        return await model.gen_unique_id(prefix=uid_prefix, alphabet=uid_alphabet, total_length=uid_total_length,
-                                         max_attempts=10)
+        return await model.gen_unique_id(prefix=uid_prefix, alphabet=uid_alphabet, total_length=uid_total_length, max_attempts=10)
 
     @staticmethod
     def update_body_with_timestamps(payload: SchemaType, body: Dict[str, Any]) -> None:
@@ -184,14 +182,15 @@ class BaseServiceUtils:
             body['last_updated'] = tortoise.timezone.make_aware(datetime.datetime.now())
 
     @staticmethod
-    async def update_db_entity_instance(model_loc,
-                                        payload: SchemaType,
-                                        db_item: ModelType,
-                                        schem_item: SchemaType,
-                                        service_instance,
-                                        request,
-                                        logged_user_id: uuid.UUID,
-                                        ):
+    async def update_db_entity_instance(
+        model_loc,
+        payload: SchemaType,
+        db_item: ModelType,
+        schem_item: SchemaType,
+        service_instance,
+        request,
+        logged_user_id: uuid.UUID,
+    ):
         updated = {}
         for key in model_loc:
 
@@ -239,9 +238,7 @@ class BaseServiceUtils:
                                 await old_item.delete()
 
                             service_loc = service_instance.model.schema_service_loc()
-                            new_db_item = await service_loc[key]().create(logged_user_id, list_item, request,
-                                                                          **list_item.unq(),
-                                                                          return_db_object=True)
+                            new_db_item = await service_loc[key]().create(logged_user_id, list_item, request, **list_item.unq(), return_db_object=True)
                             await getattr(db_item, key).add(new_db_item)
                             new_values.append(str(list_item))
                         updated[key] = [old, new_values]
@@ -255,24 +252,19 @@ class BaseServiceUtils:
         return updated
 
     @staticmethod
-    async def update_updated_fields(request: Request,
-                                    model_item: ModelType,
-                                    updated: dict[str, Any],
-                                    schem_item: SchemaType,
-                                    service_instance: Any,
-                                    logged_user_id: uuid.UUID,
-                                    ) -> None:
+    async def update_updated_fields(
+        request: Request,
+        model_item: ModelType,
+        updated: dict[str, Any],
+        schem_item: SchemaType,
+        service_instance: Any,
+        logged_user_id: uuid.UUID,
+    ) -> None:
 
         if hasattr(schem_item, 'on_change_value'):
             for u in updated.items():
                 await getattr(schem_item, 'on_change_value')(
-                    key=u[0],
-                    new_value=u[1][1],
-                    old_value=u[1][0],
-                    svc=service_instance,
-                    item=model_item,
-                    request=request,
-                    logged_user_id=logged_user_id
+                    key=u[0], new_value=u[1][1], old_value=u[1][0], svc=service_instance, item=model_item, request=request, logged_user_id=logged_user_id
                 )
 
     @staticmethod

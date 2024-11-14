@@ -292,13 +292,11 @@ async def fetch_timesheet_with_affected_tickets_for_month(year, month):
 
     from base4.utilities.files import get_file_path
 
-    await fetch_timesheets_for_specific_month(
-        year, month, result_file=get_file_path(f'/ombis_repo/timesheets-{year}-{month:02}.json'), max_limit=max_limit
-    )
+    await fetch_timesheets_for_specific_month(year, month, result_file=get_file_path(f'/ombis_repo/timesheets-{year}-{month:02}.json'), max_limit=max_limit)
 
     await fetch_tickets_for_fetched_timesheets(
-         get_file_path(f'/ombis_repo/timesheets-{year}-{month:02}.json'),
-         get_file_path(f'/ombis_repo/tickets-{year}-{month:02}.json'),
+        get_file_path(f'/ombis_repo/timesheets-{year}-{month:02}.json'),
+        get_file_path(f'/ombis_repo/tickets-{year}-{month:02}.json'),
         max_limit=max_limit,
     )
 

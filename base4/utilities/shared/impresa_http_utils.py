@@ -21,8 +21,7 @@ class ImpresaApiHandler:
         IMPRESA_BASE_URL = os.getenv("IMPRESA_BASE_URL")
         IMPRESA_USERNAME = os.getenv("IMPRESA_USERNAME")
         IMPRESA_PASSWORD = os.getenv("IMPRESA_PASSWORD")
-        required_credentials = {"IMPRESA_BASE_URL": IMPRESA_BASE_URL, "IMPRESA_USERNAME": IMPRESA_USERNAME,
-                                "IMPRESA_PASSWORD": IMPRESA_PASSWORD}
+        required_credentials = {"IMPRESA_BASE_URL": IMPRESA_BASE_URL, "IMPRESA_USERNAME": IMPRESA_USERNAME, "IMPRESA_PASSWORD": IMPRESA_PASSWORD}
 
         missing_credentials: List[str] = [cred for cred, value in required_credentials.items() if value is None]
 
@@ -39,12 +38,12 @@ class ImpresaApiHandler:
         return IMPRESA_BASE_URL, IMPRESA_USERNAME, IMPRESA_PASSWORD
 
     async def make_impresa_request(
-            url: str,
-            method: HttpMethod = HttpMethod.GET,
-            params: Optional[Dict[str, Any]] = None,
-            data: Optional[Dict[str, Any]] = None,
-            json: Optional[Dict[str, Any]] = None,
-            timeout: int = 30,
+        url: str,
+        method: HttpMethod = HttpMethod.GET,
+        params: Optional[Dict[str, Any]] = None,
+        data: Optional[Dict[str, Any]] = None,
+        json: Optional[Dict[str, Any]] = None,
+        timeout: int = 30,
     ) -> httpx.Response | HTTPException:
         """
         Make an HTTP request using httpx with error handling.
@@ -81,16 +80,14 @@ class ImpresaApiHandler:
         logger.info(f"request body data: {data}")
         try:
             async with httpx.AsyncClient() as client:
-                response = await client.request(str(method), url, auth=auth, params=params, data=data, json=json,
-                                                timeout=timeout)
+                response = await client.request(str(method), url, auth=auth, params=params, data=data, json=json, timeout=timeout)
                 response.raise_for_status()  # Raises an HTTPStatusError for 4xx and 5xx responses
         except httpx.RequestError as e:
             logger.critical(f"Network-related error occurred after sending a request to impresa: {e}")
             critical_logger.critical(f"Network-related error occurred after sending a request to impresa: {e}")
 
             raise HTTPException(
-                status_code=500, detail={"code": "IMPRESA_NETWORK_ERROR", "parameter": "option",
-                                         "message": f"Network-related error occurred: {e}"}
+                status_code=500, detail={"code": "IMPRESA_NETWORK_ERROR", "parameter": "option", "message": f"Network-related error occurred: {e}"}
             )
 
         except httpx.HTTPStatusError as e:
@@ -109,8 +106,7 @@ class ImpresaApiHandler:
         except httpx.TimeoutException as e:
 
             raise HTTPException(
-                status_code=response.status_code,
-                detail={"code": "HTTP_ERROR_IMPRESA", "parameter": "option", "message": f"Timeout occurred: {e}"}
+                status_code=response.status_code, detail={"code": "HTTP_ERROR_IMPRESA", "parameter": "option", "message": f"Timeout occurred: {e}"}
             )
 
         except Exception as e:

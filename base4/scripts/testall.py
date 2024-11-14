@@ -2,8 +2,8 @@ import os
 
 
 def do():
-	os.system(
-		'''
+    os.system(
+        '''
 	SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 	if [[ "$SCRIPT_DIR" == *"/.venv/"* ]]; then
@@ -17,8 +17,8 @@ def do():
 	TEST_DATABASE=sqlite pytest -n 8 --disable-warnings tests --no-cov
 	cd -
 	'''
-	)
+    )
 
 
 if __name__ == '__main__':
-	do()
+    do()

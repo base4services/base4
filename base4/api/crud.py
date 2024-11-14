@@ -9,10 +9,7 @@ from fastapi import APIRouter, Depends, FastAPI, Query, Response, status
 from fastapi.exceptions import HTTPException
 from fastapi.requests import Request
 
-from base4.schemas.universal_table import (
-    UniversalTableGetRequest,
-    UniversalTableResponse,
-)
+from base4.schemas.universal_table import UniversalTableGetRequest, UniversalTableResponse
 
 # from base4.schemas.crud import CreateItemParamsRequest
 from base4.service.base import BaseService

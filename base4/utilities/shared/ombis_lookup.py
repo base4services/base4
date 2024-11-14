@@ -13,10 +13,7 @@ default_id_user = os.getenv('DEFAULT_ID_USER', '00000000-0000-0000-0000-00000000
 class OmbisLookupTableService:
 
     async def populate_ombis_lookup_table(
-        self, data, additional_data: dict = None,
-            additional_source_data: dict = None,
-            display_name_term="f['DisplayName']",
-            ids=None
+        self, data, additional_data: dict = None, additional_source_data: dict = None, display_name_term="f['DisplayName']", ids=None
     ):
 
         if not additional_data:
@@ -60,7 +57,7 @@ class OmbisLookupTableService:
                             'validated': tortoise.timezone.now(),
                         }
                         if ids:
-                            if id_value:=ids.get(f["Code"]):
+                            if id_value := ids.get(f["Code"]):
                                 kwa["id"] = id_value
                         kwa.update(additional_data)
                         if int(external_id) in additional_source_data:
