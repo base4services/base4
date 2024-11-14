@@ -163,7 +163,16 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, 
 				cp -R sendmail/* {project_root}/src/services/sendmail
 				rm -rf sendmail
 				''')
-
+			elif template == 'base4default_template':
+				os.system(f'''
+				mkdir -p {project_root}/src/services/{new_service}
+				git clone git+ssh://git@github2/base4services/base4service_template.git > /dev/null 2>&1
+				cp -R base4service_template/* {project_root}/src/services/{new_service}
+				rm -rf base4service_template
+				cd {project_root}/src/services/{new_service}
+				bash rename.sh {new_service}
+				''')
+				
 			os.system(f'craft -s {new_service}')
 			
 		else:
