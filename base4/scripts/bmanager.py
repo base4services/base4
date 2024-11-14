@@ -172,6 +172,7 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, 
 				'''
                 )
             elif template == 'b4default':
+                print('[*] creating service from default template...')
                 os.system(
                     f'''
 				echo [*] creating service -> {new_service}
@@ -182,11 +183,10 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, 
 				cd {project_root}/src/services/{new_service}
 				bash rename.sh {new_service}
 				rm  {project_root}/src/services/{new_service}/rename.sh
-				#rm  {project_root}/src/services/{new_service}/{new_service}
-				#echo [*] service -> {new_service} created!
 				'''
                 )
-
+                print('[*] service -> {new_service} created!')
+                
             else:
                 print(f'[*] please choose template')
                 for i, j in enumerate(['b4tenants', 'b4ws', 'b4sendmail', 'b4default'], start=1):
