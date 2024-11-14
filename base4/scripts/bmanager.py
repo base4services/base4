@@ -173,8 +173,8 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, 
 				cd {project_root}/src/services/{new_service}
 				bash rename.sh {new_service}
 				rm  {project_root}/src/services/{new_service}/rename.sh
-				rm  {project_root}/src/services/{new_service}/{new_service}
-				echo [*] service -> {new_service} created!
+				#rm  {project_root}/src/services/{new_service}/{new_service}
+				#echo [*] service -> {new_service} created!
 				''')
 			
 			else:
