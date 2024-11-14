@@ -55,10 +55,8 @@ repository = "https://github.com/digital-cube/base4"
 [project.scripts]
     gen = "base4.scripts.generator:main"
     craft = "base4.scripts.servicecrafter.craft:craft"
-    pip_up = "base4.scripts.pip.up:do"
-    pip_down = "base4.scripts.pip.down:do"
     bmanager = "base4.scripts.bmanager:do"
-    #testall = "base4.scripts.testall:do"
+    testall = "base4.scripts.testall:do"
 
 [tool.setuptools]
 packages = [

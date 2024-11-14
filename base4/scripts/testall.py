@@ -14,7 +14,7 @@ def do():
 	    pwd
 	fi
 
-	TEST_DATABASE=sqlite pytest -n 8 --disable-warnings tests --dist=loadscope --no-cov
+	TEST_DATABASE=sqlite pytest -n 8 --disable-warnings tests --no-cov
 	cd -
 	'''
 	)
