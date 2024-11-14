@@ -157,8 +157,8 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, 
             elif template == 'b4ws':
                 os.system(
                     f'''
-				git clone git+ssh://git@github2/base4services/base4tenants.git > /dev/null 2>&1
-				mv base4ws/ws {project_root}/src
+				git clone git+ssh://git@github2/base4services/base4ws.git > /dev/null 2>&1
+				cp -R base4ws/ws {project_root}/src
 				rm -rf base4ws
 				'''
                 )
