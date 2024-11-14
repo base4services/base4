@@ -54,8 +54,10 @@ def get_service_names():
 
 def evaluate_gen(gen: str):
 	gen_values = gen.split(",")
+	if not gen_values:
+		raise ValueError("[*] no services to generate")
+	
 	for gen in gen_values:
-		print('-', gen)
 		if gen not in ("schemas", "tables", "models"):
 			raise ValueError("gen must be one of 'schemas', 'tables', 'models' or 'models'")
 	return gen_values
