@@ -118,7 +118,7 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, 
 		return
 	
 	if ls_templates:
-		for i, j in enumerate(['base4ws', 'base4tenants', 'base4sendmail'], start=1):
+		for i, j in enumerate(['b4tenants', 'b4ws', 'b4sendmail', 'b4default'], start=1):
 			print(f'->: {j}')
 		return
 	
@@ -172,8 +172,15 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, 
 				cd {project_root}/src/services/{new_service}
 				bash rename.sh {new_service}
 				''')
-				
-			os.system(f'craft -s {new_service}')
+			
+			else:
+				print(f'[*] please choose template')
+				for i, j in enumerate(['b4tenants', 'b4ws', 'b4sendmail', 'b4default'], start=1):
+					print(f'->: {j}')
+				return
+			
+			#os.system(f'craft -s {new_service}')
+			
 		else:
 			print(f'[*] please choose template')
 			for i, j in enumerate(['b4tenants', 'b4ws', 'b4sendmail', 'b4default'], start=1):
