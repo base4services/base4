@@ -140,7 +140,9 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, 
 			sys.exit(f'[*] service -> {new_service} already exists')
 		
 		if is_git_dirty():
-			sys.exit(f'[*] please commit previous changes!')
+			print(f'[*] please commit previous changes!')
+			os.system('git status')
+			return
 		
 		if template:
 			if template == 'b4tenants':
