@@ -87,7 +87,7 @@ def is_git_dirty(repo_path='.'):
 @click.option('--pip-down', '-pd', is_flag=True, help='pip downgrade')
 @click.option('--fmt', '-f', is_flag=True, help='Run format and isort recursively')
 @click.option('--ls-templates', '-lt', is_flag=True, help='List available templates')
-@click.option('--template', '-t', default='b4default', help='Choose template: (-t base4tenants ...)')
+@click.option('--template', '-t', default='b4default', help='See  list of templates with `bmanager -lt` ')
 @click.option('--base-lib-update', '-u', is_flag=True, help='Update base4 library')
 @click.pass_context
 def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, pip_down, fmt, ls_templates, template, base_lib_update):
