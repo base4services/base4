@@ -116,7 +116,6 @@ fi
 mv base4project/* base4project/.[^.]* ./
 rm -rf  base4project
 
-
 # config files
 sed -i '' "s/__PROJECT_NAME__/${app}/g" config/services.yaml config/env.yaml
 
@@ -125,9 +124,6 @@ rm -rf .git
 git init
 git add .  > /dev/null 2>&1;
 git commit -m "initial commit" > /dev/null 2>&1;
-
-# todo, sredi ovo
-cp lib/base4/base4/scripts/testall .venv/bin/testall
 
 # security keys
 echo "[*] generating security keys..."
