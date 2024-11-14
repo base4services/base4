@@ -169,7 +169,7 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, 
 				os.system(f'''
 				echo [*] creating service -> {new_service}
 				mkdir -p {project_root}/src/services/{new_service}
-				git clone git+ssh://git@github2/base4services/base4service_template.git
+				git clone git+ssh://git@github2/base4services/base4service_template.git > /dev/null 2>&1
 				cp -R base4service_template/* {project_root}/src/services/{new_service}
 				rm -rf base4service_template {new_service}
 				cd {project_root}/src/services/{new_service}
