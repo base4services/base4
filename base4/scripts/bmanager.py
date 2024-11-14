@@ -164,14 +164,15 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, 
 				rm -rf sendmail
 				''')
 			elif template == 'b4default':
-				print(f'[*] cloning from default template...')
 				os.system(f'''
+				echo [*] creating service -> {new_service}
 				mkdir -p {project_root}/src/services/{new_service}
 				git clone git+ssh://git@github2/base4services/base4service_template.git
 				cp -R base4service_template/* {project_root}/src/services/{new_service}
 				rm -rf base4service_template
 				cd {project_root}/src/services/{new_service}
 				bash rename.sh {new_service}
+				rm  {project_root}/src/services/{new_service}/rename.sh
 				echo [*] service -> {new_service} created!
 				''')
 			
