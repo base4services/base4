@@ -121,7 +121,7 @@ sed -i '' "s/__PROJECT_NAME__/${app}/g" config/services.yaml config/env.yaml
 
 # reinitialize git
 rm -rf .git
-git init
+git init > /dev/null 2>&1;
 git add .  > /dev/null 2>&1;
 git commit -m "initial commit" > /dev/null 2>&1;
 
