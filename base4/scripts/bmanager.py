@@ -87,7 +87,7 @@ def is_git_dirty(repo_path='.'):
 @click.option('--pip-down', '-pd', is_flag=True, help='pip downgrade')
 @click.option('--fmt', '-f', is_flag=True, help='Run format and isort recursively')
 @click.option('--ls-templates', '-lt', is_flag=True, help='List available templates')
-@click.option('--template', '-t', help='Choose template: (-t base4tenants ...)')
+@click.option('--template', '-t', default='b4default', help='Choose template: (-t base4tenants ...)')
 @click.option('--base-lib-update', '-u', is_flag=True, help='Update base4 library')
 @click.pass_context
 def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, pip_down, fmt, ls_templates, template, base_lib_update):
@@ -143,27 +143,27 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, 
 			sys.exit(f'[*] please commit previous changes!')
 		
 		if template:
-			if template == 'base4tenants':
+			if template == 'b4tenants':
 				os.system(f'''
 				mkdir -p {project_root}/src/services/{new_service}
 				git clone git+ssh://git@github2/base4services/base4tenants.git > /dev/null 2>&1
 				cp -R base4tenants/* {project_root}/src/services/{new_service}
 				rm -rf base4tenants
 				''')
-			elif template == 'base4ws':
+			elif template == 'b4ws':
 				os.system(f'''
 				git clone git+ssh://git@github2/base4services/base4tenants.git > /dev/null 2>&1
 				mv base4ws/ws {project_root}/src
 				rm -rf base4ws
 				''')
-			elif template == 'base4sendmail':
+			elif template == 'b4sendmail':
 				os.system(f'''
 				mkdir -p {project_root}/src/services/sendmail
 				git clone git+ssh://git@github2/base4services/base4sendmail.git > /dev/null 2>&1
 				cp -R sendmail/* {project_root}/src/services/sendmail
 				rm -rf sendmail
 				''')
-			elif template == 'base4default_template':
+			elif template == 'b4default':
 				os.system(f'''
 				mkdir -p {project_root}/src/services/{new_service}
 				git clone git+ssh://git@github2/base4services/base4service_template.git > /dev/null 2>&1
@@ -174,10 +174,11 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, 
 				''')
 				
 			os.system(f'craft -s {new_service}')
-			
 		else:
-			# compile yaml files
-			os.system(f'craft -s {new_service} > /dev/null 2>&1')
+			print(f'[*] please choose template')
+			for i, j in enumerate(['b4tenants', 'b4ws', 'b4sendmail', 'b4default'], start=1):
+				print(f'->: {j}')
+			return
 	
 	if gen:
 		gen = evaluate_gen(gen)
