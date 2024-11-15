@@ -193,7 +193,7 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, 
                     print(f'->: {j}')
                 return
 
-            # os.system(f'craft -s {new_service}')
+            # todo call yaml and py generation
 
         else:
             print(f'[*] please choose template')
