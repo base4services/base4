@@ -91,7 +91,7 @@ def is_git_dirty(repo_path='.'):
 @click.option('--service-name', '-s', help='Service name to generate or reset')
 @click.option('--service-template', '-t', default='base4service_template', help='See list of templates with `bmanager -c list-templates')
 @click.option('--yaml-file', '-y', default='gen.yaml', help='YAML file to use for generation')
-@click.option('--gen-type', '-g', default='model,schema', help='Components to generate (comma-separated: models,schemas,tables)')
+@click.option('--gen-type', '-g', default='models,schemas', help='Components to generate (comma-separated: models,schemas,tables)')
 
 def do(command, service_name, yaml_file, service_template, gen_type):
 
