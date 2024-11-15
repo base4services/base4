@@ -187,7 +187,7 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen_type, pip
                 return
             
             # generate main config yaml
-            compile_main_config(new_service, gen_items=gen_type)
+            compile_main_config(new_service, gen_items=gen_type.split(','))
 
         else:
             print(f'[*] please choose template')
