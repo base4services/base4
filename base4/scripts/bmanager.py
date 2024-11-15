@@ -14,7 +14,7 @@ from base4.scripts.pip.down import do as p_down
 from base4.scripts.pip.up import do as p_up
 from base4.utilities.config import yaml_to_env
 from base4.utilities.files import get_project_root
-from yaml_compiler import compile_main_config
+from base4.scripts.yaml_compiler import compile_main_config
 
 import base4.scripts.gen_model as gen_model
 import base4.scripts.gen_schemas as gen_schemas
