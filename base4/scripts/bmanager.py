@@ -217,10 +217,10 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen_type, pip
                 continue
             location = i['location']
 
-            if not gen:
+            if not gen_type:
                 to_gen = i.get('gen')
             else:
-                to_gen = gen
+                to_gen = gen_type
                 
             gen4svc(svc_name, location, gen=to_gen)
 
