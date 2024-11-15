@@ -110,17 +110,8 @@ def do(command, service_name, yaml_file, service_template, gen_type):
 
     if command == 'test':
         os.system(
-            '''
-        SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-        if [[ "$SCRIPT_DIR" == *"/.venv/"* ]]; then
-            cd "$SCRIPT_DIR/../../src/.."
-            pwd
-        else
-            cd "$SCRIPT_DIR/../.."
-            pwd
-        fi
-
+            f'''
+        cd {project_root}
         TEST_DATABASE=sqlite pytest -n 8 --disable-warnings tests --no-cov
         cd -
         '''
