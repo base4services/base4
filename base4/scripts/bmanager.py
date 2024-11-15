@@ -187,13 +187,6 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen_type, pip
                 return
             
             # generate main config yaml
-            if gen_type:
-                user_gen = gen_type.split(',')
-                for i in ['models', 'schemas', 'tables']:
-                    if i in user_gen:
-                        user_gen.append(i)
-                gen_type = user_gen
-            print('aaaaaaaaaa', gen_type, type(gen_type))
             compile_main_config(new_service, gen_items=gen_type)
 
         else:
