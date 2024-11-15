@@ -9,58 +9,51 @@ import asyncclick as click
 import git
 import yaml
 
-import base4.scripts.gen_model as gen_model
-import base4.scripts.gen_schemas as gen_schemas
-import base4.scripts.gen_tables as gen_tables
 from base4 import configuration
 from base4.scripts.pip.down import do as p_down
 from base4.scripts.pip.up import do as p_up
 from base4.utilities.config import yaml_to_env
 from base4.utilities.files import get_project_root
+from yaml_compiler import compile_main_config
+
+import base4.scripts.gen_model as gen_model
+import base4.scripts.gen_schemas as gen_schemas
+import base4.scripts.gen_tables as gen_tables
 
 project_root = str(get_project_root())
 
 
-def gen4svc(svc_name, object_name, location, gen=None):
+def gen4svc(svc_name, location, gen=None):
     if not gen:
         gen = {'models', 'schemas', 'tables'}
+    
     if 'models' in gen:
         gen_model.save(
-            project_root + f'/{location}/yaml_sources/{object_name}_model.yaml',
-            project_root + f'/{location}/models/generated_{object_name}_model.py',
+            project_root + f'/{location}/yaml_sources/{svc_name}_model.yaml',
+            project_root + f'/{location}/models/generated_{svc_name}_model.py',
         )
     if 'schemas' in gen:
         gen_schemas.save(
-            project_root + f'/{location}/yaml_sources/{object_name}_schema.yaml',
-            project_root + f'/{location}/schemas/generated_{object_name}_schema.py',
+            project_root + f'/{location}/yaml_sources/{svc_name}_schema.yaml',
+            project_root + f'/{location}/schemas/generated_{svc_name}_schema.py',
         )
-
-    if 'tables' in gen:
-        gen_tables.save(
-            svc_name,
-            project_root + f'/{location}/yaml_sources/{object_name}_table.yaml',
-            project_root + f'/{location}/yaml_sources/{object_name}_model.yaml',
-            project_root + f'/{location}/schemas/generated_universal_tables_schema_for_{svc_name}.py',
-        )
-
-
+    
+    # todo, sredi ovo
+    # if 'tables' in gen:
+    #     gen_tables.save(
+    #         svc_name,
+    #         project_root + f'/{location}/yaml_sources/{object_name}_table.yaml',
+    #         project_root + f'/{location}/yaml_sources/{object_name}_model.yaml',
+    #         project_root + f'/{location}/schemas/generated_universal_tables_schema_for_{svc_name}.py',
+    #     )
+    
+    
 def get_service_names():
     service_names = []
     service_config = configuration("services")
     for service in service_config["services"]:
         service_names.append(list(service.keys())[0])
     return service_names
-
-
-def evaluate_gen(gen: str):
-    gen_values = gen.split(",")
-    if not gen_values:
-        raise ValueError("[*] no services to generate")
-
-    for gen in gen_values:
-        if gen not in ("schemas", "tables", "models"):
-            raise ValueError("gen must be one of 'schemas', 'tables', 'models' or 'models'")
-    return gen_values
 
 
 def is_git_dirty(repo_path='.'):
@@ -82,7 +75,7 @@ def is_git_dirty(repo_path='.'):
 @click.option('--reset-service', '-r', is_flag=True, help='Reset compiled files from newly created service')
 @click.option('--compile-env', '-e', is_flag=True, help=f'Generate .env file from env.yaml')
 @click.option('--compile-yaml', '-y', default='gen.yaml', help='YAML file to use for generation')
-@click.option('--gen', '-g', help='Components to generate (comma-separated: models,schemas,tables)')
+@click.option('--gen-type', '-g', default=['models', 'schemas'], help='Components to generate (comma-separated: models,schemas,tables)')
 @click.option('--pip-up', '-pu', is_flag=True, help='pip upgrade')
 @click.option('--pip-down', '-pd', is_flag=True, help='pip downgrade')
 @click.option('--fmt', '-f', is_flag=True, help='Run format and isort recursively')
@@ -90,9 +83,9 @@ def is_git_dirty(repo_path='.'):
 @click.option('--template', '-t', default='b4default', help='See  list of templates with `bmanager -lt` ')
 @click.option('--base-lib-update', '-u', is_flag=True, help='Update base4 library')
 @click.pass_context
-def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, pip_down, fmt, ls_templates, template, base_lib_update):
+def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen_type, pip_up, pip_down, fmt, ls_templates, template, base_lib_update):
 
-    if not any([new_service, reset_service, compile_env, gen, pip_up, pip_down, fmt, ls_templates, base_lib_update]):
+    if not any([new_service, reset_service, compile_env, pip_up, pip_down, fmt, ls_templates, base_lib_update]):
         click.echo(ctx.get_help())
         return
 
@@ -145,7 +138,7 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, 
             return
 
         if template:
-            if template == 'b4tenants':
+            if template == 'base4tenants':
                 os.system(
                     f'''
 				mkdir -p {project_root}/src/services/{new_service}
@@ -154,7 +147,7 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, 
 				rm -rf base4tenants
 				'''
                 )
-            elif template == 'b4ws':
+            elif template == 'base4ws':
                 os.system(
                     f'''
 				git clone git+ssh://git@github2/base4services/base4ws.git > /dev/null 2>&1
@@ -162,7 +155,7 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, 
 				rm -rf base4ws
 				'''
                 )
-            elif template == 'b4sendmail':
+            elif template == 'base4sendmail':
                 os.system(
                     f'''
 				mkdir -p {project_root}/src/services/sendmail
@@ -171,7 +164,7 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, 
 				rm -rf sendmail
 				'''
                 )
-            elif template == 'b4default':
+            elif template == 'base4service_template':
                 print('[*] creating service from default template...')
                 os.system(
                     f'''
@@ -185,24 +178,28 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, 
 				rm  {project_root}/src/services/{new_service}/rename.sh
 				'''
                 )
-                print('[*] service -> {new_service} created!')
+                print(f'[*] service -> {new_service} created!')
                 
             else:
                 print(f'[*] please choose template')
-                for i, j in enumerate(['b4tenants', 'b4ws', 'b4sendmail', 'b4default'], start=1):
+                for i, j in enumerate(['base4tenants', 'base4ws', 'base4sendmail', 'base4service_template'], start=1):
                     print(f'->: {j}')
                 return
-
-            # todo call yaml and py generation
+            
+            # generate main config yaml
+            if gen_type:
+                user_gen = gen_type.split(',')
+                for i in ['models', 'schemas', 'tables']:
+                    if i in user_gen:
+                        user_gen.append(i)
+                gen_type = user_gen
+            compile_main_config(new_service, gen_items=gen_type)
 
         else:
             print(f'[*] please choose template')
-            for i, j in enumerate(['b4tenants', 'b4ws', 'b4sendmail', 'b4default'], start=1):
+            for i, j in enumerate(['base4tenants', 'base4ws', 'base4sendmail', 'base4service_template'], start=1):
                 print(f'->: {j}')
             return
-
-    if gen:
-        gen = evaluate_gen(gen)
 
     try:
         yaml_file = (project_root + '/config/' + compile_yaml) if '/' not in compile_yaml else compile_yaml
@@ -218,18 +215,17 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen, pip_up, 
             svc_name = i['name']
             if new_service and svc_name not in new_service:
                 continue
-            singular_name = i['singular']
-
             location = i['location']
 
             if not gen:
                 to_gen = i.get('gen')
             else:
                 to_gen = gen
-            gen4svc(svc_name, singular_name, location, gen=to_gen)
+                
+            gen4svc(svc_name, location, gen=to_gen)
 
             # run test for new service
-            os.system(f'pytest -n 8 --disable-warnings {project_root + f"/tests/test_{new_service}.py"}')
+            os.system(f'pytest -n 8 --disable-warnings {project_root + f"/tests/test_{new_service}.py"} --no-cov')
 
 
 if __name__ == '__main__':

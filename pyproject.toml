@@ -53,8 +53,6 @@ repository = "https://github.com/digital-cube/base4"
 "base4" = ["*.json"]
 
 [project.scripts]
-    gen = "base4.scripts.generator:main"
-    craft = "base4.scripts.servicecrafter.craft:craft"
     bmanager = "base4.scripts.bmanager:do"
     testall = "base4.scripts.testall:do"
 
