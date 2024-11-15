@@ -176,6 +176,8 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen_type, pip
 				cd {project_root}/src/services/{new_service}
 				bash rename.sh {new_service}
 				rm  {project_root}/src/services/{new_service}/rename.sh
+				mv {project_root}/src/services/{new_service}/yaml_sources/model.yaml {project_root}/src/services/{new_service}/yaml_sources/{new_service}_model.yaml
+				mv {project_root}/src/services/{new_service}/yaml_sources/schema.yaml {project_root}/src/services/{new_service}/yaml_sources/{new_service}_schema.yaml
 				'''
                 )
                 print(f'[*] service -> {new_service} created!')
