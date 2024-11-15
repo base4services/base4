@@ -145,7 +145,8 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen_type, pip
 				mkdir -p {project_root}/src/services/{new_service}
 				git clone git+ssh://git@github2/base4services/base4tenants.git > /dev/null 2>&1
 				cp -R base4tenants/src/services/tenants/* {project_root}/src/services/{new_service}/
-				cp -R base4tenants/tests/test_tenants.py {project_root}/tests/test_base_{new_service}.py
+				cp -R base4tenants/tests/test_base_tenants.py {project_root}/tests/
+				cp -R base4tenants/tests/test_tenants.py {project_root}/tests/test_{new_service}.py
 				rm -rf base4tenants
 				'''
                 )
