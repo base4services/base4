@@ -246,7 +246,7 @@ def do(command, service_name, yaml_file, service_template, gen_type):
 
         try:
             _yaml_file = (project_root + '/config/' + yaml_file) if '/' not in yaml_file else yaml_file
-            with open(yaml_file) as f:
+            with open(_yaml_file) as f:
                 data = yaml.safe_load(f)
         except Exception as e:
             print(f'Error loading {_yaml_file}')
