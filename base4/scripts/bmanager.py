@@ -236,11 +236,8 @@ def do(command, service_name, yaml_file, service_template, gen_type):
             # generate main config yaml
             compile_main_config(service_name, gen_items=gen_type.split(','))
 
-        else:
-            print(f'[*] please choose template')
-            for i, j in enumerate(['base4tenants', 'base4ws', 'base4sendmail', 'base4service_template'], start=1):
-                print(f'->: {j}')
-            return
+            # continue with another command
+            command = 'compile-yaml'
 
     if command == 'compile-yaml':
 
@@ -256,9 +253,9 @@ def do(command, service_name, yaml_file, service_template, gen_type):
         if data and 'services' in data and isinstance(data['services'], list):
             for i in data['services']:
                 svc_name = i['name']
-
-                # if new_service and svc_name not in new_service:
-                #     continue
+    
+                if service_name and svc_name not in service_name:
+                    continue
 
                 location = i['location']
 
