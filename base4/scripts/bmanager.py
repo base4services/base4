@@ -80,7 +80,7 @@ def is_git_dirty(repo_path='.'):
 @click.option('--pip-down', '-pd', is_flag=True, help='pip downgrade')
 @click.option('--fmt', '-f', is_flag=True, help='Run format and isort recursively')
 @click.option('--ls-templates', '-lt', is_flag=True, help='List available templates')
-@click.option('--template', '-t', default='b4default', help='See  list of templates with `bmanager -lt` ')
+@click.option('--template', '-t', default='base4service_template', help='See  list of templates with `bmanager -lt` ')
 @click.option('--base-lib-update', '-u', is_flag=True, help='Update base4 library')
 @click.pass_context
 def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen_type, pip_up, pip_down, fmt, ls_templates, template, base_lib_update):
@@ -111,7 +111,7 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen_type, pip
         return
 
     if ls_templates:
-        for i, j in enumerate(['b4tenants', 'b4ws', 'b4sendmail', 'b4default'], start=1):
+        for i, j in enumerate(['base4tenants', 'base4ws', 'base4sendmail', 'base4service_template'], start=1):
             print(f'->: {j}')
         return
 
