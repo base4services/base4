@@ -88,7 +88,8 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen_type, pip
     if not any([new_service, reset_service, compile_env, pip_up, pip_down, fmt, ls_templates, base_lib_update]):
         click.echo(ctx.get_help())
         return
-
+    # todo ako je -s i g onda regenerisi samo taj servis
+    # todo validacija za g parametar
     if base_lib_update:
         print('[*] Updating base4 library...')
         os.system(f'''cd {project_root}/lib/base4 && git pull''')
