@@ -132,7 +132,7 @@ cd security || exit
 cd .. || exit
 
 echo "[*] generating env file..."
-bmanager -e > /dev/null 2>&1;
+bmanager -c compile-env > /dev/null 2>&1;
 
 echo "[*] linking docker-compose.yaml..."
 ln -sf infrastructure/docker-compose.yaml docker-compose.yaml
