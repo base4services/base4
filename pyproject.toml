@@ -74,9 +74,6 @@ packages = [
     'base4.utilities.security',
     'base4.utilities.service',
     'base4.utilities.shared',
-    'base4.scripts.servicecrafter',
-    'base4.scripts.servicecrafter.utils',
-    'base4.scripts.servicecrafter.utils.templates',
     'base4.ws',
     'base4.ombis', # TODO: Remove and place into shared on impresa
 ]
