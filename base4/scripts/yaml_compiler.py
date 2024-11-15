@@ -29,7 +29,7 @@ db_{db_name}: &db_{db_name}
 	new_app_section = f"""
     {db_name}:
       models:
-        - {db_name}.models
+        - services.{db_name}.models
       default_connection: conn_{db_name}
 """
 	
