@@ -75,7 +75,7 @@ def is_git_dirty(repo_path='.'):
 @click.option('--reset-service', '-r', is_flag=True, help='Reset compiled files from newly created service')
 @click.option('--compile-env', '-e', is_flag=True, help=f'Generate .env file from env.yaml')
 @click.option('--compile-yaml', '-y', default='gen.yaml', help='YAML file to use for generation')
-@click.option('--gen-type', '-g', default='models,schemas', help='Components to generate (comma-separated: models,schemas,tables)')
+@click.option('--gen-type', '-g', default='model,schema', help='Components to generate (comma-separated: models,schemas,tables)')
 @click.option('--pip-up', '-pu', is_flag=True, help='pip upgrade')
 @click.option('--pip-down', '-pd', is_flag=True, help='pip downgrade')
 @click.option('--fmt', '-f', is_flag=True, help='Run format and isort recursively')
@@ -177,7 +177,7 @@ def do(ctx, new_service, reset_service, compile_env, compile_yaml, gen_type, pip
 				cd {project_root}/src/services/{new_service}
 				bash rename.sh {new_service}
 				rm  {project_root}/src/services/{new_service}/rename.sh
-				mv {project_root}/src/services/{new_service}/yaml_sources/models.yaml {project_root}/src/services/{new_service}/yaml_sources/{new_service}_models.yaml
+				mv {project_root}/src/services/{new_service}/yaml_sources/model.yaml {project_root}/src/services/{new_service}/yaml_sources/{new_service}_model.yaml
 				mv {project_root}/src/services/{new_service}/yaml_sources/schema.yaml {project_root}/src/services/{new_service}/yaml_sources/{new_service}_schema.yaml
 				'''
                 )
