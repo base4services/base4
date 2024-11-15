@@ -208,7 +208,8 @@ def do(command, service_name, yaml_file, service_template, gen_type):
 				mkdir -p {project_root}/src/services/{service_name}
 				git clone git+ssh://git@github2/base4services/base4service_template.git > /dev/null 2>&1
 				cp -R base4service_template/services/template/* {project_root}/src/services/{service_name}
-				rm -rf base4service_template {service_name}
+                cp base4service_template/rename.sh {project_root}/src/services/{service_name}
+				rm -rf base4service_template  
 				cd {project_root}/src/services/{service_name}
                 cp base4service_template/tests/test_template.py {project_root}/tests/test_{service_name} 
 				bash rename.sh {service_name}
