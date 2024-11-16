@@ -204,7 +204,6 @@ def do(command, service_name, yaml_file, service_template, gen_type):
                 print('[*] creating service from default template...')
                 os.system(
                     f'''
-				echo [*] creating service -> {service_name}
 				mkdir -p {project_root}/src/services/{service_name}
 				git clone git+ssh://git@github2/base4services/base4service_template.git > /dev/null 2>&1
 				cp -R base4service_template/services/template/* {project_root}/src/services/{service_name}
