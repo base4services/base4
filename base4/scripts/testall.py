@@ -1,22 +1,15 @@
 import os
-
+from base4.utilities.files import get_project_root
 
 def do():
+    project_root = str(get_project_root())
+
     os.system(
-        '''
-	SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-	if [[ "$SCRIPT_DIR" == *"/.venv/"* ]]; then
-	    cd "$SCRIPT_DIR/../../src/.."
-	    pwd
-	else
-	    cd "$SCRIPT_DIR/../.."
-	    pwd
-	fi
-
-	TEST_DATABASE=sqlite pytest -n 8 --disable-warnings tests --no-cov
-	cd -
-	'''
+        f'''
+    cd {project_root}
+    TEST_DATABASE=sqlite pytest -n 8 --disable-warnings tests --no-cov
+    cd -
+    '''
     )
 
 
