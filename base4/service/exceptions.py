@@ -6,7 +6,7 @@ class ServiceException(BaseException):
         self.error_code = error_code
         self.message = message
         self.status_code = status_code
-        self.additional_info = additional_info
+        self.additional_info = additional_info if additional_info is not None else {}
 
         super().__init__(message)
 
