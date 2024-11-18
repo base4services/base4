@@ -77,7 +77,7 @@ def is_git_dirty(repo_path='.'):
                    'reset-service',
                    'compile-env',
                    'compile-yaml',
-                   'gen-from-yaml',
+                   # 'gen-from-yaml',
                    'pip-up',
                    'pip-down',
                    'list-templates',
