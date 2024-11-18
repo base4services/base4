@@ -2,23 +2,17 @@
 import uuid
 from typing import AnyStr, Dict, List
 
-from black.linegen import partial
-
-from base4.utilities.cache import memoize
-from base4.project_specifics import lookups_module
-
 from .ipc import ipc
 from .tickets import get_single_ticket
-
+from base4.project_specifics import lookups_module
 try:
     # TODO: ovo mora da se skine iz base, posto base ne treba da zna za druge projte
     from shared.utils.v3_api_utils import make_v3_api_request
 except Exception as e:
     pass
 
-import pydash
-
 from base4.utilities.http.methods import HttpMethod
+import pydash
 
 deal_field_map = {
     "title": "deal.short_description",
@@ -28,6 +22,7 @@ deal_field_map = {
     "priority": None,
     "status_id": "deal.status_id",
     "stage_id": "deal.stage_id",
+
 }
 tickets_field_map = {
     "title": "title",
@@ -37,12 +32,15 @@ tickets_field_map = {
     "priority": "priority",
     "status_id": None,
     "stage_id": None,
+
 }
 
 
 async def get_workflow_item_attribute(handler, item_type_id, item_id: uuid.UUID, field: str) -> Dict | None:
-    dir(lookups_module)
-    if str(item_type_id) == lookups_module.Lookups.Workflows.WorkflowItemTypes.TICKETS:
+    if str(item_type_id) == lookups_module.Lookups.Workflows.WorkflowItemTypes.BACKOFFICE:
+        ticket_data = await get_single_ticket(handler, item_id)
+        return pydash.get(ticket_data, tickets_field_map[field])
+    if str(item_type_id) == lookups_module.Lookups.Workflows.WorkflowItemTypes.ORDER:
         ticket_data = await get_single_ticket(handler, item_id)
         return pydash.get(ticket_data, tickets_field_map[field])
     elif str(item_type_id) == lookups_module.Lookups.Workflows.WorkflowItemTypes.SALES:
@@ -52,3 +50,17 @@ async def get_workflow_item_attribute(handler, item_type_id, item_id: uuid.UUID,
         return pydash.get(deal_data, deal_field_map[field])
     else:
         raise Exception('Unknown item type')
+
+
+async def get_single_workflow(handler, workflow_id):
+    try:
+        res = await ipc(
+            handler,
+            'workflows',
+            'GET',
+            f'/{workflow_id}',
+        )
+    except Exception as e:
+        raise
+
+    return res
