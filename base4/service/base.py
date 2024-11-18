@@ -654,9 +654,14 @@ class BaseService[ModelType]:
 
         return
 
-    async def mk_cache(self, request: Request, cache_type, citem, item, reversed_lookups, conn=None, ):
+    async def mk_cache(self, request: Request, cache_type, citem, item, conn=None, ):
 
         import base4.ipc as ipc  # DO NOT REMOVE THIS IMPORT, IT IS USED BY EVAL FUNCTION
+
+        from base4.project_specifics import lookups_module
+
+        # lookups = lookups_module.Lookups
+
 
         updated = set()
         for c in citem.mk_cache_rules:
@@ -726,7 +731,7 @@ class BaseService[ModelType]:
                 if 'source' not in c:
                     raise NameError("Source must be used")
 
-                rlookup = lookups.LookupsReversed.get_instance()
+                rlookup = lookups_module.LookupsReversed.get_instance()
 
                 if getattr(citem, c['source']):
                     try:
