@@ -43,9 +43,9 @@ def get_service() -> FastAPI:
 
     cfg = configuration('services')
 
-    docs_path = pydash.get(cfg, 'general.docs_uri', '/api/docs')
-    openapi_path = pydash.get(cfg, 'general.openapi_uri', '/api/openapi')
-    redoc_path = pydash.get(cfg, 'general.redoc_uri', '/api/redoc')
+    docs_path = pydash.get(cfg, 'general.docs.docs_path', '/api/docs')
+    openapi_path = pydash.get(cfg, 'general.docs.openapi_path', '/api/openapi')
+    redoc_path = pydash.get(cfg, 'general.docs.redoc_path', '/api/redoc')
 
     service: FastAPI = FastAPI(lifespan=lifespan, openapi_url=openapi_path, docs_url=docs_path, redoc_url=redoc_path)
 
@@ -226,7 +226,7 @@ class GracefulShutdown:
         self.exit_code = signum  # Standard exit code for signals
 
 
-def load_services(single_service=None):
+def load_services(app, single_service=None):
 
     with open(get_project_config_folder() / 'services.yaml') as f:
 
@@ -238,7 +238,8 @@ def load_services(single_service=None):
                 continue
 
             try:
-                importlib.import_module(f"services.{svc_name}.api")
+                module = importlib.import_module(f"services.{svc_name}.api")
+                app.include_router(module.router, prefix=f"/api/v4/{svc_name}", tags=[svc_name.capitalize()])
             except Exception as e:
                 raise
                 # ...
@@ -246,7 +247,7 @@ def load_services(single_service=None):
                 # ...
 
 
-def run_server(config, single_service=None):
+def run_server(config, service, single_service=None):
     server = uvicorn.Server(config)
     shutdown_handler = GracefulShutdown()
 
@@ -257,7 +258,7 @@ def run_server(config, single_service=None):
     server.force_exit = False
     server.custom_on_tick = custom_on_tick
 
-    load_services(single_service=single_service)
+    load_services(service, single_service=single_service)
 
     try:
         server.run()

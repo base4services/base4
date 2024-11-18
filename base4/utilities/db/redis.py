@@ -1,7 +1,9 @@
 import os
 from typing import Any, List, Optional
 
-import redis.asyncio as redis
+# import redis.asyncio as redis
+import redis
+
 import ujson as json
 
 
