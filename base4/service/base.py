@@ -654,7 +654,7 @@ class BaseService[ModelType]:
 
         return
 
-    async def mk_cache(self, request: Request, cache_type, citem, item, conn=None):
+    async def mk_cache(self, request: Request, cache_type, citem, item, reversed_lookups, conn=None, ):
 
         import base4.ipc as ipc  # DO NOT REMOVE THIS IMPORT, IT IS USED BY EVAL FUNCTION
 
