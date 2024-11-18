@@ -5,6 +5,7 @@ from base4.utilities.cache import memoize
 
 from .ipc import ipc
 
+
 # TODO: ADD TIME CACHING MEMOIZE
 
 
@@ -49,6 +50,21 @@ async def get_single_ticket(handler, id_ticket):
             'tickets',
             'GET',
             f'/{id_ticket}',
+        )
+    except Exception as e:
+        raise
+
+    return res
+
+
+async def create_ticket(handler, body: dict):
+    try:
+        res = await ipc(
+            handler,
+            'tickets',
+            'POST',
+            f'',
+            body=body
         )
     except Exception as e:
         raise
