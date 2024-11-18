@@ -227,6 +227,7 @@ class GracefulShutdown:
 
 
 def load_services(app, single_service=None):
+    api_prefix = os.getenv('GENERAL_API_PREFIX', None)
 
     with open(get_project_config_folder() / 'services.yaml') as f:
 
@@ -239,7 +240,7 @@ def load_services(app, single_service=None):
 
             try:
                 module = importlib.import_module(f"services.{svc_name}.api")
-                app.include_router(module.router, prefix=f"/api/v4/{svc_name}", tags=[svc_name.capitalize()])
+                app.include_router(module.router, prefix=f"{api_prefix}/{svc_name}", tags=[svc_name.capitalize()])
             except Exception as e:
                 raise
                 # ...

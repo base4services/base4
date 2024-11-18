@@ -23,7 +23,9 @@ async def ipc(
     test_mode = os.getenv('TEST_MODE', 'False')
     # base_url = 'TODO'
 
-    url = f'/api/v4/{service}{uri}'
+    api_prefix = os.getenv('API_PREFIX', '/api')
+
+    url = f'{api_prefix}/{service}{uri}'
 
     if test_mode in (True, 'true', 'True'):
 

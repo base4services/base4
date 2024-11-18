@@ -83,17 +83,20 @@ def is_git_dirty(repo_path='.'):
                    'list-templates',
                    'base-lib-update',
                    'fmt',
-                   'test'
+                   'test',
+                   'services',
+                   'aerich'
                    ]),
               required=True,
               help='Command to execute',
               )
+@click.option('--aerich', '-a', help='aerich command to execute')
 @click.option('--service-name', '-s', help='Service name to generate or reset')
 @click.option('--service-template', '-t', default='base4service_template', help='See list of templates with `bmanager -c list-templates')
 @click.option('--yaml-file', '-y', default='gen.yaml', help='YAML file to use for generation')
 @click.option('--gen-type', '-g', default='models,schemas', help='Components to generate (comma-separated: models,schemas,tables)')
 
-def do(command, service_name, yaml_file, service_template, gen_type):
+def do(command, aerich, service_name, yaml_file, service_template, gen_type):
 
     #TODO: ovo pokupiti listanjem git repo-a
     existing_service_templates = ['base4tenants', 'base4ws', 'base4sendmail', 'base4service_template']
@@ -107,6 +110,26 @@ def do(command, service_name, yaml_file, service_template, gen_type):
         os.system(f'black --target-version py312 --line-length 160 --skip-string-normalization {project_root}')
         os.system(f'isort {project_root} --profile black --line-length 160')
         return
+
+    if command == 'services':
+        print(f'[*] Available services:')
+        for i, j in enumerate(get_service_names(), start=1):
+            print(j)
+        return
+
+    if command == 'aerich':
+        if not aerich:
+            print(f'[*] please provide aerich command')
+            return
+
+        if aerich not in ('init', 'init-db', 'migrate', 'upgrade', 'downgrade'):
+            print(f'[*] please provide valid aerich command')
+            return
+
+        for service in ['aerich'] + get_service_names():
+            if service_name and service != service_name:
+                continue
+            print('aerich --app '+service+' '+aerich)
 
     if command == 'test':
         os.system(
