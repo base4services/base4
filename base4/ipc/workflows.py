@@ -5,6 +5,7 @@ from typing import AnyStr, Dict, List
 from black.linegen import partial
 
 from base4.utilities.cache import memoize
+from base4.project_specifics import lookups_module
 
 from .ipc import ipc
 from .tickets import get_single_ticket
@@ -40,10 +41,11 @@ tickets_field_map = {
 
 
 async def get_workflow_item_attribute(handler, item_type_id, item_id: uuid.UUID, field: str) -> Dict | None:
-    if str(item_type_id) == Lookups.Workflows.WorkflowItemTypes.TICKETS:
+    dir(lookups_module)
+    if str(item_type_id) == lookups_module.Lookups.Workflows.WorkflowItemTypes.TICKETS:
         ticket_data = await get_single_ticket(handler, item_id)
         return pydash.get(ticket_data, tickets_field_map[field])
-    elif str(item_type_id) == Lookups.Workflows.WorkflowItemTypes.SALES:
+    elif str(item_type_id) == lookups_module.Lookups.Workflows.WorkflowItemTypes.SALES:
         deal_data = await make_v3_api_request(handler=handler, service="deals", url=f"{item_id}", method=HttpMethod.GET)
         if not deal_field_map.get(field):
             return None
