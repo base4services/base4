@@ -175,4 +175,4 @@ def save(input_yaml, gen_fname):
 if __name__ == '__main__':
     current_file_path = os.path.abspath(os.path.dirname(__file__))
 
-    save(current_file_path + '/../services/tickets/yaml_sources/ticket_model.yaml', '/tmp/generated_ticket_model.py')
+    save(current_file_path + '/../services/tickets/yaml_sources/ticket_model.yaml', '/tmp/generated_tickets_model.py')
