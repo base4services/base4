@@ -23,7 +23,7 @@ async def ipc(
     test_mode = os.getenv('TEST_MODE', 'False')
     # base_url = 'TODO'
 
-    api_prefix = os.getenv('API_PREFIX', '/api')
+    api_prefix = os.getenv('GENERAL_API_PREFIX', '/api')
 
     url = f'{api_prefix}/{service}{uri}'
 
