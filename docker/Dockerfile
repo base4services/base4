@@ -6,14 +6,12 @@ WORKDIR /app
 
 COPY src .
 
-RUN apt update
-RUN apt install -y cron
-
-# Install some useful tools
-RUN apt install -y joe vim redis postgresql-client
+RUN apt-get update && \
+    apt-get install -y wget gnupg git cron joe vim redis postgresql-client && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --upgrade pip
-RUN pip install wheel
+RUN pip install wheel ujson pydantic
 
 COPY requirements.txt /app/requirements.txt
 
@@ -46,6 +44,3 @@ COPY ./security/public_key.pem /app/security/public_key.pem
 
 COPY src/config/docker/start.sh /start.sh
 RUN chmod +x /start.sh
-
-RUN pip install ujson
-RUN pip install pydantic
