@@ -6,7 +6,6 @@ import time
 
 import dotenv
 import ujson as json
-
 from base4.utilities.common import split_list
 
 current_file_dir = os.path.dirname(os.path.realpath(__file__))

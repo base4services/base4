@@ -3,10 +3,9 @@ import uuid
 from typing import AnyStr, Dict, List, Literal
 
 import httpx
+from base4.utilities.logging.setup import get_logger
 from fastapi.exceptions import HTTPException
 from fastapi.requests import Request
-
-from base4.utilities.logging.setup import get_logger
 
 logger = get_logger()
 

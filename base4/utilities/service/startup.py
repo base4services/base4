@@ -10,12 +10,11 @@ import asyncpg
 import pydash
 import uvicorn
 import yaml
-from fastapi import APIRouter, FastAPI, WebSocket, WebSocketDisconnect
-from tortoise import Tortoise
-
 from base4.schemas import DatabaseConfig
 from base4.utilities.db.base import TORTOISE_ORM
 from base4.utilities.files import get_project_config_folder
+from fastapi import APIRouter, FastAPI, WebSocket, WebSocketDisconnect
+from tortoise import Tortoise
 
 _test: Optional[AnyStr] = os.getenv('TEST_MODE', None)
 _database_to_use: Optional[AnyStr] = os.getenv('TEST_DATABASE', None)

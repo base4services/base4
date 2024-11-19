@@ -2,7 +2,6 @@ import os
 import re
 
 import yaml
-
 from base4.utilities.files import get_project_root
 
 current_file_path = str(get_project_root())
