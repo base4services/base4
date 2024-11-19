@@ -1,3 +1,7 @@
+from base4.utilities.files import get_project_root
+import dotenv
+dotenv.load_dotenv(get_project_root() / '.env')
+
 import inspect
 import os
 import uuid
@@ -10,7 +14,7 @@ from base4.utilities.config import load_yaml_config
 
 SchemaType = TypeVar('SchemaType')
 
-from base4.utilities.files import get_project_root
+
 
 current_file_path = str(get_project_root())
 

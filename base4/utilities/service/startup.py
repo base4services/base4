@@ -235,6 +235,7 @@ class GracefulShutdown:
 
 
 def load_services(app, single_service=None):
+    api_prefix = os.getenv('GENERAL_API_PREFIX', None)
 
     api_prefix = os.getenv('GENERAL_API_PREFIX', None)
 
