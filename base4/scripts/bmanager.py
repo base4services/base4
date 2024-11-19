@@ -5,7 +5,8 @@ import shutil
 import sys
 from pathlib import Path
 
-import asyncclick as click
+# import asyncclick as click
+import click
 import git
 import yaml
 
@@ -170,7 +171,7 @@ def new_service(service_name, service_template, verbose, gen_type):
         compile_main_config(service_name, gen_items=gen_type.split(','))
 
         # continue with another command
-        command = 'compile-yaml'
+        _compile_yaml(yaml_file='gen.yaml', service_name=service_name, gen_type=gen_type)
 
 
 @do.command('reset-service')
@@ -246,11 +247,7 @@ def services():
     return
 
 
-@do.command('compile-yaml')
-@click.option('--yaml-file', '-y', default='gen.yaml', help='YAML file to use for generation')
-@click.option('--service-name', '-s', help='Service name')
-@click.option('--gen-type', '-g', default='models,schemas', help='Components to generate (comma-separated: models,schemas,tables)')
-def compile_yaml(yaml_file: str, service_name: str, gen_type: str):
+def _compile_yaml(yaml_file: str, service_name: str, gen_type: str):
 
     try:
         _yaml_file = (project_root + '/config/' + yaml_file) if '/' not in yaml_file else yaml_file
@@ -276,6 +273,14 @@ def compile_yaml(yaml_file: str, service_name: str, gen_type: str):
                 to_gen = gen_type
 
             gen4svc(svc_name, location, gen=to_gen)
+
+
+@do.command('compile-yaml')
+@click.option('--yaml-file', '-y', default='gen.yaml', help='YAML file to use for generation')
+@click.option('--service-name', '-s', help='Service name')
+@click.option('--gen-type', '-g', default='models,schemas', help='Components to generate (comma-separated: models,schemas,tables)')
+def compile_yaml(yaml_file: str, service_name: str, gen_type: str):
+    _compile_yaml(yaml_file, service_name, gen_type)
 
             # run test for new service
             # os.system(f'pytest -n 8 --disable-warnings {project_root + f"/tests/test_{new_service}.py"} --no-cov')
