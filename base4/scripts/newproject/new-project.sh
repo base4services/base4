@@ -6,7 +6,6 @@ if [ "$#" -lt 1 ]; then
     exit 1
 fi
 
-# Ulazni parametri
 app=$1
 workdir=${2:-.} 
 
