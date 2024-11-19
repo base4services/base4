@@ -80,7 +80,8 @@ def do():
 @click.option('--service-name', '-s', help='Service name to generate or reset')
 @click.option('--service-template', '-t', default='base4service_template', help='See list of templates with `bmanager list-templates')
 @click.option('--verbose', '-v', is_flag=True, default=False, help='Verbose output')
-def new_service(service_name, service_template, verbose):
+@click.option('--gen-type', '-g', default='models,schemas', help='Components to generate (comma-separated: models,schemas,tables)')
+def new_service(service_name, service_template, verbose, gen_type):
     v = '> /dev/null 2>&1' if verbose else ''
 
     if not service_name:
