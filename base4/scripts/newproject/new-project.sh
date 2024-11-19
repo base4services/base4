@@ -10,6 +10,12 @@ fi
 app=$1
 workdir=${2:-.} 
 
+# Proveri da li direktorijum postoji
+if [ -d "$app" ]; then
+  echo "[*] '$app' already exists. Please choose a different name."
+  exit 0
+fi
+
 GITHUB_HOST=github2
 #GITHUB_HOST=github.com
 
