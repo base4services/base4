@@ -203,6 +203,7 @@ def do(command, aerich, service_name, yaml_file, service_template, gen_type):
 				cp -R base4tenants/src/services/tenants/* {project_root}/src/services/{service_name}/
 				cp -R base4tenants/tests/test_base_tenants.py {project_root}/tests/
 				cp -R base4tenants/tests/test_tenants.py {project_root}/tests/test_{service_name}.py
+				cp -R base4tenants/rename.sh {project_root}/src/rename.sh
 				rm -rf base4tenants
                 cd {project_root}/src/services/{service_name}
 				bash rename.sh {service_name}
