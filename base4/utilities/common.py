@@ -230,18 +230,23 @@ def split_list(input_list, m):
 
     return split_lists
 
-def import_star_from_current_path(file, globals):
-    # Dobijanje apsolutnog puta direktorijuma
-    current_dir = os.path.dirname(file)
+
     
-    # Iteracija kroz sve fajlove u trenutnom direktorijumu
-    for file_name in os.listdir(current_dir):
+def import_all_from_dir(directory: str, package: str):
+    """
+    Dinamički uvozi sve simbole iz svih .py fajlova u datom direktorijumu.
+
+    :param directory: Putanja do direktorijuma gde se nalaze fajlovi.
+    :param package: Ime paketa za uvoz (koristi se za relativni import).
+    """
+    # Iteracija kroz fajlove u direktorijumu
+    for file_name in os.listdir(directory):
         # Ignoriši '__init__.py' i fajlove koji nisu Python moduli
         if file_name.endswith(".py") and file_name != "__init__.py":
             # Uklanjanje ekstenzije ".py" kako bi se dobilo ime modula
             module_name = file_name[:-3]
             # Dinamički uvoz modula koristeći importlib
-            module = importlib.import_module(f".{module_name}", package=__name__)
+            module = importlib.import_module(f".{module_name}", package=package)
             # Dodavanje svih simbola iz modula u globalni prostor
             if hasattr(module, "__all__"):
                 # Ako modul ima __all__, uvozi samo definisane simbole
