@@ -9,7 +9,7 @@ def do():
     os.system(
         f'''
     cd {project_root}
-    TEST_DATABASE=sqlite pytest -n 8 --disable-warnings tests --no-cov
+    PYTHONPATH=tests TEST_DATABASE=sqlite pytest -n 8 --disable-warnings tests --no-cov
     cd -
     '''
     )
