@@ -2,17 +2,19 @@
 import uuid
 from typing import AnyStr, Dict, List
 
+from base4.project_specifics import lookups_module
+
 from .ipc import ipc
 from .tickets import get_single_ticket
-from base4.project_specifics import lookups_module
+
 try:
     # TODO: ovo mora da se skine iz base, posto base ne treba da zna za druge projte
     from shared.utils.v3_api_utils import make_v3_api_request
 except Exception as e:
     pass
 
-from base4.utilities.http.methods import HttpMethod
 import pydash
+from base4.utilities.http.methods import HttpMethod
 
 deal_field_map = {
     "title": "deal.short_description",

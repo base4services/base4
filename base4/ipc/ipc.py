@@ -3,10 +3,9 @@ import uuid
 from typing import AnyStr, Dict, List, Literal
 
 import httpx
+from base4.utilities.logging.setup import get_logger
 from fastapi.exceptions import HTTPException
 from fastapi.requests import Request
-
-from base4.utilities.logging.setup import get_logger
 
 logger = get_logger()
 
@@ -23,7 +22,9 @@ async def ipc(
     test_mode = os.getenv('TEST_MODE', 'False')
     # base_url = 'TODO'
 
-    url = f'/api/v4/{service}{uri}'
+    api_prefix = os.getenv('GENERAL_API_PREFIX', '/api')
+
+    url = f'{api_prefix}/{service}{uri}'
 
     if test_mode in (True, 'true', 'True'):
 

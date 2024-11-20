@@ -1,4 +1,6 @@
 import os
+import datetime
+
 import yaml
 
 
@@ -160,9 +162,11 @@ def generate(svc_name, fname, model_fname):
     with open(fname, 'rt') as f:
         conf = yaml.safe_load(f)
 
-    res = '''# THIS IS AN AUTO-GENERATED AND PROTECTED FILE. PLEASE USE
+    res = f'''# THIS IS AN AUTO-GENERATED AND PROTECTED FILE. PLEASE USE
 # THE gen_tables.py SCRIPT TO GENERATE THIS FILE. DO NOT EDIT DIRECTLY
 # AS IT CAN BE OVERWRITTEN. 
+#
+# FILE GENERATED ON: {datetime.datetime.now()}
 
 import uuid, datetime
 

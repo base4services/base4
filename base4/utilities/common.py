@@ -1,7 +1,7 @@
 import glob
 import math
 import os
-
+import importlib
 import bcrypt
 from base4.service.exceptions import ServiceException
 from fastapi import Request
@@ -248,3 +248,33 @@ async def get_tenant_from_headers(tenants_model_class, _request: Request):
     except Exception as e:
         raise ServiceException('TENANT_NOT_FOUND', 'Tenant not found')
 
+
+def import_all_from_dir(directory: str, package: str, namespace: dict):
+    """
+    Dinamički uvozi sve simbole (* - funkcije, klase, promenljive) iz .py fajlova
+    u datom direktorijumu u navedeni prostor imena.
+
+    :param directory: Putanja do direktorijuma gde se nalaze moduli.
+    :param package: Ime paketa za uvoz (koristi se za relativni import).
+    :param namespace: Prostor imena (npr. globals() iz pozivajućeg fajla).
+    """
+    for file_name in os.listdir(directory):
+        # Ignoriši '__init__.py' i fajlove koji nisu Python moduli
+        if file_name.endswith(".py") and file_name != "__init__.py":
+            module_name = file_name[:-3]  # Uklanja ekstenziju '.py'
+            try:
+                # Dinamički uvoz modula
+                module = importlib.import_module(f".{module_name}", package=package)
+                
+                # Dodavanje simbola iz modula u namespace
+                if hasattr(module, "__all__"):
+                    # Ako modul ima definisan __all__, uvozi samo definisane simbole
+                    for symbol in module.__all__:
+                        namespace[symbol] = getattr(module, symbol)
+                else:
+                    # Ako nema __all__, uvozi sve simbole koji ne počinju sa "_"
+                    for symbol in dir(module):
+                        if not symbol.startswith("_"):
+                            namespace[symbol] = getattr(module, symbol)
+            except Exception as e:
+                raise ImportError(f"Neuspešan uvoz modula '{module_name}': {e}")

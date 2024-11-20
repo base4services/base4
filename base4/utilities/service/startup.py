@@ -10,12 +10,11 @@ import asyncpg
 import pydash
 import uvicorn
 import yaml
-from fastapi import APIRouter, FastAPI, WebSocket, WebSocketDisconnect
-from tortoise import Tortoise
-
 from base4.schemas import DatabaseConfig
 from base4.utilities.db.base import TORTOISE_ORM
 from base4.utilities.files import get_project_config_folder
+from fastapi import APIRouter, FastAPI, WebSocket, WebSocketDisconnect
+from tortoise import Tortoise
 
 _test: Optional[AnyStr] = os.getenv('TEST_MODE', None)
 _database_to_use: Optional[AnyStr] = os.getenv('TEST_DATABASE', None)
@@ -43,9 +42,17 @@ def get_service() -> FastAPI:
 
     cfg = configuration('services')
 
-    docs_path = pydash.get(cfg, 'general.docs.docs_path', '/api/docs')
-    openapi_path = pydash.get(cfg, 'general.docs.openapi_path', '/api/openapi')
-    redoc_path = pydash.get(cfg, 'general.docs.redoc_path', '/api/redoc')
+    api_prefix = os.getenv('GENERAL_API_PREFIX', None)
+    if not api_prefix:
+        raise Exception('GENERAL_API_PREFIX is not set in environment variables')
+
+    _docs = pydash.get(cfg, 'GENERAL_DOCS_URI', '/docs')
+    _openapi = pydash.get(cfg, 'GENERAL_OPENAPI_URI', '/openapi.json')
+    _redoc = pydash.get(cfg, 'GENERAL_REDOC_URI', '/redoc')
+
+    docs_path = pydash.get(cfg, 'general.docs.docs_path', f'{api_prefix}{_docs}')
+    openapi_path = pydash.get(cfg, 'general.docs.openapi_path', f'{api_prefix}{_openapi}')
+    redoc_path = pydash.get(cfg, 'general.docs.redoc_path', f'{api_prefix}{_redoc}')
 
     service: FastAPI = FastAPI(lifespan=lifespan, openapi_url=openapi_path, docs_url=docs_path, redoc_url=redoc_path)
 
@@ -69,14 +76,10 @@ async def startup_event(services: List[str] = None) -> None:
 
         with open(get_project_config_folder() / 'services.yaml') as f:
             services = yaml.safe_load(f)['services']
-            services = [list(s.keys())[0] for s in services]
-
-        # services = ['tickets', 'bp']
+            services = [list(s.keys())[0] if type(s) == dict else s for s in services]
 
     if isinstance(_test, str):
         return await test_startup_event(services)
-
-    # service mode vvvv
 
     for svc_name in services:
         DATABASE: DatabaseConfig = DatabaseConfig(
@@ -227,6 +230,12 @@ class GracefulShutdown:
 
 
 def load_services(app, single_service=None):
+    api_prefix = os.getenv('GENERAL_API_PREFIX', None)
+
+    api_prefix = os.getenv('GENERAL_API_PREFIX', None)
+
+    if not api_prefix:
+        raise Exception('GENERAL_API_PREFIX is not set in environment variables')
 
     with open(get_project_config_folder() / 'services.yaml') as f:
 
@@ -239,7 +248,7 @@ def load_services(app, single_service=None):
 
             try:
                 module = importlib.import_module(f"services.{svc_name}.api")
-                app.include_router(module.router, prefix=f"/api/v4/{svc_name}", tags=[svc_name.capitalize()])
+                app.include_router(module.router, prefix=f"{api_prefix}/{svc_name}", tags=[svc_name.capitalize()])
             except Exception as e:
                 raise
                 # ...

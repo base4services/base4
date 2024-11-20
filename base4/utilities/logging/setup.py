@@ -7,9 +7,8 @@ from logging.handlers import RotatingFileHandler
 from typing import Any, Callable, Type
 
 import tortoise
-from fastapi import HTTPException, status
-
 from base4 import configuration
+from fastapi import HTTPException, status
 
 
 def setup_logging() -> None:

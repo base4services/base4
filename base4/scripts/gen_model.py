@@ -1,7 +1,7 @@
 import os
 
 import yaml
-
+import datetime
 
 def gen_model(tbl, tbl_name, ctable=False, parent_class_name='', parent_types=None):
     cls_name = tbl["__meta"].get("model_name")
@@ -136,9 +136,11 @@ def gen_models(fname):
     with open(fname, 'rt') as f:
         model_definition = yaml.safe_load(f)
 
-    res = '''# THIS IS AN AUTO-GENERATED AND PROTECTED FILE. PLEASE USE
+    res = f'''# THIS IS AN AUTO-GENERATED AND PROTECTED FILE. PLEASE USE
 # THE gen_model.py SCRIPT TO GENERATE THIS FILE. DO NOT EDIT DIRECTLY
 # AS IT CAN BE OVERWRITTEN. 
+#
+# FILE GENERATED ON: {datetime.datetime.now()}
     
 import tortoise
 from tortoise import fields
@@ -175,4 +177,4 @@ def save(input_yaml, gen_fname):
 if __name__ == '__main__':
     current_file_path = os.path.abspath(os.path.dirname(__file__))
 
-    save(current_file_path + '/../services/tickets/yaml_sources/ticket_model.yaml', '/tmp/generated_ticket_model.py')
+    save(current_file_path + '/../services/tickets/yaml_sources/ticket_model.yaml', '/tmp/generated_tickets_model.py')

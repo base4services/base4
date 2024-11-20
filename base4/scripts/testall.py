@@ -1,5 +1,7 @@
 import os
+
 from base4.utilities.files import get_project_root
+
 
 def do():
     project_root = str(get_project_root())

@@ -1,4 +1,5 @@
 import os
+import datetime
 
 import yaml
 
@@ -195,9 +196,12 @@ def gen_schemas(fname):
     with open(fname, 'rt') as f:
         model_definition = yaml.safe_load(f)
 
-    res = '''# THIS IS AN AUTO-GENERATED AND PROTECTED FILE. PLEASE USE
+    res = f'''# THIS IS AN AUTO-GENERATED AND PROTECTED FILE. PLEASE USE
 # THE gen_model.py SCRIPT TO GENERATE THIS FILE. DO NOT EDIT DIRECTLY
 # AS IT CAN BE OVERWRITTEN. 
+#
+# FILE GENERATED ON: {datetime.datetime.now()}
+
     
 import uuid, datetime
 
@@ -207,8 +211,10 @@ from typing import List, Dict, Optional, AnyStr, Literal, Any
 from fastapi.requests import Request
 
 from base4.schemas.base import Base, NOT_SET
-'''
 
+from base4.project_specifics import lookups_module as Lookups
+
+'''
     # REMOVED
     '''
     from pydantic import root_validator
@@ -270,5 +276,5 @@ if __name__ == '__main__':
 
     save(
         current_file_path + '/../services/tickets/yaml_sources/ticket_schema.yaml',
-        current_file_path + '/../services/tickets/schemas/generated_ticket_schema.py',
+        current_file_path + '/../services/tickets/schemas/generated_tickets_schema.py',
     )
