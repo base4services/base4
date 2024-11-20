@@ -231,7 +231,6 @@ def split_list(input_list, m):
     return split_lists
 
 
-    
 def import_all_from_dir(directory: str, package: str, namespace: dict):
     """
     Dinamički uvozi sve simbole (* - funkcije, klase, promenljive) iz .py fajlova
