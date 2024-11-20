@@ -1,7 +1,7 @@
 import glob
 import math
 import os
-
+import importlib
 import bcrypt
 
 
@@ -229,3 +229,26 @@ def split_list(input_list, m):
         split_lists.append(input_list[full_lists_count * m :])
 
     return split_lists
+
+def import_star_from_current_path(file):
+    # Dobijanje apsolutnog puta direktorijuma
+    current_dir = os.path.dirname(file)
+    
+    # Iteracija kroz sve fajlove u trenutnom direktorijumu
+    for file_name in os.listdir(current_dir):
+        # Ignoriši '__init__.py' i fajlove koji nisu Python moduli
+        if file_name.endswith(".py") and file_name != "__init__.py":
+            # Uklanjanje ekstenzije ".py" kako bi se dobilo ime modula
+            module_name = file_name[:-3]
+            # Dinamički uvoz modula koristeći importlib
+            module = importlib.import_module(f".{module_name}", package=__name__)
+            # Dodavanje svih simbola iz modula u globalni prostor
+            if hasattr(module, "__all__"):
+                # Ako modul ima __all__, uvozi samo definisane simbole
+                for symbol in module.__all__:
+                    globals()[symbol] = getattr(module, symbol)
+            else:
+                # Ako nema __all__, uvozi sve simbole koji ne počinju sa "_"
+                for symbol in dir(module):
+                    if not symbol.startswith("_"):
+                        globals()[symbol] = getattr(module, symbol)
