@@ -1,9 +1,12 @@
 import glob
 import math
 import os
-import importlib
 import bcrypt
-
+import importlib
+import importlib.util
+import importlib.resources
+from pathlib import Path
+from typing import Dict, Any
 
 def hash_password(password):
     if os.getenv('TEST_MODE') == 'true':
@@ -231,32 +234,39 @@ def split_list(input_list, m):
     return split_lists
 
 
-def import_all_from_dir(directory: str, package: str, namespace: dict):
+def import_all_from_dir(directory: str, package: str, namespace: Dict[str, Any]) -> None:
     """
-    Dinamički uvozi sve simbole (* - funkcije, klase, promenljive) iz .py fajlova
-    u datom direktorijumu u navedeni prostor imena.
+    Dinamički uvozi sve simbole iz .py fajlova u datom direktorijumu u navedeni prostor imena.
 
     :param directory: Putanja do direktorijuma gde se nalaze moduli.
     :param package: Ime paketa za uvoz (koristi se za relativni import).
     :param namespace: Prostor imena (npr. globals() iz pozivajućeg fajla).
     """
-    for file_name in os.listdir(directory):
-        # Ignoriši '__init__.py' i fajlove koji nisu Python moduli
-        if file_name.endswith(".py") and file_name != "__init__.py":
-            module_name = file_name[:-3]  # Uklanja ekstenziju '.py'
-            try:
-                # Dinamički uvoz modula
-                module = importlib.import_module(f".{module_name}", package=package)
-                
-                # Dodavanje simbola iz modula u namespace
-                if hasattr(module, "__all__"):
-                    # Ako modul ima definisan __all__, uvozi samo definisane simbole
-                    for symbol in module.__all__:
-                        namespace[symbol] = getattr(module, symbol)
-                else:
-                    # Ako nema __all__, uvozi sve simbole koji ne počinju sa "_"
-                    for symbol in dir(module):
-                        if not symbol.startswith("_"):
-                            namespace[symbol] = getattr(module, symbol)
-            except Exception as e:
-                raise ImportError(f"Neuspešan uvoz modula '{module_name}': {e}")
+    dir_path = Path(directory)
+    if not dir_path.is_dir():
+        raise ValueError(f"Direktorijum '{directory}' ne postoji ili nije direktorijum.")
+
+    for file in dir_path.glob("*.py"):
+        if file.name == "__init__.py":  # Ignoriši __init__.py
+            continue
+
+        module_name = file.stem  # Uzimamo ime fajla bez ekstenzije (.py)
+        try:
+            # Dinamički uvoz modula
+            module = importlib.import_module(f".{module_name}", package=package)
+
+            # Dodavanje simbola iz modula u namespace
+            if hasattr(module, "__all__"):
+                # Ako modul ima definisan __all__, uvozi samo definisane simbole
+                symbols = {symbol: getattr(module, symbol) for symbol in module.__all__}
+            else:
+                # Ako nema __all__, uvozi sve simbole koji ne počinju sa "_"
+                symbols = {
+                    symbol: getattr(module, symbol)
+                    for symbol in dir(module)
+                    if not symbol.startswith("_")
+                }
+
+            namespace.update(symbols)
+        except Exception as e:
+            raise ImportError(f"Neuspešan uvoz modula '{module_name}': {e}")

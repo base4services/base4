@@ -94,7 +94,7 @@ echo "$current_folder/src" >> "$current_folder/.venv/lib/$PYTHON/site-packages/p
 
 # Nadogradi pip
 echo "[*] upgrading pip..."
-pip3 install --upgrade pip -q
+pip3 install --upgrade pip #-q
 
 # Napravi i pređi u folder lib
 mkdir lib
@@ -108,7 +108,7 @@ if ! git clone git+ssh://git@$GITHUB_HOST/base4services/base4.git > /dev/null 2>
 fi
 cd base4 || exit
 echo "[*] installing base4 dependencies..."
-pip3 install -e . -q
+pip3 install -e . #-q
 cd ../../ || exit
 
 
