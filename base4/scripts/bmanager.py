@@ -108,8 +108,8 @@ def new_service(service_name, service_template, verbose, gen_type):
 
         if service_template == 'base4tenants':
             if service_name != 'tenants':
-                sys.exit(f'[*] Tenants service name can not be renamed! \nIf you want to create your version of tenants service, '
-                         f'\n use bmanager new-service -s {service_name} -t base4service_template ')
+                sys.exit(f'[*] Tenants service name can not be renamed! \nIf you want to create your version of tenants service, use:\n'
+                         f'bmanager new-service -s {service_name} -t base4service_template ')
                 
             os.system(
                 f'''
