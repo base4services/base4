@@ -3,10 +3,18 @@ import math
 import os
 
 import bcrypt
+from base4.service.exceptions import ServiceException
+from fastapi import Request
 
+def is_test_mode():
+    return os.getenv('TEST_MODE') == 'true'
+
+def allow_test_only():
+    if not is_test_mode():
+        raise ServiceException('TEST_ONLY', 'This endpoint is available only in test mode', status_code=403)
 
 def hash_password(password):
-    if os.getenv('TEST_MODE') == 'true':
+    if is_test_mode():
         return password
     _salt = bcrypt.gensalt()
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), _salt)
@@ -229,3 +237,14 @@ def split_list(input_list, m):
         split_lists.append(input_list[full_lists_count * m :])
 
     return split_lists
+
+
+async def get_tenant_from_headers(tenants_model_class, _request: Request):
+    if not _request.headers.get('x-tenant-id'):
+        raise ServiceException('X-TENANT-ID_MISSING_IN_HEADERS', 'X-Tenant-ID missing in headers', status_code=406)
+
+    try:
+        return await tenants_model_class.get(id=_request.headers.get('x-tenant-id'))
+    except Exception as e:
+        raise ServiceException('TENANT_NOT_FOUND', 'Tenant not found')
+
