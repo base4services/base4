@@ -234,26 +234,29 @@ def split_list(input_list, m):
     
 def import_all_from_dir(directory: str, package: str):
     """
-    Dinamički uvozi sve simbole iz svih .py fajlova u datom direktorijumu.
+    Dinamički uvozi sve simbole (* - funkcije, klase, promenljive)
+    iz svih .py fajlova u datom direktorijumu u globalni prostor imena.
 
     :param directory: Putanja do direktorijuma gde se nalaze fajlovi.
     :param package: Ime paketa za uvoz (koristi se za relativni import).
     """
+    # Prostor imena u koji ćemo dodavati simbole
+    global_namespace = globals()
+    
     # Iteracija kroz fajlove u direktorijumu
     for file_name in os.listdir(directory):
-        # Ignoriši '__init__.py' i fajlove koji nisu Python moduli
         if file_name.endswith(".py") and file_name != "__init__.py":
-            # Uklanjanje ekstenzije ".py" kako bi se dobilo ime modula
+            # Dobijanje imena modula
             module_name = file_name[:-3]
-            # Dinamički uvoz modula koristeći importlib
+            # Dinamički uvoz modula
             module = importlib.import_module(f".{module_name}", package=package)
-            # Dodavanje svih simbola iz modula u globalni prostor
+            # Dodavanje simbola iz modula
             if hasattr(module, "__all__"):
-                # Ako modul ima __all__, uvozi samo definisane simbole
+                # Uvozi samo simbole definisane u __all__
                 for symbol in module.__all__:
-                    globals()[symbol] = getattr(module, symbol)
+                    global_namespace[symbol] = getattr(module, symbol)
             else:
-                # Ako nema __all__, uvozi sve simbole koji ne počinju sa "_"
+                # Uvozi sve simbole koji ne počinju sa "_"
                 for symbol in dir(module):
                     if not symbol.startswith("_"):
-                        globals()[symbol] = getattr(module, symbol)
+                        global_namespace[symbol] = getattr(module, symbol)
