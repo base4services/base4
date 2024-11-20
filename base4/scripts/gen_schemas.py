@@ -1,4 +1,5 @@
 import os
+import datetime
 
 import yaml
 
@@ -195,9 +196,12 @@ def gen_schemas(fname):
     with open(fname, 'rt') as f:
         model_definition = yaml.safe_load(f)
 
-    res = '''# THIS IS AN AUTO-GENERATED AND PROTECTED FILE. PLEASE USE
+    res = f'''# THIS IS AN AUTO-GENERATED AND PROTECTED FILE. PLEASE USE
 # THE gen_model.py SCRIPT TO GENERATE THIS FILE. DO NOT EDIT DIRECTLY
 # AS IT CAN BE OVERWRITTEN. 
+#
+# FILE GENERATED ON: {datetime.datetime.now()}
+
     
 import uuid, datetime
 

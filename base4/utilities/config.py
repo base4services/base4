@@ -1,5 +1,6 @@
 import os
 import re
+import datetime
 
 import yaml
 from base4.utilities.files import get_project_root
@@ -54,9 +55,13 @@ def yaml_to_env(yaml_cfg):
     flat_config = yaml_to_obj(load_yaml_config(yaml_cfg))
     with open(env_path, 'w+') as env_file:
         env_file.write(
-            '''# THIS IS AN AUTO-GENERATED AND PROTECTED FILE. PLEASE USE
+            f'''# THIS IS AN AUTO-GENERATED AND PROTECTED FILE. PLEASE USE
 # THE 'gen --env' SCRIPT TO GENERATE THIS FILE. DO NOT EDIT DIRECTLY
-# AS IT CAN BE OVERWRITTEN.\n'''
+# AS IT CAN BE OVERWRITTEN.
+#
+# FILE GENERATED ON: {datetime.datetime.now()}
+
+\n'''
         )
         for key, value in flat_config.items():
             if key == 'db_postgres_databases':
