@@ -114,7 +114,6 @@ def new_service(service_name, service_template, verbose, gen_type):
                 cp -R base4tenants/src/services/tenants/* {project_root}/src/services/{service_name}/
                 cp -R base4tenants/tests/test_base_tenants.py {project_root}/tests/
                 cp -R base4tenants/tests/test_tenants.py {project_root}/tests/test_{service_name}.py
-                cp -R base4tenants/rename.sh {project_root}/src/services/{service_name}
                 rm -rf base4tenants
                 '''
             )
