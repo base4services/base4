@@ -76,14 +76,10 @@ async def startup_event(services: List[str] = None) -> None:
 
         with open(get_project_config_folder() / 'services.yaml') as f:
             services = yaml.safe_load(f)['services']
-            services = [list(s.keys())[0] for s in services]
-
-        # services = ['tickets', 'bp']
+            services = [list(s.keys())[0] if type(s) == dict else s for s in services]
 
     if isinstance(_test, str):
         return await test_startup_event(services)
-
-    # service mode vvvv
 
     for svc_name in services:
         DATABASE: DatabaseConfig = DatabaseConfig(
