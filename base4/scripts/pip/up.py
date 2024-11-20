@@ -83,7 +83,7 @@ def extract_dependencies(toml_file):
 
 def do():
     os.system('pip install wheel setuptools pip -U')
-    extract_dependencies(f"{get_project_root()}/pyproject.toml")
+    extract_dependencies(f"{get_project_root()}/lib/base4/pyproject.toml")
 
 
 if __name__ == '__main__':
