@@ -107,13 +107,16 @@ def new_service(service_name, service_template, verbose, gen_type):
             return
 
         if service_template == 'base4tenants':
+            if service_name == 'tenants':
+                sys.exit(f'[*] Tenants service name can not be renamed! \nIf you want to create your tenants service, use default template.')
+                
             os.system(
                 f'''
-                mkdir -p {project_root}/src/services/{service_name}
+                mkdir -p {project_root}/src/services/tenants
                 git clone git+ssh://git@github2/base4services/base4tenants.git {v}
-                cp -R base4tenants/src/services/tenants/* {project_root}/src/services/{service_name}/
+                cp -R base4tenants/src/services/tenants/* {project_root}/src/services/tenants/
                 cp -R base4tenants/tests/test_base_tenants.py {project_root}/tests/
-                cp -R base4tenants/tests/test_tenants.py {project_root}/tests/test_{service_name}.py
+                cp -R base4tenants/tests/test_tenants.py {project_root}/tests/test_tenants.py
                 rm -rf base4tenants
                 '''
             )
