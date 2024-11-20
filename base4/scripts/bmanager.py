@@ -116,13 +116,6 @@ def new_service(service_name, service_template, verbose, gen_type):
                 cp -R base4tenants/tests/test_tenants.py {project_root}/tests/test_{service_name}.py
                 cp -R base4tenants/rename.sh {project_root}/src/services/{service_name}
                 rm -rf base4tenants
-                cd {project_root}/src/services/{service_name}
-                bash rename.sh {service_name}
-                rm  {project_root}/src/services/{service_name}/rename.sh
-                mv {project_root}/src/services/{service_name}/yaml_sources/tenants_model.yaml {project_root}/src/services/{service_name}/yaml_sources/{service_name}_model.yaml
-                mv {project_root}/src/services/{service_name}/yaml_sources/tenants_schema.yaml {project_root}/src/services/{service_name}/yaml_sources/{service_name}_schema.yaml
-                mv {project_root}/src/services/{service_name}/api/tenants.py {project_root}/src/services/{service_name}/api/{service_name}.py
-                mv {project_root}/src/services/{service_name}/schemas/tenants.py {project_root}/src/services/{service_name}/schemas/{service_name}.py
                 '''
             )
         elif service_template == 'base4ws':
