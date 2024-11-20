@@ -230,7 +230,7 @@ def split_list(input_list, m):
 
     return split_lists
 
-def import_star_from_current_path(file):
+def import_star_from_current_path(file, globals):
     # Dobijanje apsolutnog puta direktorijuma
     current_dir = os.path.dirname(file)
     
