@@ -229,7 +229,7 @@ class GracefulShutdown:
         self.exit_code = signum  # Standard exit code for signals
 
 
-def load_services(app, service, single_service=None):
+def load_services(app, service=None, single_service=None):
     # todo, igore ovde nisi opet push svoje izmene
     api_prefix = os.getenv('GENERAL_API_PREFIX', None)
 
@@ -266,7 +266,7 @@ def run_server(config, service, single_service=None):
     server.force_exit = False
     server.custom_on_tick = custom_on_tick
 
-    load_services(service, single_service=single_service)
+    load_services(config, service, single_service=single_service)
 
     try:
         server.run()
