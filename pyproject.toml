@@ -68,6 +68,8 @@ packages = [
     "base4.ipc",
     "base4.api",
     'base4.utilities',
+    'base4.constants.users',
+    'base4.constants.service',
     'base4.utilities.logging',
     'base4.utilities.db',
     'base4.utilities.http',
