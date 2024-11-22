@@ -17,7 +17,8 @@ class RedisClientHandler:
         if redis_instance:
             self.redis_client = redis_instance
         else:
-            host = "localhost" if os.getenv('V4INSTALLATION', "localhost") not in ('docker', 'docker-monolith') else 'redis'
+            # host = "localhost" if os.getenv('V4INSTALLATION', "localhost") not in ('docker', 'docker-monolith') else 'redis'
+            host = "localhost" if os.getenv('APPLICATION_RUN_MODE', "localhost") not in ('docker', 'docker-monolith') else 'redis'
             self.redis_client = redis.StrictRedis(host=host, port=port, db=db)
 
     @staticmethod

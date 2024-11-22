@@ -759,6 +759,7 @@ class BaseService[ModelType]:
                 try:
                     #                    breakpoint()
                     new_value = await eval(c['ipc'])
+                    ...
                 except Exception as e:
                     new_value = None
                     raise

@@ -230,8 +230,7 @@ class GracefulShutdown:
 
 
 def load_services(app, single_service=None):
-    api_prefix = os.getenv('GENERAL_API_PREFIX', None)
-
+    # todo, igore ovde nisi opet push svoje izmene
     api_prefix = os.getenv('GENERAL_API_PREFIX', None)
 
     if not api_prefix:
@@ -256,7 +255,7 @@ def load_services(app, single_service=None):
                 # ...
 
 
-def run_server(config, service, single_service=None):
+def run_server(config, single_service=None):
     server = uvicorn.Server(config)
     shutdown_handler = GracefulShutdown()
 
