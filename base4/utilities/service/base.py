@@ -1,17 +1,21 @@
 import datetime
 import uuid
-from typing import Any, Dict, List, TypeVar
-
+from typing import Any, Dict, List, TypeVar, Callable
+from functools import wraps
 import base4.ipc.flow as ipc_flow
 import base4.ipc.tenants as ipc_tenants
+from fastapi import HTTPException, status, Request
 import pydantic
 import tortoise
 import tortoise.timezone
 from base4.schemas.base import NOT_SET
 from fastapi import HTTPException, Request
+from base4.utilities.security.jwt import decode_token
+import jwt
 
 SchemaType = TypeVar('SchemaType', bound=pydantic.BaseModel)
 ModelType = TypeVar('ModelType', bound=tortoise.models.Model)
+
 
 
 class BaseServiceUtils:
@@ -275,3 +279,37 @@ class BaseServiceUtils:
             else:
                 return False
         return True
+
+
+def authorization(permission: List[str] = None):
+    """
+	Autorisation decorator
+	"""
+    
+    def decorator(func: Callable):
+        @wraps(func)
+        async def wrapper(request: Request, *args, **kwargs):
+            token = request.headers.get("Authorization")
+            if not token or not token.startswith("Bearer "):
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token"})
+            
+            token = token.replace("Bearer ", "")
+            
+            try:
+                session = decode_token(token)  # decode_token već treba da postoji
+            except Exception:
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token"})
+            except jwt.InvalidTokenError:
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token"})
+            
+            if session.expired:
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has been expired"})
+            
+            # todo, get role from user
+            # permission check
+            if permission and not any(role in getattr(session, "roles", []) for role in permission):
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail={"code": "FORBIDDEN", "parameter": "token", "message": f"you don't have permission to access this resource"})
+            
+            return await func(*args, **kwargs, request=request)
+        return wrapper
+    return decorator
