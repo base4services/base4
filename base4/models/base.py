@@ -14,6 +14,9 @@ class BaseCache1n(BaseCache11):
     language = fields.CharField(2, null=False, index=True)
 
 
+class Nothing:
+    ...
+
 class BaseNoTenant:
     """
     A base model class that includes common fields for all models.
