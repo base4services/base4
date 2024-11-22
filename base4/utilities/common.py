@@ -256,33 +256,37 @@ async def get_tenant_from_headers(tenants_model_class, _request: Request):
 
 
 def import_all_from_dir(directory: str, package: str, namespace: Dict[str, Any]) -> None:
-
     """
-    Dinamički uvozi sve simbole iz .py fajlova u datom direktorijumu u navedeni prostor imena.
+    Dynamically imports all Python modules from a given directory into the provided namespace.
 
-    :param directory: Putanja do direktorijuma gde se nalaze moduli.
-    :param package: Ime paketa za uvoz (koristi se za relativni import).
-    :param namespace: Prostor imena (npr. globals() iz pozivajućeg fajla).
+    Args:
+        directory (str): The directory path to scan for Python modules.
+        package (str): The package name to which the modules belong.
+        namespace (Dict[str, Any]): The namespace where symbols from the modules will be added.
+
+    Raises:
+        ValueError: If the specified directory does not exist or is not a directory.
+        ImportError: If there is an issue importing any of the modules.
     """
     dir_path = Path(directory)
     if not dir_path.is_dir():
-        raise ValueError(f"Direktorijum '{directory}' ne postoji ili nije direktorijum.")
+        raise ValueError(f"The directory '{directory}' does not exist or is not a directory.")
 
     for file in dir_path.glob("*.py"):
-        if file.name == "__init__.py":  # Ignoriši __init__.py
+        if file.name == "__init__.py":  # Ignore __init__.py
             continue
 
-        module_name = file.stem  # Uzimamo ime fajla bez ekstenzije (.py)
+        module_name = file.stem  # Extract the file name without the extension (.py)
         try:
-            # Dinamički uvoz modula
+            # Dynamically import the module
             module = importlib.import_module(f".{module_name}", package=package)
 
-            # Dodavanje simbola iz modula u namespace
+            # Add symbols from the module to the namespace
             if hasattr(module, "__all__"):
-                # Ako modul ima definisan __all__, uvozi samo definisane simbole
+                # If the module defines __all__, import only the defined symbols
                 symbols = {symbol: getattr(module, symbol) for symbol in module.__all__}
             else:
-                # Ako nema __all__, uvozi sve simbole koji ne počinju sa "_"
+                # If __all__ is not defined, import all symbols not starting with "_"
                 symbols = {
                     symbol: getattr(module, symbol)
                     for symbol in dir(module)
@@ -291,4 +295,4 @@ def import_all_from_dir(directory: str, package: str, namespace: Dict[str, Any])
 
             namespace.update(symbols)
         except Exception as e:
-            raise ImportError(f"Neuspešan uvoz modula '{module_name}': {e}")
+            raise ImportError(f"Failed to import module '{module_name}': {e}")
