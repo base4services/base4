@@ -10,12 +10,17 @@ import tortoise.timezone
 from base4.schemas.base import NOT_SET
 from fastapi import HTTPException, Request, APIRouter
 from base4.utilities.security.jwt import decode_token
+from fastapi.responses import JSONResponse
 import functools
+import ujson as json
+from fastapi.encoders import jsonable_encoder
+from lib.base4.base4.utilities.db.redis import RedisClientHandler
 
 SchemaType = TypeVar('SchemaType', bound=pydantic.BaseModel)
 ModelType = TypeVar('ModelType', bound=tortoise.models.Model)
 
 
+rdb = RedisClientHandler().redis_client
 
 class BaseServiceUtils:
     @staticmethod
@@ -343,7 +348,38 @@ def api(permission: Optional[List[str]] = None, cache: int = 0, exposed: bool = 
             # if permission and not any(role in getattr(session, "roles", []) for role in permission):
             #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
             #                         detail={"code": "FORBIDDEN", "parameter": "token", "message": f"you don't have permission to access this resource"})
-
+            
+            # get methods are cached id cache ttl is defined in seconds. You can user constants for TTL.
+            if 'GET' in func.route_kwargs.get('methods', []) and func.cache:
+                cache_key = f"cache:{'NEKIPERSISTENT1KLJUC' if session else ''}{request.url.path}?{request.url.query}"
+                try:
+                    cached_response = rdb.get(cache_key)
+                    if cached_response:
+                        # Set the x-rcache header to HIT
+                        response = JSONResponse(content=json.loads(cached_response))
+                        response.headers["x-rcache"] = "HIT"
+                        return response
+                    
+                except Exception as e:
+                    print(f"Redis cache error: {e}")
+                    
+                response = await func(self, request=request, **request.path_params)
+                
+                try:
+                    response_data = jsonable_encoder(response)
+                    rdb.setex(cache_key, func.cache, json.dumps(response_data))
+                except Exception as e:
+                    print(f"Redis set error: {e}")
+                
+                # Set the x-rcache header to MISS
+                if isinstance(response, JSONResponse):
+                    response.headers["x-rcache"] = "MISS"
+                else:
+                    # Convert response to JSONResponse if it's not already
+                    response = JSONResponse(content=jsonable_encoder(response))
+                    response.headers["x-rcache"] = "MISS"
+                return response
+            
             return await func(self, request=request, **request.path_params)
         return wrapper
     return decorator
