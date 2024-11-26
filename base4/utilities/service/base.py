@@ -1,3 +1,5 @@
+from inspect import signature
+
 import tortoise.timezone
 import datetime
 import time
@@ -294,18 +296,16 @@ class BaseAPIController(object):
             attribute = getattr(self, attribute_name)
             if callable(attribute) and hasattr(attribute, 'route_kwargs'):
                 route_kwargs = attribute.route_kwargs
-                method = attribute
-                endpoint = functools.partial(method, self)
+                # Uklanja se ručni `self`, jer ga dekorator već pravilno mapira
                 self.router.add_api_route(
-                    endpoint=endpoint,
+                    endpoint=attribute,
                     **route_kwargs
                 )
 
-
 def api(permissions: Optional[List[str]] = None, cache: int = 0, exposed: bool = True, accesslog: bool = True, **route_kwargs):
-    '''
-        decorator for class based api calls
-    '''
+    """
+    Decorator for class-based API calls.
+    """
     def decorator(func: Callable):
         func.route_kwargs = route_kwargs
         func.permissions = permissions
@@ -316,15 +316,17 @@ def api(permissions: Optional[List[str]] = None, cache: int = 0, exposed: bool =
 
         @wraps(func)
         async def wrapper(self, *args, **kwargs):
-            request: Request = None
-            for arg in args:
-                if isinstance(arg, Request):
-                    request = arg
-                    break
+            # Extracting request from either args or kwargs
+            func_sig = signature(func)
             
-            if not request:
-                request = kwargs.get('request')
-            if not request:
+            # Handle args dynamically if key is not explicitly present
+            bound_args = func_sig.bind(self, *args, **kwargs)
+            bound_args.apply_defaults()
+            
+            # Extract 'request' if it exists in arguments
+            request = bound_args.arguments.get("request", None)
+            
+            if not request or not isinstance(request, Request):
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                                     detail="Request object is required")
             
