@@ -1,7 +1,6 @@
-import time
-
 import tortoise.timezone
 import datetime
+import time
 import uuid
 from typing import Any, Dict, List, TypeVar, Callable, Optional
 from functools import wraps
@@ -12,11 +11,9 @@ import tortoise.timezone
 from base4.schemas.base import NOT_SET
 from fastapi import HTTPException, Request, APIRouter
 from base4.utilities.security.jwt import decode_token
-from fastapi.responses import JSONResponse
 import functools
 import ujson as json
-from fastapi.encoders import jsonable_encoder
-from lib.base4.base4.utilities.db.redis import RedisClientHandler
+from base4.utilities.db.redis import RedisClientHandler
 
 SchemaType = TypeVar('SchemaType', bound=pydantic.BaseModel)
 ModelType = TypeVar('ModelType', bound=tortoise.models.Model)
@@ -305,50 +302,18 @@ class BaseAPIController(object):
                 )
 
 
-def api_accesslog(request, response, session, start_time, accesslog, exc=None):
-    # todo, treba uradi po tenantima
-    # todo, treba da se odvoji jos jedan redis server (accesslog) da bi bilo uslo grlo
-    # todo, napraviti chain mehanizam za poverzane requests i beleziti njihovu sesiju, u 'chain' neka se appenduju sve sesion uuid i da se
-    # ako se posalje fleg da se ne loguje nemoj da logujes
-    if accesslog or request.state > 400:
-        # po tome moze raditi pretraga - o tom po tom
-        payload = {
-            'chain':           '',
-            'uuid':            '',
-            'method':          request.method,
-            'path':            request.url.path,
-            'query_params':    request.query_params,
-            'path_params':     request.path_params,
-            'body_params':     {},
-            'session':         session,
-            'host':            request.client.host,
-            'ip':              '',
-            'x_forwarded_for': '',
-            'user_agent':      '',
-            'total_time':      time.time() - start_time,
-            'hostname':        '',
-            'response':        response,
-            'is_cached':       '',
-            'status_code':     '',
-            'requested':       datetime.datetime.now().timestamp(),
-        }
-        if exc:
-            payload['exception'] = exc
-    #rdb.lpush(f'ACCESSLOG-{config.PROJECT_NAME}', json_dumps(payload, usepickle=True))
-    
-    
-def api(permission: Optional[List[str]] = None, cache: int = 0, exposed: bool = True, accesslog: bool = True, **route_kwargs):
+def api(permissions: Optional[List[str]] = None, cache: int = 0, exposed: bool = True, accesslog: bool = True, **route_kwargs):
     '''
         decorator for class based api calls
     '''
     def decorator(func: Callable):
         func.route_kwargs = route_kwargs
-        func.permission = permission
+        func.permissions = permissions
         func.cache = cache
         func.exposed = exposed
         func.accesslog = accesslog
         start_time = time.time()
-        
+
         @wraps(func)
         async def wrapper(self, *args, **kwargs):
             request: Request = None
@@ -360,13 +325,11 @@ def api(permission: Optional[List[str]] = None, cache: int = 0, exposed: bool = 
             if not request:
                 request = kwargs.get('request')
             if not request:
-                api_accesslog(request, '', '', start_time, func.accesslog)
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                                     detail="Request object is required")
             
             token = request.headers.get("Authorization")
             if not token or not token.startswith("Bearer "):
-                api_accesslog(request, '', '', start_time, func.accesslog)
                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                     detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token"})
 
@@ -375,7 +338,6 @@ def api(permission: Optional[List[str]] = None, cache: int = 0, exposed: bool = 
             try:
                 session = decode_token(token)
             except Exception:
-                api_accesslog(request, '', '', start_time, func.accesslog)
                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                     detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token"})
 
@@ -387,45 +349,26 @@ def api(permission: Optional[List[str]] = None, cache: int = 0, exposed: bool = 
             # if permission and not any(role in getattr(session, "roles", []) for role in permission):
             #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
             #                         detail={"code": "FORBIDDEN", "parameter": "token", "message": f"you don't have permission to access this resource"})
-            
-            # get methods are cached id cache ttl is defined in seconds. You can user constants for TTL.
-            
-            # todo, treba da se odvoji jos jedan redis server (cache) da bi bilo uslo grlo
             if 'GET' in func.route_kwargs.get('methods', []) and func.cache:
-                cache_key = f"cache:{'NEKIPERSISTENT1KLJUC' if session else ''}{request.url.path}?{request.url.query}"
+                cache_key = f"cache:{session.user_id if session else ''}{request.url.path}?{request.url.query}"
+                
                 try:
                     cached_response = rdb.get(cache_key)
                     if cached_response:
-                        # Set the x-rcache header to HIT
-                        response = JSONResponse(content=json.loads(cached_response))
-                        response.headers["x-rcache"] = "HIT"
-                        api_accesslog(request, response, session, start_time, func.accesslog)
-                        return response
-                    
+                        return cached_response
                 except Exception as e:
                     print(f"Redis cache error: {e}")
-                    
-                response = await func(self, request=request, **request.path_params)
                 
+                response = await func(self, request=request, **request.path_params)
                 try:
-                    response_data = jsonable_encoder(response)
-                    rdb.setex(cache_key, func.cache, json.dumps(response_data))
+                    rdb.setex(cache_key, func.cache, json.dumps(response, default=str))
                 except Exception as e:
                     print(f"Redis set error: {e}")
                 
-                # Set the x-rcache header to MISS
-                if isinstance(response, JSONResponse):
-                    response.headers["x-rcache"] = "MISS"
-                else:
-                    # Convert response to JSONResponse if it's not already
-                    response = JSONResponse(content=jsonable_encoder(response))
-                    response.headers["x-rcache"] = "MISS"
-                    api_accesslog(request, response, session, start_time, func.accesslog)
                 return response
             
             response = await func(self, request=request, **request.path_params)
             
-            api_accesslog(request, response, session, start_time, func.accesslog)
-            
+            return response
         return wrapper
     return decorator
