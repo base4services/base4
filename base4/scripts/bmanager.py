@@ -150,8 +150,8 @@ def new_service(service_name, service_template, verbose, gen_type):
                 
                 cp base4service_template/rename.sh {project_root}
                 
-                bash rename.sh {service_name} src/services
-                bash rename.sh {service_name} tests/
+                bash {project_root}/rename.sh {service_name} src/services
+                bash {project_root}/rename.sh {service_name} tests
 
                 rm -rf base4service_template
                 rm  {project_root}/rename.sh
