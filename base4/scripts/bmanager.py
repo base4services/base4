@@ -145,14 +145,20 @@ def new_service(service_name, service_template, verbose, gen_type):
                 mkdir -p {project_root}/src/services/{service_name}
                 git clone git+ssh://git@github2/base4services/base4service_template.git {v}
                 cp -R base4service_template/services/template/* {project_root}/src/services/{service_name}
-                cp base4service_template/rename.sh {project_root}
-                
-                cp base4service_template/tests/test_template.py {project_root}/tests/test_{service_name}.py 
+                cp base4service_template/tests/test_template.py {project_root}/tests/test_{service_name}.py
                 cp base4service_template/tests/test_api_v2.py {project_root}/tests/test_api_v2_{service_name}.py
+                
+                cp base4service_template/rename.sh {project_root}/tests
+                cp base4service_template/rename.sh {project_root}/src/services
+                
+                bash {project_root}/tests/rename.sh {service_name}
+                bash {project_root}/src/services/rename.sh {service_name}
+
                 rm -rf base4service_template
                 bash rename.sh {service_name}
                 cd {project_root}/src/services/{service_name}
                 rm  {project_root}/src/services/{service_name}/rename.sh
+                rm  {project_root}/src/tests/rename.sh
                 mv {project_root}/src/services/{service_name}/yaml_sources/model.yaml {project_root}/src/services/{service_name}/yaml_sources/{service_name}_model.yaml
                 mv {project_root}/src/services/{service_name}/yaml_sources/schema.yaml {project_root}/src/services/{service_name}/yaml_sources/{service_name}_schema.yaml
                 '''
