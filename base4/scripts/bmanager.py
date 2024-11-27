@@ -282,6 +282,9 @@ def _compile_yaml(yaml_file: str, service_name: str, gen_type: str):
 @click.option('--service-name', '-s', help='Service name')
 @click.option('--gen-type', '-g', default='models,schemas', help='Components to generate (comma-separated: models,schemas,tables)')
 def compile_yaml(yaml_file: str, service_name: str, gen_type: str):
+    """
+    Compile YAML
+    """
     _compile_yaml(yaml_file, service_name, gen_type)
 
 
@@ -290,10 +293,6 @@ def create_pycharm_project_config():
     """
     Creates XML configuration for PyCharm, setting multiple source directories and a test directory.
     Validates directories before processing.
-
-    :param get_project_root(): Path to the PyCharm project.
-    :param source_dirs: List of source directories.
-    :param tests_dir: Name of the directory for tests.
     """
     # Validate the project path
     if not os.path.exists(get_project_root()):
@@ -312,13 +311,11 @@ def create_pycharm_project_config():
     for source_dir in ['lib/base4', 'src']:
         source_path = os.path.abspath(os.path.join(get_project_root(), source_dir))
         if not os.path.exists(source_path):
-            print(f"Source directory '{source_path}' does not exist. Creating it.")
             os.makedirs(source_path, exist_ok=True)
     
     # Validate and create the tests directory
     tests_path = os.path.abspath(os.path.join(get_project_root(), 'tests'))
     if not os.path.exists(tests_path):
-        print(f"Test directory '{tests_path}' does not exist. Creating it.")
         os.makedirs(tests_path, exist_ok=True)
     
     # Create the root XML element
@@ -348,5 +345,3 @@ def create_pycharm_project_config():
     
     with open(config_path, "wb") as xml_file:
         tree.write(xml_file, encoding="UTF-8", xml_declaration=True)
-    
-    print(f"PyCharm configuration successfully created at: {config_path}")
