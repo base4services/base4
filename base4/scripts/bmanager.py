@@ -146,11 +146,12 @@ def new_service(service_name, service_template, verbose, gen_type):
                 git clone git+ssh://git@github2/base4services/base4service_template.git {v}
                 cp -R base4service_template/services/template/* {project_root}/src/services/{service_name}
                 cp base4service_template/rename.sh {project_root}/src/services/{service_name}
+                
                 cp base4service_template/tests/test_template.py {project_root}/tests/test_{service_name}.py 
                 cp base4service_template/tests/test_api_v2.py {project_root}/tests/test_api_v2_{service_name}.py
                 rm -rf base4service_template
-                cd {project_root}/src/services/{service_name}
                 bash rename.sh {service_name}
+                cd {project_root}/src/services/{service_name}
                 rm  {project_root}/src/services/{service_name}/rename.sh
                 mv {project_root}/src/services/{service_name}/yaml_sources/model.yaml {project_root}/src/services/{service_name}/yaml_sources/{service_name}_model.yaml
                 mv {project_root}/src/services/{service_name}/yaml_sources/schema.yaml {project_root}/src/services/{service_name}/yaml_sources/{service_name}_schema.yaml
