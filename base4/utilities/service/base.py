@@ -13,7 +13,7 @@ import tortoise.timezone
 from base4.schemas.base import NOT_SET
 from fastapi import HTTPException, Request, APIRouter
 from base4.utilities.security.jwt import decode_token
-import functools
+from fastapi import File, UploadFile
 import ujson as json
 from base4.utilities.db.redis import RedisClientHandler
 
@@ -302,7 +302,38 @@ class BaseAPIController(object):
                     **route_kwargs
                 )
 
-def api(permissions: Optional[List[str]] = None, cache: int = 0, exposed: bool = True, accesslog: bool = True, **route_kwargs):
+async def api_accesslog(request, response, session, start_time, accesslog, exc=None):
+    # # todo, napraviti chain mehanizam za poverzane requests i beleziti njihovu sesiju, u 'chain' neka se appenduju sve sesion uuid i da se
+    # ako se posalje fleg da se ne loguje nemoj da logujes
+    if accesslog or request.state > 400:
+        payload = {
+            'chain':           '',
+            'uuid':            '',
+            'method':          request.method,
+            'path':            request.url.path,
+            'query_params':    request.query_params,
+            'path_params':     request.path_params,
+            'body_params':     {},
+            'session':         session,
+            'host':            request.client.host,
+            'ip':              '',
+            'x_forwarded_for': '',
+            'user_agent':      '',
+            'total_time':      time.time() - start_time,
+            'hostname':        '',
+            'response':        response,
+            'is_cached':       '',
+            'status_code':     '',
+            'requested':       datetime.datetime.now().timestamp(),
+        }
+        if exc:
+            payload['exception'] = exc
+            
+    #rdb.lpush(f'ACCESSLOG-{config.PROJECT_NAME}', json_dumps(payload, usepickle=True))
+
+def api(permissions: Optional[List[str]] = None, cache: int = 0, exposed: bool = True, accesslog: bool = True,
+        upload_allowed_file_types: Optional[List[str]] = None,upload_max_file_size: Optional[int] = None,
+        upload_max_files: Optional[int] = None,  **route_kwargs):
     """
     Decorator for class-based API calls.
     """
@@ -312,65 +343,102 @@ def api(permissions: Optional[List[str]] = None, cache: int = 0, exposed: bool =
         func.cache = cache
         func.exposed = exposed
         func.accesslog = accesslog
+        func.upload_allowed_file_types = upload_allowed_file_types
+        func.upload_max_file_size = upload_max_file_size
+        
         start_time = time.time()
 
         @wraps(func)
         async def wrapper(self, *args, **kwargs):
-            # Extracting request from either args or kwargs
-            func_sig = signature(func)
-            
-            # Handle args dynamically if key is not explicitly present
-            bound_args = func_sig.bind(self, *args, **kwargs)
-            bound_args.apply_defaults()
-            
-            # Extract 'request' if it exists in arguments
-            request = bound_args.arguments.get("request", None)
-            
+            session = None
+
+            request = kwargs.get("request", None)
             if not request or not isinstance(request, Request):
-                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                                    detail="Request object is required")
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Request object is required")
+            request.path_params.update(kwargs)
             
-            token = request.headers.get("Authorization")
-            if not token or not token.startswith("Bearer "):
-                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                                    detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token"})
+            #####################################
+            # upload file check
+            #####################################
+            files = kwargs.get("files", [])
+            if not isinstance(files, list):
+                files = [files]
+            for file in files:
+                if upload_allowed_file_types and file.content_type not in upload_allowed_file_types:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Unsupported file type: {file.content_type}"
+                    )
 
-            token = token.replace("Bearer ", "")
-
-            try:
-                session = decode_token(token)
-            except Exception:
-                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                                    detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token"})
-
-            if getattr(session, 'expired', False):
-                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                                    detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"})
+                if upload_max_file_size:
+                    content = await file.read()
+                    if len(content) > upload_max_file_size:
+                        raise HTTPException(
+                            status_code=400,
+                            detail=f"File size exceeds limit of {upload_max_file_size // (1024 * 1024)} MB"
+                        )
+                # Validacija broja fajlova
+                if upload_max_files and len(files) > upload_max_files:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Too many files uploaded. Maximum allowed is {upload_max_files}."
+                    )
+                
+            #####################################
+            # permission check
+            #####################################
+            if permissions:
+                token = request.headers.get("Authorization")
+                if not token or not token.startswith("Bearer "):
+                    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                                        detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token"})
+    
+                token = token.replace("Bearer ", "")
+    
+                try:
+                    session = decode_token(token)
+                except Exception:
+                    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                                        detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token"})
+    
+                if getattr(session, 'expired', False):
+                    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                                        detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"})
 
             # # todo finish permission
             # if permission and not any(role in getattr(session, "roles", []) for role in permission):
             #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
             #                         detail={"code": "FORBIDDEN", "parameter": "token", "message": f"you don't have permission to access this resource"})
-            if 'GET' in func.route_kwargs.get('methods', []) and func.cache:
-                cache_key = f"cache:{session.user_id if session else ''}{request.url.path}?{request.url.query}"
+            
+            
+            #####################################
+            # cache mechanism
+            #####################################
+            if 'GET' in route_kwargs.get('methods', []) and cache:
+                cache_key = f"cache:{request.method}{session.user_id if session else ''}{request.url.path}?{request.url.query}"
                 
                 try:
                     cached_response = rdb.get(cache_key)
                     if cached_response:
-                        return cached_response
+                        return json.loads(cached_response)
                 except Exception as e:
                     print(f"Redis cache error: {e}")
                 
-                response = await func(self, request=request, **request.path_params)
+                # todo, uhvati exc ako se desi na api i to da udje u accesslog na exc
+                response = await func(self, **request.path_params)
+                await api_accesslog(request, response, session, start_time, accesslog, exc=None)
                 try:
-                    rdb.setex(cache_key, func.cache, json.dumps(response, default=str))
+                    rdb.setex(cache_key, cache, json.dumps(response))
                 except Exception as e:
                     print(f"Redis set error: {e}")
-                
                 return response
             
-            response = await func(self, request=request, **request.path_params)
-            
+            #####################################
+            # call api handler that not have cache
+            #####################################
+            response = await func(self, **request.path_params)
+            # todo, uhvati exc ako se desi na api i to da udje u accesslog na exc
+            await api_accesslog(request, response, session, start_time, accesslog, exc=None)
             return response
         return wrapper
     return decorator
