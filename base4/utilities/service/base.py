@@ -332,6 +332,7 @@ async def api_accesslog(request, response, session, start_time, accesslog, exc=N
     #rdb.lpush(f'ACCESSLOG-{config.PROJECT_NAME}', json_dumps(payload, usepickle=True))
 
 def api(permissions: Optional[List[str]] = None, cache: int = 0, exposed: bool = True, accesslog: bool = True,
+        headers: Optional[dict] = None,
         upload_allowed_file_types: Optional[List[str]] = None,upload_max_file_size: Optional[int] = None,
         upload_max_files: Optional[int] = None,  **route_kwargs):
     """
@@ -343,8 +344,10 @@ def api(permissions: Optional[List[str]] = None, cache: int = 0, exposed: bool =
         func.cache = cache
         func.exposed = exposed
         func.accesslog = accesslog
+        func.headers = headers
         func.upload_allowed_file_types = upload_allowed_file_types
         func.upload_max_file_size = upload_max_file_size
+        func.upload_max_files = upload_max_files
         
         start_time = time.time()
 
@@ -405,6 +408,7 @@ def api(permissions: Optional[List[str]] = None, cache: int = 0, exposed: bool =
                     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                         detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"})
 
+
             # # todo finish permission
             # if permission and not any(role in getattr(session, "roles", []) for role in permission):
             #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
@@ -414,7 +418,7 @@ def api(permissions: Optional[List[str]] = None, cache: int = 0, exposed: bool =
             #####################################
             # cache mechanism
             #####################################
-            if 'GET' in route_kwargs.get('methods', []) and cache:
+            if 'GET' in route_kwargs.get('methods', ['GET']) and cache:
                 cache_key = f"cache:{request.method}{session.user_id if session else ''}{request.url.path}?{request.url.query}"
                 
                 try:
