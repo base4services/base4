@@ -331,7 +331,7 @@ async def api_accesslog(request, response, session, start_time, accesslog, exc=N
             
     #rdb.lpush(f'ACCESSLOG-{config.PROJECT_NAME}', json_dumps(payload, usepickle=True))
 
-def api(permissions: Optional[List[str]] = None, cache: int = 0, exposed: bool = True, accesslog: bool = True,
+def api(roles: Optional[List[str]] = None, cache: int = 0, exposed: bool = True, accesslog: bool = True,
         headers: Optional[dict] = None,
         upload_allowed_file_types: Optional[List[str]] = None,upload_max_file_size: Optional[int] = None,
         upload_max_files: Optional[int] = None,  **route_kwargs):
@@ -340,7 +340,7 @@ def api(permissions: Optional[List[str]] = None, cache: int = 0, exposed: bool =
     """
     def decorator(func: Callable):
         func.route_kwargs = route_kwargs
-        func.permissions = permissions
+        func.roles = roles
         func.cache = cache
         func.exposed = exposed
         func.accesslog = accesslog
@@ -390,7 +390,7 @@ def api(permissions: Optional[List[str]] = None, cache: int = 0, exposed: bool =
             #####################################
             # permission check
             #####################################
-            if permissions:
+            if roles:
                 token = request.headers.get("Authorization")
                 if not token or not token.startswith("Bearer "):
                     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
