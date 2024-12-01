@@ -115,6 +115,7 @@ def new_service(service_name, service_template, verbose, gen_type):
                 f'''
                 mkdir -p {project_root}/src/services/tenants
                 git clone git+ssh://git@github2/base4services/base4tenants.git {v}
+                git checkout dev-api-v2 > /dev/null 2>&1;
                 cp -R base4tenants/src/services/tenants/* {project_root}/src/services/tenants/
                 cp -R base4tenants/tests/test_base_tenants.py {project_root}/tests/
                 cp -R base4tenants/tests/test_tenants.py {project_root}/tests/test_tenants.py
@@ -144,6 +145,7 @@ def new_service(service_name, service_template, verbose, gen_type):
                 f'''
                 mkdir -p {project_root}/src/services/{service_name}
                 git clone git+ssh://git@github2/base4services/base4service_template.git {v}
+                git checkout dev-api-v2 > /dev/null 2>&1;
                 cp -R base4service_template/services/template/* {project_root}/src/services/{service_name}
                 cp base4service_template/tests/test_template.py {project_root}/tests/test_{service_name}.py
                 cp base4service_template/tests/test_api_v2.py {project_root}/tests/test_api_v2_{service_name}.py

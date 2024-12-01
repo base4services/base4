@@ -107,6 +107,7 @@ if ! git clone git+ssh://git@$GITHUB_HOST/base4services/base4.git > /dev/null 2>
   exit 1
 fi
 cd base4 || exit
+git checkout dev-api-v2 > /dev/null 2>&1;
 echo "[*] installing base4 dependencies..."
 pip3 install -e . #-q
 cd ../../ || exit
@@ -118,6 +119,7 @@ if ! git clone git+ssh://git@$GITHUB_HOST/base4services/base4project.git > /dev/
   exit 1
 
 fi
+git checkout dev-api-v2 > /dev/null 2>&1;
 mv base4project/* base4project/.[^.]* ./
 rm -rf  base4project
 
