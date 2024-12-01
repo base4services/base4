@@ -463,10 +463,14 @@ class BaseAPIController(object):
 			attribute = getattr(self, attribute_name)
 			if callable(attribute) and hasattr(attribute, 'route_kwargs'):
 				route_kwargs = attribute.route_kwargs
-				self.router.add_api_route(
-					endpoint=attribute,
-					**route_kwargs
-				)
+				self.router.add_api_route(endpoint=attribute,**route_kwargs)
+	
+	@api(
+		path='/healthy',
+	)
+	async def healthy(self, request: Request):
+		return {'status': 'ok'}
+	
 	@api(
 		roles=[],
 		path='/search',
@@ -546,3 +550,12 @@ class BaseAPIController(object):
 			}
 		
 		return response
+	
+	@api(
+		methods=['GET'],
+		path='/options/by-key/{key}',
+		response_model=Dict[str, str]
+	)
+	async def get_by_key(self, request: Request, key: str) -> dict:
+		service = self.service.OptionService()
+		return await service.get_option_by_key(key)
