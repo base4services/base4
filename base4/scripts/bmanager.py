@@ -152,7 +152,6 @@ def new_service(service_name, service_template, verbose, gen_type):
                 cd ..
                 cp -R base4service_template/services/template/* {project_root}/src/services/{service_name}
                 cp base4service_template/tests/test_template.py {project_root}/tests/test_{service_name}.py
-                cp base4service_template/tests/test_api_v2.py {project_root}/tests/test_api_v2_{service_name}.py
                 
                 cp base4service_template/rename.sh {project_root}
                 
