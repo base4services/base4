@@ -6,13 +6,14 @@ import time
 import uuid
 from typing import Any, Dict, List, TypeVar, Callable, Optional
 from functools import wraps
-from fastapi import HTTPException, status, Request, Form
+from fastapi import HTTPException, status, Request, Form, Query
 import pydantic
 import tortoise
 import tortoise.timezone
 from base4.schemas.base import NOT_SET
-from fastapi import HTTPException, Request, APIRouter
+from fastapi import HTTPException, Request, APIRouter, Response
 import hashlib
+import base4.service.base
 from base4.utilities.files import get_project_root
 from base4.utilities.security.jwt import decode_token
 from fastapi import File, UploadFile
@@ -20,6 +21,8 @@ import ujson as json
 from base4.utilities.db.redis import RedisClientHandler
 import os
 import dotenv
+
+from base4.utilities.ws import sio_client_manager, emit
 
 dotenv.load_dotenv()
 upload_dir = os.getenv('UPLOAD_DIR', '/tmp')
@@ -352,7 +355,7 @@ def api(roles: Optional[List[str]] = None, cache: int = 0, exposed: bool = True,
 		
 		@wraps(func)
 		async def wrapper(self, *args, **kwargs):
-			session = None
+			self.session = None
 			
 			request = kwargs.get("request", None)
 			if not request or not isinstance(request, Request):
@@ -422,7 +425,7 @@ def api(roles: Optional[List[str]] = None, cache: int = 0, exposed: bool = True,
 			# cache mechanism
 			#####################################
 			if 'GET' in route_kwargs.get('methods', ['GET']) and cache:
-				cache_key = f"cache:{request.method}{session.user_id if session else ''}{request.url.path}?{request.url.query}"
+				cache_key = f"cache:{request.method}{self.session.user_id if self.session else ''}{request.url.path}?{request.url.query}"
 				
 				try:
 					cached_response = rdb.get(cache_key)
@@ -433,7 +436,7 @@ def api(roles: Optional[List[str]] = None, cache: int = 0, exposed: bool = True,
 				
 				# todo, uhvati exc ako se desi na api i to da udje u accesslog na exc
 				response = await func(self, **request.path_params)
-				await api_accesslog(request, response, session, start_time, accesslog, exc=None)
+				await api_accesslog(request, response, self.session, start_time, accesslog, exc=None)
 				try:
 					rdb.setex(cache_key, cache, json.dumps(response))
 				except Exception as e:
@@ -445,7 +448,7 @@ def api(roles: Optional[List[str]] = None, cache: int = 0, exposed: bool = True,
 			#####################################
 			response = await func(self, **request.path_params)
 			# todo, uhvati exc ako se desi na api i to da udje u accesslog na exc
-			await api_accesslog(request, response, session, start_time, accesslog, exc=None)
+			await api_accesslog(request, response, self.session, start_time, accesslog, exc=None)
 			return response
 		
 		return wrapper
@@ -453,9 +456,22 @@ def api(roles: Optional[List[str]] = None, cache: int = 0, exposed: bool = True,
 	return decorator
 
 
+sio_connection = sio_client_manager(write_only=True)
+
+
 class BaseAPIController(object):
-	def __init__(self, router: APIRouter):
+	def __init__(self, router: APIRouter, services=None, model=None, schema=None):
+		def get_conn_name():
+			if os.environ.get('TEST_MODE', None) in ('true', 'True', 'TRUE', '1'):
+				return 'conn_test'
+			return 'conn_tenants'
+		
+		self.base_service_class = base4.service.base.BaseService(schema=schema, model=model, conn_name=get_conn_name())
 		self.router = router
+		self.services = services
+		self.model = model
+		self.schema = schema
+		self.sio_connection = sio_connection
 		self.register_routes()
 	
 	def register_routes(self):
@@ -465,11 +481,25 @@ class BaseAPIController(object):
 				route_kwargs = attribute.route_kwargs
 				self.router.add_api_route(endpoint=attribute,**route_kwargs)
 	
+	async def ws_emit(self, event, data={''}, room=None):
+		await emit(event=event, data=data, room=room, connection=self.sio_connection)
+		
 	@api(
 		path='/healthy',
 	)
 	async def healthy(self, request: Request):
 		return {'status': 'ok'}
+	
+	# @api(
+	# 	methods=['GET', 'POST'],
+	# 	path='/options/key/{key}',
+	# 	response_model=Dict[str, str]
+	# )
+	# async def get_by_key(self, request: Request, key: str) -> dict:
+	# 	if request.method == 'GET':
+	# 		return await self.service.OptionService().get_option_by_key(key)
+	# 	elif request.method == 'POST':
+	# 		return await self.service.OptionService().create_option(key, request)
 	
 	@api(
 		roles=[],
@@ -477,44 +507,73 @@ class BaseAPIController(object):
 		methods=['GET'],
 		response_model=Dict[str, Any]
 	)
-	def search(self, request: Request, data: Optional[Dict[str, Any]] = None):
+	async def search(self, request: Request, data: Optional[Dict[str, Any]] = None):
+		# todo
 		return {'search': 'ok'}
 
 	@api(
 		roles=[],
-		path='/key/{key}',
+		path='/id/{_id}',
 		methods=['GET'],
-		response_model=Dict[str, Any]
 	)
-	def get_by_key(self, request: Request, key: Optional[str] = None):
-		return {'by-key': 'ok'}
-
-	@api(
-		roles=[],
-		path='',
-		methods=['POST'],
-		response_model=Dict[str, Any]
-	)
-	def create(self, request: Request, data: Dict[str, Any]):
-		return {'created': 'ok'}
+	async def get_by_id(self, request: Request, _id: uuid.UUID):
+		return await self.base_service_class.get_single(item_id=_id, request=request)
 	
 	@api(
 		roles=[],
-		path='/{id}',
-		methods=['PUT'],
-		response_model=Dict[str, Any]
+		path='/{_id}/{field}',
+		methods=['GET'],
 	)
-	def update(self, request: Request, id: uuid.UUID, data: Optional[Dict[str, Any]] = None):
-		return {'updated': 'ok'}
+	async def get_by_field(self, request: Request, _id: uuid.UUID, field: str):
+		return await self.base_service_class.get_single_field(_id, field, request)
+
+	@api(
+		roles=[],
+		path='/{item_id}/validate',
+		methods=['GET'],
+	)
+	async def validate(self, request: Request, item_id: uuid.UUID, field: str):
+		return await self.base_service_class.validate(self.session.user_id, item_id=item_id, request=request)
+
+	# @api(
+	# 	roles=[],
+	# 	path='',
+	# 	methods=['POST'],
+	# )
+	# async def create(self, request: Request, payload:schemas, response: Response, key_id: str = Query(None)) -> Any:
+	# 	if key_id:
+	# 		key_id = key_id.split(',')
+	# 		return await self.services.create_or_update(self.session.user_id, key_id, payload, request, response)
+	#
+	# 	try:
+	# 		res = await self.base_service_class.create(self.session.user_id, payload, request)
+	# 	except tortoise.exceptions.IntegrityError as e:
+	# 		raise HTTPException(status_code=406, detail={"code": "NOT_ACCEPTABLE", "parameter": None, "message": f"Integrity error"})
+	# 	except Exception as e:
+	# 		raise
+	#
+	# 	response.status_code = 201
+	# 	if isinstance(res, tortoise.models.Model):
+	# 		return {'id': res.id, 'action': 'created'}
+	# 	return res
+	
+	# @api(
+	# 	roles=[],
+	# 	path='/{id}',
+	# 	methods=['PATCH'],
+	# )
+	# async def update(self, request: Request, _id: uuid.UUID, payload: schema) -> Dict:
+	# 	updated = await self.base_service_class.update(self.sessions.user_id, _id, payload, request)
+	# 	return {'deleted': updated}
 	
 	@api(
 		roles=[],
 		path='/{id}',
 		methods=['DELETE'],
-		response_model = Dict[str, Any]
 	)
-	async def delete(self, request: Request, id: uuid.UUID):
-		return {'deleted': 'ok'}
+	async def delete(self, request: Request, _id: uuid.UUID) -> Dict:
+		await self.base_service_class.delete(self.sessions.user_id, _id, request)
+		return {'deleted': _id}
 	
 	@api(
 		roles=[],
@@ -548,16 +607,4 @@ class BaseAPIController(object):
 				"size":         len(content),
 				"description":  metadata,
 			}
-		
 		return response
-	
-	@api(
-		methods=['GET', 'POST'],
-		path='/options/key/{key}',
-		response_model=Dict[str, str]
-	)
-	async def get_by_key(self, request: Request, key: str) -> dict:
-		if request.method == 'GET':
-			return await self.service.OptionService().get_option_by_key(key)
-		elif request.method == 'POST':
-			return await self.service.OptionService().create_option(key, request)

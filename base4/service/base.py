@@ -63,11 +63,6 @@ class BaseService[ModelType]:
         self.conn_name = conn_name
         self.sio_connection = sio_connection
 
-        'ws.thilo'
-
-        async def ws_emit(event, data={''}, room=None):
-            await emit(event=event, data=data, room=room, connection=self.sio_connection)
-
         # type(field), type(field) == field_type),
         def find_field_types(_model, field_type, related_name):
             return [
