@@ -15,7 +15,6 @@ from tortoise import Tortoise
 SchemaType = TypeVar('SchemaType')
 
 
-
 current_file_path = str(get_project_root())
 
 

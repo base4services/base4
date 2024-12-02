@@ -486,7 +486,7 @@ class BaseAPIController(object):
 		methods=['GET'],
 		response_model=Dict[str, Any]
 	)
-	def get_by_key(self, request: Request, key:Optional[str] = None):
+	def get_by_key(self, request: Request, key: Optional[str] = None):
 		return {'by-key': 'ok'}
 
 	@api(
@@ -552,10 +552,12 @@ class BaseAPIController(object):
 		return response
 	
 	@api(
-		methods=['GET'],
-		path='/options/by-key/{key}',
+		methods=['GET', 'POST'],
+		path='/options/key/{key}',
 		response_model=Dict[str, str]
 	)
 	async def get_by_key(self, request: Request, key: str) -> dict:
-		service = self.service.OptionService()
-		return await service.get_option_by_key(key)
+		if request.method == 'GET':
+			return await self.service.OptionService().get_option_by_key(key)
+		elif request.method == 'POST':
+			return await self.service.OptionService().create_option(key, request)
