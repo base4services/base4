@@ -123,7 +123,7 @@ git checkout dev-api-v2 > /dev/null 2>&1;
 mv base4project/* base4project/.[^.]* ./
 rm -rf  base4project
 mv idea .idea
-rename .idea/rename.iml to .idea/$app.iml
+mv .idea/rename.iml .idea/$app.iml
 
 # config files
 sed -i '' "s/__PROJECT_NAME__/${app}/g" config/services.yaml config/env.yaml .idea/misc.xml .idea/modules.xml
