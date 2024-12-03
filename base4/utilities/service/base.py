@@ -466,7 +466,7 @@ class BaseAPIController(object):
 				return 'conn_test'
 			return 'conn_tenants'
 		
-		self.base_service_class = base4.service.base.BaseService(schema=schema, model=model, conn_name=get_conn_name())
+		self.base_service_class = {}#base4.service.base.BaseService(schema=schema, model=model, conn_name=get_conn_name())
 		self.router = router
 		self.services = services
 		self.model = model
@@ -481,7 +481,7 @@ class BaseAPIController(object):
 				route_kwargs = attribute.route_kwargs
 				self.router.add_api_route(endpoint=attribute,**route_kwargs)
 	
-	async def ws_emit(self, event, data={''}, room=None):
+	async def ws_emit(self, event, data={}, room=None):
 		await emit(event=event, data=data, room=room, connection=self.sio_connection)
 		
 	@api(
@@ -501,39 +501,39 @@ class BaseAPIController(object):
 	# 	elif request.method == 'POST':
 	# 		return await self.service.OptionService().create_option(key, request)
 	
-	@api(
-		roles=[],
-		path='/search',
-		methods=['GET'],
-		response_model=Dict[str, Any]
-	)
-	async def search(self, request: Request, data: Optional[Dict[str, Any]] = None):
-		# todo
-		return {'search': 'ok'}
-
-	@api(
-		roles=[],
-		path='/id/{_id}',
-		methods=['GET'],
-	)
-	async def get_by_id(self, request: Request, _id: uuid.UUID):
-		return await self.base_service_class.get_single(item_id=_id, request=request)
-	
-	@api(
-		roles=[],
-		path='/{_id}/{field}',
-		methods=['GET'],
-	)
-	async def get_by_field(self, request: Request, _id: uuid.UUID, field: str):
-		return await self.base_service_class.get_single_field(_id, field, request)
-
-	@api(
-		roles=[],
-		path='/{item_id}/validate',
-		methods=['GET'],
-	)
-	async def validate(self, request: Request, item_id: uuid.UUID, field: str):
-		return await self.base_service_class.validate(self.session.user_id, item_id=item_id, request=request)
+	# @api(
+	# 	roles=[],
+	# 	path='/search',
+	# 	methods=['GET'],
+	# 	response_model=Dict[str, Any]
+	# )
+	# async def search(self, request: Request, data: Optional[Dict[str, Any]] = None):
+	# 	# todo
+	# 	return {'search': 'ok'}
+	#
+	# @api(
+	# 	roles=[],
+	# 	path='/id/{_id}',
+	# 	methods=['GET'],
+	# )
+	# async def get_by_id(self, request: Request, _id: uuid.UUID):
+	# 	return await self.base_service_class.get_single(item_id=_id, request=request)
+	#
+	# @api(
+	# 	roles=[],
+	# 	path='/{_id}/{field}',
+	# 	methods=['GET'],
+	# )
+	# async def get_by_field(self, request: Request, _id: uuid.UUID, field: str):
+	# 	return await self.base_service_class.get_single_field(_id, field, request)
+	#
+	# @api(
+	# 	roles=[],
+	# 	path='/{item_id}/validate',
+	# 	methods=['GET'],
+	# )
+	# async def validate(self, request: Request, item_id: uuid.UUID, field: str):
+	# 	return await self.base_service_class.validate(self.session.user_id, item_id=item_id, request=request)
 
 	# @api(
 	# 	roles=[],
@@ -566,14 +566,14 @@ class BaseAPIController(object):
 	# 	updated = await self.base_service_class.update(self.sessions.user_id, _id, payload, request)
 	# 	return {'deleted': updated}
 	
-	@api(
-		roles=[],
-		path='/{id}',
-		methods=['DELETE'],
-	)
-	async def delete(self, request: Request, _id: uuid.UUID) -> Dict:
-		await self.base_service_class.delete(self.sessions.user_id, _id, request)
-		return {'deleted': _id}
+	# @api(
+	# 	roles=[],
+	# 	path='/{id}',
+	# 	methods=['DELETE'],
+	# )
+	# async def delete(self, request: Request, _id: uuid.UUID) -> Dict:
+	# 	await self.base_service_class.delete(self.sessions.user_id, _id, request)
+	# 	return {'deleted': _id}
 	
 	@api(
 		roles=[],
