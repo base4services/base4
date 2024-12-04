@@ -1,6 +1,6 @@
+import datetime
 import os
 import re
-import datetime
 
 import yaml
 from base4.utilities.files import get_project_root

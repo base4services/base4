@@ -1,28 +1,23 @@
-from inspect import signature
-
-import tortoise.timezone
 import datetime
+import hashlib
+import os
 import time
 import uuid
-from typing import Any, Dict, List, TypeVar, Callable, Optional
 from functools import wraps
-from fastapi import HTTPException, status, Request, Form, Query
+from inspect import signature
+from typing import Any, Callable, Dict, List, Optional, TypeVar
+
+import dotenv
 import pydantic
 import tortoise
 import tortoise.timezone
+import ujson as json
 from base4.schemas.base import NOT_SET
-from fastapi import HTTPException, Request, APIRouter, Response
-import hashlib
-import base4.service.base
+from base4.utilities.db.redis import RedisClientHandler
 from base4.utilities.files import get_project_root
 from base4.utilities.security.jwt import decode_token
-from fastapi import File, UploadFile
-import ujson as json
-from base4.utilities.db.redis import RedisClientHandler
-import os
-import dotenv
-
-from base4.utilities.ws import sio_client_manager, emit
+from base4.utilities.ws import emit, sio_client_manager
+from fastapi import APIRouter, File, Form, HTTPException, Query, Request, Response, UploadFile, status
 
 dotenv.load_dotenv()
 upload_dir = os.getenv('UPLOAD_DIR', '/tmp')
@@ -480,14 +475,14 @@ sio_connection = sio_client_manager(write_only=True)
 class BaseAPIController(object):
 	def __init__(self, router: APIRouter, services=None, model=None, schema=None):
 		
-		self.base_service_class = base4.service.base.BaseService
+		self.base_service_class = {}#base4.service.base.BaseService
 		self.router = router
 		self.services = services
 		self.model = model
 		self.schema = schema
 		self.sio_connection = sio_connection
 		self.register_routes()
-	
+		
 	def _get_conn_name(self):
 		if os.environ.get('TEST_MODE', None) in ('true', 'True', 'TRUE', '1'):
 			return 'conn_test'
@@ -508,92 +503,6 @@ class BaseAPIController(object):
 	)
 	async def healthy(self, request: Request):
 		return {'status': 'ok'}
-	
-	# @api(
-	# 	methods=['GET', 'POST'],
-	# 	path='/options/key/{key}',
-	# 	response_model=Dict[str, str]
-	# )
-	# async def get_by_key(self, request: Request, key: str) -> dict:
-	# 	if request.method == 'GET':
-	# 		return await self.service.OptionService().get_option_by_key(key)
-	# 	elif request.method == 'POST':
-	# 		return await self.service.OptionService().create_option(key, request)
-	
-	# @api(
-	# 	roles=[],
-	# 	path='/search',
-	# 	methods=['GET'],
-	# 	response_model=Dict[str, Any]
-	# )
-	# async def search(self, request: Request, data: Optional[Dict[str, Any]] = None):
-	# 	# todo
-	# 	return {'search': 'ok'}
-	#
-	# @api(
-	# 	roles=[],
-	# 	path='/id/{_id}',
-	# 	methods=['GET'],
-	# )
-	# async def get_by_id(self, request: Request, _id: uuid.UUID):
-	# 	return await self.base_service_class.get_single(item_id=_id, request=request)
-	#
-	# @api(
-	# 	roles=[],
-	# 	path='/{_id}/{field}',
-	# 	methods=['GET'],
-	# )
-	# async def get_by_field(self, request: Request, _id: uuid.UUID, field: str):
-	# 	return await self.base_service_class.get_single_field(_id, field, request)
-	#
-	# @api(
-	# 	roles=[],
-	# 	path='/{item_id}/validate',
-	# 	methods=['GET'],
-	# )
-	# async def validate(self, request: Request, item_id: uuid.UUID, field: str):
-	# 	return await self.base_service_class.validate(self.session.user_id, item_id=item_id, request=request)
-
-	# @api(
-	# 	roles=[],
-	# 	path='',
-	# 	methods=['POST'],
-	# )
-	# async def create(self, request: Request, payload:schemas, response: Response, key_id: str = Query(None)) -> Any:
-	# 	if key_id:
-	# 		key_id = key_id.split(',')
-	# 		return await self.services.create_or_update(self.session.user_id, key_id, payload, request, response)
-	#
-	# 	try:
-	# 		res = await self.base_service_class.create(self.session.user_id, payload, request)
-	# 	except tortoise.exceptions.IntegrityError as e:
-	# 		raise HTTPException(status_code=406, detail={"code": "NOT_ACCEPTABLE", "parameter": None, "message": f"Integrity error"})
-	# 	except Exception as e:
-	# 		raise
-	#
-	# 	response.status_code = 201
-	# 	if isinstance(res, tortoise.models.Model):
-	# 		return {'id': res.id, 'action': 'created'}
-	# 	return res
-	
-	# @api(
-	# 	roles=[],
-	# 	path='/{id}',
-	# 	methods=['PATCH'],
-	# )
-	# async def update(self, request: Request, _id: uuid.UUID, payload: schema) -> Dict:
-	# 	updated = await self.base_service_class.update(self.sessions.user_id, _id, payload, request)
-	# 	return {'deleted': updated}
-	
-	# @api(
-	# 	roles=[],
-	# 	path='/{id}',
-	# 	methods=['DELETE'],
-	# )
-	# async def delete(self, request: Request, _id: uuid.UUID) -> Dict:
-	# 	await self.base_service_class.delete(self.sessions.user_id, _id, request)
-	# 	return {'deleted': _id}
-	
 
 	@api(
 		roles=[],
