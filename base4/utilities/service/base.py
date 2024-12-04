@@ -392,29 +392,47 @@ def api(roles: Optional[List[str]] = None, cache: int = 0, exposed: bool = True,
 			#####################################
 			# permission check
 			#####################################
-			if roles:
-				token = request.headers.get("Authorization")
-				if not token or not token.startswith("Bearer "):
-					raise HTTPException(
-						status_code=status.HTTP_401_UNAUTHORIZED,
-						detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token"}
-					)
-				
+			token = request.headers.get("Authorization")
+			if token and token.startswith("Bearer "):
 				token = token.replace("Bearer ", "")
-				
+			
 				try:
-					session = decode_token(token)
+					self.session = decode_token(token)
 				except Exception:
 					raise HTTPException(
 						status_code=status.HTTP_401_UNAUTHORIZED,
 						detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token"}
 					)
 				
-				if getattr(session, 'expired', False):
+				if getattr(self.session, 'expired', False):
 					raise HTTPException(
 						status_code=status.HTTP_401_UNAUTHORIZED,
 						detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"}
 					)
+				
+			# if roles:
+			# 	token = request.headers.get("Authorization")
+			# 	if not token or not token.startswith("Bearer "):
+			# 		raise HTTPException(
+			# 			status_code=status.HTTP_401_UNAUTHORIZED,
+			# 			detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token"}
+			# 		)
+			#
+			# 	token = token.replace("Bearer ", "")
+			#
+			# 	try:
+			# 		session = decode_token(token)
+			# 	except Exception:
+			# 		raise HTTPException(
+			# 			status_code=status.HTTP_401_UNAUTHORIZED,
+			# 			detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token"}
+			# 		)
+			#
+			# 	if getattr(session, 'expired', False):
+			# 		raise HTTPException(
+			# 			status_code=status.HTTP_401_UNAUTHORIZED,
+			# 			detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"}
+			# 		)
 			
 			# # todo finish permission
 			# if permission and not any(role in getattr(session, "roles", []) for role in permission):
@@ -461,18 +479,19 @@ sio_connection = sio_client_manager(write_only=True)
 
 class BaseAPIController(object):
 	def __init__(self, router: APIRouter, services=None, model=None, schema=None):
-		def get_conn_name():
-			if os.environ.get('TEST_MODE', None) in ('true', 'True', 'TRUE', '1'):
-				return 'conn_test'
-			return 'conn_tenants'
 		
-		self.base_service_class = {}#base4.service.base.BaseService(schema=schema, model=model, conn_name=get_conn_name())
+		self.base_service_class = base4.service.base.BaseService
 		self.router = router
 		self.services = services
 		self.model = model
 		self.schema = schema
 		self.sio_connection = sio_connection
 		self.register_routes()
+	
+	def _get_conn_name(self):
+		if os.environ.get('TEST_MODE', None) in ('true', 'True', 'TRUE', '1'):
+			return 'conn_test'
+		return 'conn_tenants'
 	
 	def register_routes(self):
 		for attribute_name in dir(self):
@@ -575,6 +594,7 @@ class BaseAPIController(object):
 	# 	await self.base_service_class.delete(self.sessions.user_id, _id, request)
 	# 	return {'deleted': _id}
 	
+
 	@api(
 		roles=[],
 		path='/upload',

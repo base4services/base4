@@ -39,7 +39,7 @@ logger = get_logger()
 sio_connection = sio_client_manager(write_only=True)
 
 
-@class_exception_traceback_logging(logger)
+
 class BaseService[ModelType]:
 
     def __init__(
@@ -96,6 +96,7 @@ class BaseService[ModelType]:
                 self.c1n_related_to = many_to_many_fields[0]
 
         except Exception as e:
+            print(e)
             raise
 
         ...
