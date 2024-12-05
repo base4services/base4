@@ -1,27 +1,23 @@
-from inspect import signature
-
-import tortoise.timezone
 import datetime
+import hashlib
+import os
 import time
 import uuid
-from typing import Any, Dict, List, TypeVar, Callable, Optional
 from functools import wraps
-from fastapi import HTTPException, status, Request, Form, Query
+from inspect import signature
+from typing import Any, Callable, Dict, List, Optional, TypeVar
+
+import dotenv
 import pydantic
 import tortoise
 import tortoise.timezone
+import ujson as json
 from base4.schemas.base import NOT_SET
-from fastapi import HTTPException, Request, APIRouter, Response
-import hashlib
+from base4.utilities.db.redis import RedisClientHandler
 from base4.utilities.files import get_project_root
 from base4.utilities.security.jwt import decode_token
-from fastapi import File, UploadFile
-import ujson as json
-from base4.utilities.db.redis import RedisClientHandler
-import os
-import dotenv
-
-from base4.utilities.ws import sio_client_manager, emit
+from base4.utilities.ws import emit, sio_client_manager
+from fastapi import APIRouter, FastAPI, File, Form, HTTPException, Query, Request, Response, UploadFile, status
 
 dotenv.load_dotenv()
 upload_dir = os.getenv('UPLOAD_DIR', '/tmp')
@@ -408,36 +404,7 @@ def api(roles: Optional[List[str]] = None, cache: int = 0, exposed: bool = True,
 						status_code=status.HTTP_401_UNAUTHORIZED,
 						detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"}
 					)
-				
-			# if roles:
-			# 	token = request.headers.get("Authorization")
-			# 	if not token or not token.startswith("Bearer "):
-			# 		raise HTTPException(
-			# 			status_code=status.HTTP_401_UNAUTHORIZED,
-			# 			detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token"}
-			# 		)
-			#
-			# 	token = token.replace("Bearer ", "")
-			#
-			# 	try:
-			# 		session = decode_token(token)
-			# 	except Exception:
-			# 		raise HTTPException(
-			# 			status_code=status.HTTP_401_UNAUTHORIZED,
-			# 			detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token"}
-			# 		)
-			#
-			# 	if getattr(session, 'expired', False):
-			# 		raise HTTPException(
-			# 			status_code=status.HTTP_401_UNAUTHORIZED,
-			# 			detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"}
-			# 		)
-			
-			# # todo finish permission
-			# if permission and not any(role in getattr(session, "roles", []) for role in permission):
-			#     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-			#                         detail={"code": "FORBIDDEN", "parameter": "token", "message": f"you don't have permission to access this resource"})
-			
+
 			#####################################
 			# cache mechanism
 			#####################################
@@ -473,24 +440,25 @@ def api(roles: Optional[List[str]] = None, cache: int = 0, exposed: bool = True,
 	return decorator
 
 
+def route(app: FastAPI, router: APIRouter, prefix: str):
+	def decorator(cls):
+		instance = cls(router)
+		app.include_router(router, prefix=prefix)
+		return cls
+	return decorator
+
+
 sio_connection = sio_client_manager(write_only=True)
 
-
 class BaseAPIController(object):
+	
 	def __init__(self, router: APIRouter, services=None, model=None, schema=None):
-		
-		self.base_service_class = {}
 		self.router = router
 		self.services = services
 		self.model = model
 		self.schema = schema
 		self.sio_connection = sio_connection
 		self.register_routes()
-		
-	def _get_conn_name(self):
-		if os.environ.get('TEST_MODE', None) in ('true', 'True', 'TRUE', '1'):
-			return 'conn_test'
-		return 'conn_tenants'
 	
 	def register_routes(self):
 		for attribute_name in dir(self):
@@ -498,9 +466,6 @@ class BaseAPIController(object):
 			if callable(attribute) and hasattr(attribute, 'route_kwargs'):
 				route_kwargs = attribute.route_kwargs
 				self.router.add_api_route(endpoint=attribute,**route_kwargs)
-	
-	async def ws_emit(self, event, data={}, room=None):
-		await emit(event=event, data=data, room=room, connection=self.sio_connection)
 		
 	@api(
 		path='/healthy',
@@ -508,6 +473,9 @@ class BaseAPIController(object):
 	async def healthy(self, request: Request):
 		return {'status': 'ok'}
 
+
+class BaseUploadFileHandler(object):
+	
 	@api(
 		roles=[],
 		path='/upload',
@@ -533,7 +501,9 @@ class BaseAPIController(object):
 			content = await file.read()
 			hash_md5 = hashlib.md5()
 			hash_md5.update(content)
-			with open(f"{full_upload_dir}/{hash_md5.hexdigest()}-{int(time.time())}.{file.filename.split('.')[-1]}", "wb") as buffer:
+			with open(
+					f"{full_upload_dir}/{hash_md5.hexdigest()}-{int(time.time())}.{file.filename.split('.')[-1]}", "wb"
+			) as buffer:
 				buffer.write(content)
 			response[file.filename] = {
 				"content_type": file.content_type,
@@ -541,3 +511,10 @@ class BaseAPIController(object):
 				"description":  metadata,
 			}
 		return response
+
+
+class BaseWebSocketHandler(object):
+	sio_connection = sio_connection
+	
+	async def ws_emit(self, event, data={}, room=None):
+		await emit(event=event, data=data, room=room, connection=self.sio_connection)
