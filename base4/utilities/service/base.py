@@ -1,23 +1,27 @@
+from inspect import signature
+
+import tortoise.timezone
 import datetime
-import hashlib
-import os
 import time
 import uuid
+from typing import Any, Dict, List, TypeVar, Callable, Optional
 from functools import wraps
-from inspect import signature
-from typing import Any, Callable, Dict, List, Optional, TypeVar
-
-import dotenv
+from fastapi import HTTPException, status, Request, Form, Query
 import pydantic
 import tortoise
 import tortoise.timezone
-import ujson as json
 from base4.schemas.base import NOT_SET
-from base4.utilities.db.redis import RedisClientHandler
+from fastapi import HTTPException, Request, APIRouter, Response
+import hashlib
 from base4.utilities.files import get_project_root
 from base4.utilities.security.jwt import decode_token
-from base4.utilities.ws import emit, sio_client_manager
-from fastapi import APIRouter, File, Form, HTTPException, Query, Request, Response, UploadFile, status
+from fastapi import File, UploadFile
+import ujson as json
+from base4.utilities.db.redis import RedisClientHandler
+import os
+import dotenv
+
+from base4.utilities.ws import sio_client_manager, emit
 
 dotenv.load_dotenv()
 upload_dir = os.getenv('UPLOAD_DIR', '/tmp')
@@ -475,7 +479,7 @@ sio_connection = sio_client_manager(write_only=True)
 class BaseAPIController(object):
 	def __init__(self, router: APIRouter, services=None, model=None, schema=None):
 		
-		self.base_service_class = {}#base4.service.base.BaseService
+		self.base_service_class = {}
 		self.router = router
 		self.services = services
 		self.model = model
