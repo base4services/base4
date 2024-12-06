@@ -446,7 +446,7 @@ def route(router: APIRouter, prefix: str):
 sio_connection = sio_client_manager(write_only=True)
 
 
-class BaseAPIController(object):
+class BaseAPIHandler(object):
 	
 	def __init__(self, router: APIRouter, services=None, model=None, schema=None):
 		self.router = router
