@@ -6,7 +6,7 @@ import uuid
 from functools import wraps
 from inspect import signature
 from typing import Any, Callable, Dict, List, Optional, TypeVar
-
+from base4.utilities.service.startup import service as app
 import dotenv
 import pydantic
 import tortoise
@@ -331,9 +331,6 @@ def api(roles: Optional[List[str]] = None, cache: int = 0, exposed: bool = True,
 		headers: Optional[dict] = None,
 		upload_allowed_file_types: Optional[List[str]] = None, upload_max_file_size: Optional[int] = None,
 		upload_max_files: Optional[int] = None, **route_kwargs):
-	"""
-	Decorator for class-based API calls.
-	"""
 	
 	def decorator(func: Callable):
 		func.route_kwargs = route_kwargs
@@ -345,7 +342,6 @@ def api(roles: Optional[List[str]] = None, cache: int = 0, exposed: bool = True,
 		func.upload_allowed_file_types = upload_allowed_file_types
 		func.upload_max_file_size = upload_max_file_size
 		func.upload_max_files = upload_max_files
-		
 		start_time = time.time()
 		
 		@wraps(func)
@@ -434,13 +430,11 @@ def api(roles: Optional[List[str]] = None, cache: int = 0, exposed: bool = True,
 			# todo, uhvati exc ako se desi na api i to da udje u accesslog na exc
 			await api_accesslog(request, response, self.session, start_time, accesslog, exc=None)
 			return response
-		
 		return wrapper
-	
 	return decorator
 
 
-def route(app: FastAPI, router: APIRouter, prefix: str):
+def route(router: APIRouter, prefix: str):
 	def decorator(cls):
 		instance = cls(router)
 		app.include_router(router, prefix=prefix)
@@ -449,6 +443,7 @@ def route(app: FastAPI, router: APIRouter, prefix: str):
 
 
 sio_connection = sio_client_manager(write_only=True)
+
 
 class BaseAPIController(object):
 	
