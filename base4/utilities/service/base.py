@@ -6,7 +6,7 @@ import uuid
 from functools import wraps
 from inspect import signature
 from typing import Any, Callable, Dict, List, Optional, TypeVar
-from base4.utilities.service.startup import service as app
+
 import dotenv
 import pydantic
 import tortoise
@@ -16,6 +16,7 @@ from base4.schemas.base import NOT_SET
 from base4.utilities.db.redis import RedisClientHandler
 from base4.utilities.files import get_project_root
 from base4.utilities.security.jwt import decode_token
+from base4.utilities.service.startup import service as app
 from base4.utilities.ws import emit, sio_client_manager
 from fastapi import APIRouter, FastAPI, File, Form, HTTPException, Query, Request, Response, UploadFile, status
 
