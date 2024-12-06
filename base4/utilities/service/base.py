@@ -460,10 +460,20 @@ class BaseAPIHandler(object):
 		for attribute_name in dir(self):
 			attribute = getattr(self, attribute_name)
 			if callable(attribute) and hasattr(attribute, 'route_kwargs'):
+				# hack da bi mogao da omogucim da bude method:str u mesto method:list koji je u fast api default
+				#  def add_api_route(
+				#         methods: Optional[Union[Set[str], List[str]]] = None,
+				try:
+					attribute.route_kwargs['methods'] = [attribute.route_kwargs['method']]
+					del attribute.route_kwargs['method']
+				except:
+					pass
 				route_kwargs = attribute.route_kwargs
+				
 				self.router.add_api_route(endpoint=attribute,**route_kwargs)
 		
 	@api(
+		method='GET',
 		path='/healthy',
 	)
 	async def healthy(self, request: Request):
@@ -475,7 +485,7 @@ class BaseUploadFileHandler(object):
 	@api(
 		roles=[],
 		path='/upload',
-		methods=['POST'],
+		method='POST',
 		upload_allowed_file_types=["image/jpeg", "image/png", "image/svg"],
 		upload_max_file_size=5 * 1024 * 1024,  # 5 MB
 		upload_max_files=5,
