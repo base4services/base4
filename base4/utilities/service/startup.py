@@ -240,13 +240,16 @@ def load_services(app, single_service=None):
 
         services = yaml.safe_load(f)
         for service in services['services']:
-            svc_name = list(service.keys())[0]
+            if isinstance(service, str):
+                svc_name = service
+            else:
+                svc_name = list(service.keys())[0]
 
             if single_service and svc_name != single_service:
                 continue
 
             try:
-                module = importlib.import_module(f"services.{svc_name}.api")
+                module = importlib.import_module(f"services.{svc_name}.api.run")
                 app.include_router(module.router, prefix=f"{api_prefix}/{svc_name}", tags=[svc_name.capitalize()])
             except Exception as e:
                 raise
