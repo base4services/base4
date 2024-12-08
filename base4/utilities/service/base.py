@@ -439,7 +439,7 @@ def route(router: APIRouter, prefix: str):
 	def decorator(cls):
 		instance = cls(router)
 		app.include_router(router, prefix=prefix)
-		return cls
+		return instance
 	return decorator
 
 
@@ -461,15 +461,12 @@ class BaseAPIHandler(object):
 			attribute = getattr(self, attribute_name)
 			if callable(attribute) and hasattr(attribute, 'route_kwargs'):
 				# hack da bi mogao da omogucim da bude method:str u mesto method:list koji je u fast api default
-				#  def add_api_route(
-				#         methods: Optional[Union[Set[str], List[str]]] = None,
 				try:
 					attribute.route_kwargs['methods'] = [attribute.route_kwargs['method']]
 					del attribute.route_kwargs['method']
 				except:
 					pass
 				route_kwargs = attribute.route_kwargs
-				
 				self.router.add_api_route(endpoint=attribute,**route_kwargs)
 		
 	@api(

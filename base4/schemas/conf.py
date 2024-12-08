@@ -56,6 +56,7 @@ class DatabaseConfig(BaseModel):
         try:
             super().__init__(**kwargs)
         except Exception as e:
+            print(e)
             raise
 
         ...
