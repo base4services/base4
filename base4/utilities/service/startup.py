@@ -5,7 +5,7 @@ import signal
 import sys
 from contextlib import asynccontextmanager
 from typing import AnyStr, Dict, List, Optional
-
+from tortoise.contrib.fastapi import register_tortoise
 import asyncpg
 import pydash
 import uvicorn
@@ -201,14 +201,19 @@ async def _initialize_tortoise_models(conf: Optional[DatabaseConfig] = None, con
         for conn in TORTOISE_ORM['connections']:
             TORTOISE_ORM['connections'][conn] = TORTOISE_ORM['connections']['conn_test']
         ...
-
+    
+    # register_tortoise(
+    #     service,
+    #     config=TORTOISE_ORM,
+    #     generate_schemas=True,
+    #     add_exception_handlers=True,
+    # )
     try:
         await Tortoise.init(config=TORTOISE_ORM)
-
         await Tortoise.generate_schemas()
     except Exception as e:
+        print(e)
         raise
-
     return
 
 
