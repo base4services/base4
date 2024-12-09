@@ -249,8 +249,10 @@ def load_services(single_service=None):
             if not single_service:
                 importlib.import_module(f"services.{svc_name}.api.run")
             else:
-                if service != single_service:
-                    continue
+                # todo, postoji sada problem kada pokrenem jedan servis
+
+                # if service != single_service:
+                #     continue
                 importlib.import_module(f"services.{svc_name}.api.run")
 
 
