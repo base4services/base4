@@ -121,7 +121,7 @@ def update_config_env(service_name: str):
 	content = content.replace("'", "")
 	
 	# Kreiraj liniju za novi servis
-	new_service_line = f"  - \t\t{service_name}\n"
+	new_service_line = f"  - \t{service_name}\n"
 	
 	# Proveri da li sekcija 'services' postoji
 	if 'databases:' in content:
