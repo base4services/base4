@@ -129,7 +129,7 @@ mv idea .idea
 mv .idea/rename.iml .idea/$app.iml
 
 # config files
-sed -i '' "s/__PROJECT_NAME__/${app}/g" config/services.yaml config/env.yaml .idea/misc.xml .idea/modules.xml .idea/workspace.xml
+sed -i '' "s/__PROJECT_NAME__/${app}/g" config/services.yaml config/env.yaml .idea/misc.xml .idea/modules.xml .idea/workspace.xml > /dev/null 2>&1; then
 
 # reinitialize git
 rm -rf .git
