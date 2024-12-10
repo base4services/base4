@@ -124,7 +124,7 @@ def new_service(service_name, service_template, verbose, gen_type):
                 rm -rf base4tenants
                 '''
             )
-            yaml_to_env('env')
+            
         elif service_template == 'base4ws':
             os.system(
                 f'''
@@ -168,7 +168,6 @@ def new_service(service_name, service_template, verbose, gen_type):
                 '''
             )
             print(f'[*] service -> {service_name} created!')
-            yaml_to_env('env')
             
         else:
             print(f'[*] please choose template')
@@ -181,6 +180,7 @@ def new_service(service_name, service_template, verbose, gen_type):
 
         # continue with another command
         _compile_yaml(yaml_file='gen.yaml', service_name=service_name, gen_type=gen_type)
+        yaml_to_env('env')
 
 
 @do.command('reset-service')
