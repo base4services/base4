@@ -38,16 +38,11 @@ def get_project_root():
         if os.getenv('V4INSTALLATION', 'local') in ('docker', 'docker-monolith'):
             # we are running in docker
             return Path('/app/')
-
-        # local .venv installation
         return Path(sys.executable).parent.parent.parent
-    else:
-        # we are running in a normal Python environment
-        return Path(__file__).parent.parent.parent.parent.parent
+    return Path(__file__).parent.parent.parent.parent.parent
 
 
 def get_project_config_folder():
-
     return get_project_root() / 'config'
 
 
@@ -70,12 +65,3 @@ def read_file(relative_path):
     """
     with open(get_file_path(relative_path), 'r') as f:
         return f.read()
-
-
-#
-# # Example usage
-# if __name__ == "__main__":
-#     print(f"Project root: {get_project_root()}")
-#     print(f"Path to a file: {get_file_path('security/private_key.pem')}")
-#     # Uncomment to test file reading (adjust the path as needed)
-#     # print(f"Content of README.md: {read_file('README.md')}")
