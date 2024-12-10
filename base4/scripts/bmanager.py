@@ -124,6 +124,7 @@ def new_service(service_name, service_template, verbose, gen_type):
                 rm -rf base4tenants
                 '''
             )
+            yaml_to_env('env')
         elif service_template == 'base4ws':
             os.system(
                 f'''
@@ -167,7 +168,8 @@ def new_service(service_name, service_template, verbose, gen_type):
                 '''
             )
             print(f'[*] service -> {service_name} created!')
-
+            yaml_to_env('env')
+            
         else:
             print(f'[*] please choose template')
             for i, j in enumerate(existing_service_templates, start=1):
@@ -183,7 +185,7 @@ def new_service(service_name, service_template, verbose, gen_type):
 
 @do.command('reset-service')
 @click.option('--service-name', '-s', help='Service name to generate or reset')
-def new_service(service_name):
+def reset_service(service_name):
     os.system('git checkout .')
     try:
         shutil.rmtree(project_root + f'/src/services/{service_name}')
