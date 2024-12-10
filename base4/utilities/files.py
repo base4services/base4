@@ -3,8 +3,7 @@
 import os
 import sys
 from pathlib import Path
-
-import pkg_resources
+import importlib.metadata
 
 
 def is_installed_package():
@@ -14,9 +13,10 @@ def is_installed_package():
     :return: True if running from an installed package, False if running from source.
     """
     try:
-        dist = pkg_resources.get_distribution('base4')
+        # Replace 'base4' with the actual package name you are checking
+        dist = importlib.metadata.distribution('base4')
         return True
-    except pkg_resources.DistributionNotFound:
+    except importlib.metadata.PackageNotFoundError:
         return False
 
 
