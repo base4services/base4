@@ -1,13 +1,14 @@
 #!/bin/bash
 
-# Proverite da li su prosleđena dva argumenta
-if [ "$#" -lt 2 ]; then
-    echo "Usage: $0 <app> <workdir> [branch]"
+# Proverite da li je prosleđen bar jedan argument
+if [ "$#" -lt 1 ]; then
+    echo "Usage: $0 <app> [branch] [workdir]"
     exit 1
 fi
-app=$1
-workdir=$2           # Drugi argument mora biti prosleđen
-branch=${3:-main}    # Treći argument opcionalan, podrazumevano 'main'
+
+app=$1                 # Prvi argument je ime aplikacije
+branch=${2:-main}      # Drugi argument je branch, podrazumevano 'main'
+workdir=${3:-.}        # Treći argument je workdir, podrazumevano '.'
 
 # Proveri da li direktorijum postoji
 if [ -d "$app" ]; then
@@ -127,7 +128,6 @@ if ! git clone git+ssh://git@$GITHUB_HOST/base4services/base4project.git > /dev/
 fi
 
 cd base4project || exit
-git checkout main;
 cd .. || exit
 mv base4project/* base4project/.[^.]* ./
 rm -rf  base4project
@@ -135,7 +135,7 @@ mv idea .idea
 mv .idea/rename.iml .idea/$app.iml
 
 # config files
-sed -i '' "s/__PROJECT_NAME__/${app}/g" config/services.yaml config/env.yaml .idea/misc.xml .idea/modules.xml .idea/workspace.xml > /dev/null 2>&1; then
+sed -i '' "s/__PROJECT_NAME__/${app}/g" config/services.yaml config/env.yaml .idea/misc.xml .idea/modules.xml .idea/workspace.xml > /dev/null 2>&1;
 
 # reinitialize git
 rm -rf .git
