@@ -8,14 +8,30 @@ from base4.ipc.ipc import ipc
 async def create_flow_message(handler, body: dict) -> Dict:
     return await ipc(handler, 'flow', 'POST', '', body=body)
 
-async def get_timesheet_for_flow_item_start(handler, item, attribute):
-    if attribute == 'start_datetime':
-        return datetime.datetime(2024,1,1,10,0,0)
-        # return '2024-01-01 10:00:00'
-    if attribute == 'end_datetime':
-        return datetime.datetime(2024,1,1,12,0,0)
-        # return '2024-01-01 14:00:00'
-    if attribute == 'duration':
-        return '02:00'
+from base4.utilities.cache import memoize
 
-    return "N/A"
+async def get_timesheet_for_flow_item_start(handler, item, attribute):
+
+    async def get_timesheet_object_for_flow_item(handler, item) -> Dict:
+
+        @memoize(ttl=1)
+        async def get_info(item):
+            return await ipc(handler, 'timesheet', 'GET', f'/by-flow-item/{item.id}')
+
+        return await get_info(item)
+
+    #TODO: kesiraj A na 1 sec u redis-u
+
+    a = await get_timesheet_object_for_flow_item(handler, item)
+
+    if attribute == 'start_datetime':
+        if 'date' in a and 'start' in a and a['date'] and a['start']:
+            return datetime.datetime.strptime(a['date']+' '+a['start'], '%Y-%m-%d %H:%M:%S')
+    if attribute == 'end_datetime':
+        if 'date' in a and 'end' in a and a['date'] and a['end']:
+            return datetime.datetime.strptime(a['date']+' '+a['end'], '%Y-%m-%d %H:%M:%S')
+    if attribute == 'duration':
+        if 'hhmm' in a:
+            return a['hhmm']
+
+    return None
