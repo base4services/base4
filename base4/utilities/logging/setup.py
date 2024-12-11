@@ -24,14 +24,15 @@ def setup_logging() -> None:
 
     services = [list(svc.keys())[0] for svc in configuration("services")["services"]]
     print('servicesservices', services)
-    services.append("impresaone2")
+    # services.append("impresaone2")    # REMOVED
 
     for service in services:
         logger = logging.getLogger(service)
         logger.setLevel(numeric_level)
 
         # Set up RotatingFileHandler
-        log_file_path = f"/var/log/impresaone/{service}.log"
+        # TODO: USE THIS FROM ENV_CONFIG
+        log_file_path = f"/tmp/base4project/{service}.log"
 
         # First ensure the directory exists
         os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
@@ -122,7 +123,7 @@ def get_logger():
     if len(sys.argv) > 1 and sys.argv[1]:
         logger = sys.argv[1]
     else:
-        logger = "impresaone2"
+        logger = "base4project" # "impresaone2"
     return logging.getLogger(logger)
 
 

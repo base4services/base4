@@ -3,11 +3,7 @@
 
 ### **ToDo**
 
-- **move src/bin (from impresaone) into library**
-- **move everything that is impresaone specific to src/shared on the impresa project**
-- **clean up imports from the pyproject.toml file and transfer them to impresaone**
-  requirements.txt
-
+...
 
 ### **Installation**
 

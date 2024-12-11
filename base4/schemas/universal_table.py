@@ -30,9 +30,6 @@ class UniversalTableGetRequest(pydantic.BaseModel):
     v3f_sites: Optional[None | str] = None
     v3f_created_by: Optional[None | str] = None
     v3f_last_updated_by: Optional[None | str] = None
-    # v3f_problem_types: Optional[None | str] = None
-    # v3f_partner_types: Optional[None | str] = None
-    # v3f_impresaone_id_customer: Optional[None | str] = None
 
     order_by: Optional[str] = None
     page: Optional[int] = 1
