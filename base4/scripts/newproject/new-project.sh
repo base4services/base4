@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ "$#" -lt 1 ]; then
-    echo "Usage: $0 <app> [branch|workdir] [workdir]"
+    echo "Usage: newproject <app> [branch|workdir] [workdir]"
     exit 1
 fi
 
