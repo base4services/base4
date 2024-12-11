@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Proverite da li je prosleđen bar jedan argument
 if [ "$#" -lt 1 ]; then
     echo "Usage: $0 <app> [branch] [workdir]"
     exit 1
@@ -10,7 +9,6 @@ app=$1                 # Prvi argument je ime aplikacije
 branch=${2:-main}      # Drugi argument je branch, podrazumevano 'main'
 workdir=${3:-.}        # Treći argument je workdir, podrazumevano '.'
 
-# Proveri da li direktorijum postoji
 if [ -d "$app" ]; then
   echo "[*] '$app' already exists. Please choose a different name."
   exit 0
