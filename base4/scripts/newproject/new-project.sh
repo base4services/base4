@@ -1,13 +1,13 @@
 #!/bin/bash
 
 if [ "$#" -lt 1 ]; then
-    echo "Usage: $0 <app> [branch] [workdir]"
+    echo "Usage: $0 <app> [branch|workdir] [workdir]"
     exit 1
 fi
 
-app=$1                 # Prvi argument je ime aplikacije
-branch=${2:-main}      # Drugi argument je branch, podrazumevano 'main'
-workdir=${3:-.}        # Treći argument je workdir, podrazumevano '.'
+app=$1
+branch=${2:-main}
+workdir=${3:-.}
 
 if [ -d "$app" ]; then
   echo "[*] '$app' already exists. Please choose a different name."
