@@ -1,19 +1,38 @@
 #!/bin/bash
 
-# Proverite da li su prosleđena dva argumenta
 if [ "$#" -lt 1 ]; then
-    echo "Usage: $0 <app> [workdir]"
+    echo "Usage: newproject <app> [branch|workdir] [workdir]"
     exit 1
 fi
 
 app=$1
-workdir=${2:-.} 
+branch=${2:-main}
+workdir=${3:-.}
 
-# Proveri da li direktorijum postoji
 if [ -d "$app" ]; then
   echo "[*] '$app' already exists. Please choose a different name."
   exit 0
 fi
+
+if [ "$#" -eq 2 ]; then
+    second_param=$2
+    if [[ "$second_param" == dev* || "$second_param" == main* ]]; then
+        branch=$second_param
+        workdir="."
+    else
+        branch="main"
+        workdir=$second_param
+    fi
+else
+    branch=${2:-main}
+    workdir=${3:-.}
+fi
+
+echo "================================================================================"
+echo "[*] Application name: $app"
+echo "[*] Working directory: $workdir"
+echo "[*] Branch: $branch"
+echo "================================================================================"
 
 GITHUB_HOST=github2
 #GITHUB_HOST=github.com
@@ -76,7 +95,10 @@ else
     exit 1
 fi
 
-# Idi u radni direktorijum i napravi folder za aplikaciju
+if [ "$workdir" != "." ]; then
+    mkdir -p "$workdir"
+fi
+
 cd "$workdir" || exit
 mkdir -p "$app"
 cd "$app" || exit
@@ -107,7 +129,7 @@ if ! git clone git+ssh://git@$GITHUB_HOST/base4services/base4.git > /dev/null 2>
   exit 1
 fi
 cd base4 || exit
-git checkout dev-api-v2 > /dev/null 2>&1;
+git checkout "${branch}" > /dev/null 2>&1;
 echo "[*] installing base4 dependencies..."
 pip3 install -e . #-q
 cd ../../ || exit
@@ -121,7 +143,6 @@ if ! git clone git+ssh://git@$GITHUB_HOST/base4services/base4project.git > /dev/
 fi
 
 cd base4project || exit
-git checkout dev-api-v2;
 cd .. || exit
 mv base4project/* base4project/.[^.]* ./
 rm -rf  base4project
@@ -129,7 +150,7 @@ mv idea .idea
 mv .idea/rename.iml .idea/$app.iml
 
 # config files
-sed -i '' "s/__PROJECT_NAME__/${app}/g" config/services.yaml config/env.yaml .idea/misc.xml .idea/modules.xml .idea/workspace.xml > /dev/null 2>&1; then
+sed -i '' "s/__PROJECT_NAME__/${app}/g" config/services.yaml config/env.yaml .idea/misc.xml .idea/modules.xml .idea/workspace.xml > /dev/null 2>&1;
 
 # reinitialize git
 rm -rf .git
