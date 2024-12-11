@@ -112,7 +112,34 @@ def update_config_gen(service_name: str, gen_items: list):
 		f.write(content)
 
 
+def update_config_env(service_name: str):
+	# Učitaj postojeći sadržaj fajla kao string
+	with open(project_root / 'config/env.yaml', 'r') as f:
+		content = f.read()
+	
+	# Ukloni jednostruke navodnike iz celog sadržaja
+	content = content.replace("'", "")
+	
+	# Kreiraj liniju za novi servis
+	new_service_line = f"      - {service_name}\n"
+	
+	# Proveri da li sekcija 'services' postoji
+	if 'databases:' in content:
+		# Ako sekcija postoji, proveri da li servis već postoji
+		if new_service_line not in content:
+			# Dodaj novi servis u postojeću 'services' sekciju
+			content = content.replace('databases:\n', 'databases:\n' + new_service_line)
+	else:
+		# Ako sekcija ne postoji, dodaj novu sekciju 'services' sa prvim servisom
+		content += f"\ndatabases:\n{new_service_line}"
+	
+	# Snimi ažurirani sadržaj nazad u fajl
+	with open(project_root / 'config/env.yaml', 'w') as f:
+		f.write(content)
+		
+		
 def compile_main_config(service_name: str, gen_items: list):
 	update_config_gen(service_name, gen_items)
 	update_config_services(service_name)
 	update_config_db(service_name)
+	update_config_env(service_name)

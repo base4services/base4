@@ -1,5 +1,6 @@
 from base4.utilities.contants import BaseEnum
 
+
 class Lookup(BaseEnum):
     MINUTE = 60
     HOUR = 60 * 60

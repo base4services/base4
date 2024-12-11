@@ -1,7 +1,8 @@
+import datetime
 import os
 
 import yaml
-import datetime
+
 
 def gen_model(tbl, tbl_name, ctable=False, parent_class_name='', parent_types=None):
     cls_name = tbl["__meta"].get("model_name")

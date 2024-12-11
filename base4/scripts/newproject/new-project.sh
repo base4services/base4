@@ -119,14 +119,17 @@ if ! git clone git+ssh://git@$GITHUB_HOST/base4services/base4project.git > /dev/
   exit 1
 
 fi
-git checkout dev-api-v2 > /dev/null 2>&1;
+
+cd base4project || exit
+git checkout dev-api-v2;
+cd .. || exit
 mv base4project/* base4project/.[^.]* ./
 rm -rf  base4project
 mv idea .idea
 mv .idea/rename.iml .idea/$app.iml
 
 # config files
-sed -i '' "s/__PROJECT_NAME__/${app}/g" config/services.yaml config/env.yaml .idea/misc.xml .idea/modules.xml .idea/workspace.xml
+sed -i '' "s/__PROJECT_NAME__/${app}/g" config/services.yaml config/env.yaml .idea/misc.xml .idea/modules.xml .idea/workspace.xml > /dev/null 2>&1; then
 
 # reinitialize git
 rm -rf .git

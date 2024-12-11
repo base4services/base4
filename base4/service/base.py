@@ -1,7 +1,7 @@
 import datetime
 import importlib
 import uuid
-from typing import Any, Dict, List, Type, get_origin
+from typing import Any, Dict, Generic, List, Type, TypeVar, get_args, get_origin
 
 import base4.schemas.universal_table as universal_table
 import pydantic
@@ -33,7 +33,7 @@ logger = get_logger()
 sio_connection = sio_client_manager(write_only=True)
 
 
-@class_exception_traceback_logging(logger)
+
 class BaseService[ModelType]:
 
     def __init__(
@@ -90,6 +90,7 @@ class BaseService[ModelType]:
                 self.c1n_related_to = many_to_many_fields[0]
 
         except Exception as e:
+            print(e)
             raise
 
         ...

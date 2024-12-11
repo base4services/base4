@@ -3,23 +3,23 @@
 import os
 import shutil
 import sys
-from pathlib import Path
 import xml.etree.ElementTree as ET
-# import asyncclick as click
-import click
-import git
-import yaml
-
-from base4 import configuration
-from base4.scripts.pip.down import do as p_down
-from base4.scripts.pip.up import do as p_up
-from base4.utilities.config import yaml_to_env
-from base4.utilities.files import get_project_root
-from base4.scripts.yaml_compiler import compile_main_config
+from pathlib import Path
 
 import base4.scripts.gen_model as gen_model
 import base4.scripts.gen_schemas as gen_schemas
 import base4.scripts.gen_tables as gen_tables
+
+# import asyncclick as click
+import click
+import git
+import yaml
+from base4 import configuration
+from base4.scripts.pip.down import do as p_down
+from base4.scripts.pip.up import do as p_up
+from base4.scripts.yaml_compiler import compile_main_config
+from base4.utilities.config import yaml_to_env
+from base4.utilities.files import get_project_root
 
 project_root = str(get_project_root())
 
@@ -124,6 +124,7 @@ def new_service(service_name, service_template, verbose, gen_type):
                 rm -rf base4tenants
                 '''
             )
+            
         elif service_template == 'base4ws':
             os.system(
                 f'''
@@ -167,7 +168,7 @@ def new_service(service_name, service_template, verbose, gen_type):
                 '''
             )
             print(f'[*] service -> {service_name} created!')
-
+            
         else:
             print(f'[*] please choose template')
             for i, j in enumerate(existing_service_templates, start=1):
@@ -179,11 +180,12 @@ def new_service(service_name, service_template, verbose, gen_type):
 
         # continue with another command
         _compile_yaml(yaml_file='gen.yaml', service_name=service_name, gen_type=gen_type)
+        yaml_to_env('env')
 
 
 @do.command('reset-service')
 @click.option('--service-name', '-s', help='Service name to generate or reset')
-def new_service(service_name):
+def reset_service(service_name):
     os.system('git checkout .')
     try:
         shutil.rmtree(project_root + f'/src/services/{service_name}')

@@ -1,28 +1,24 @@
-from inspect import signature
-
-import tortoise.timezone
 import datetime
+import hashlib
+import os
 import time
 import uuid
-from typing import Any, Dict, List, TypeVar, Callable, Optional
 from functools import wraps
-from fastapi import HTTPException, status, Request, Form, Query
+from inspect import signature
+from typing import Any, Callable, Dict, List, Optional, TypeVar
+
+import dotenv
 import pydantic
 import tortoise
 import tortoise.timezone
+import ujson as json
 from base4.schemas.base import NOT_SET
-from fastapi import HTTPException, Request, APIRouter, Response
-import hashlib
-import base4.service.base
+from base4.utilities.db.redis import RedisClientHandler
 from base4.utilities.files import get_project_root
 from base4.utilities.security.jwt import decode_token
-from fastapi import File, UploadFile
-import ujson as json
-from base4.utilities.db.redis import RedisClientHandler
-import os
-import dotenv
-
-from base4.utilities.ws import sio_client_manager, emit
+from base4.utilities.service.startup import service as app
+from base4.utilities.ws import emit, sio_client_manager
+from fastapi import APIRouter, FastAPI, File, Form, HTTPException, Query, Request, Response, UploadFile, status
 
 dotenv.load_dotenv()
 upload_dir = os.getenv('UPLOAD_DIR', '/tmp')
@@ -336,9 +332,6 @@ def api(roles: Optional[List[str]] = None, cache: int = 0, exposed: bool = True,
 		headers: Optional[dict] = None,
 		upload_allowed_file_types: Optional[List[str]] = None, upload_max_file_size: Optional[int] = None,
 		upload_max_files: Optional[int] = None, **route_kwargs):
-	"""
-	Decorator for class-based API calls.
-	"""
 	
 	def decorator(func: Callable):
 		func.route_kwargs = route_kwargs
@@ -350,7 +343,6 @@ def api(roles: Optional[List[str]] = None, cache: int = 0, exposed: bool = True,
 		func.upload_allowed_file_types = upload_allowed_file_types
 		func.upload_max_file_size = upload_max_file_size
 		func.upload_max_files = upload_max_files
-		
 		start_time = time.time()
 		
 		@wraps(func)
@@ -392,35 +384,24 @@ def api(roles: Optional[List[str]] = None, cache: int = 0, exposed: bool = True,
 			#####################################
 			# permission check
 			#####################################
-			if roles:
-				token = request.headers.get("Authorization")
-				if not token or not token.startswith("Bearer "):
-					raise HTTPException(
-						status_code=status.HTTP_401_UNAUTHORIZED,
-						detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token"}
-					)
-				
+			token = request.headers.get("Authorization")
+			if token and token.startswith("Bearer "):
 				token = token.replace("Bearer ", "")
-				
+			
 				try:
-					session = decode_token(token)
+					self.session = decode_token(token)
 				except Exception:
 					raise HTTPException(
 						status_code=status.HTTP_401_UNAUTHORIZED,
 						detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token"}
 					)
 				
-				if getattr(session, 'expired', False):
+				if getattr(self.session, 'expired', False):
 					raise HTTPException(
 						status_code=status.HTTP_401_UNAUTHORIZED,
 						detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"}
 					)
-			
-			# # todo finish permission
-			# if permission and not any(role in getattr(session, "roles", []) for role in permission):
-			#     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-			#                         detail={"code": "FORBIDDEN", "parameter": "token", "message": f"you don't have permission to access this resource"})
-			
+
 			#####################################
 			# cache mechanism
 			#####################################
@@ -450,23 +431,24 @@ def api(roles: Optional[List[str]] = None, cache: int = 0, exposed: bool = True,
 			# todo, uhvati exc ako se desi na api i to da udje u accesslog na exc
 			await api_accesslog(request, response, self.session, start_time, accesslog, exc=None)
 			return response
-		
 		return wrapper
-	
+	return decorator
+
+
+def route(router: APIRouter, prefix: str):
+	def decorator(cls):
+		instance = cls(router)
+		app.include_router(router, prefix=prefix)
+		return instance
 	return decorator
 
 
 sio_connection = sio_client_manager(write_only=True)
 
 
-class BaseAPIController(object):
+class BaseAPIHandler(object):
+	
 	def __init__(self, router: APIRouter, services=None, model=None, schema=None):
-		def get_conn_name():
-			if os.environ.get('TEST_MODE', None) in ('true', 'True', 'TRUE', '1'):
-				return 'conn_test'
-			return 'conn_tenants'
-		
-		self.base_service_class = base4.service.base.BaseService(schema=schema, model=model, conn_name=get_conn_name())
 		self.router = router
 		self.services = services
 		self.model = model
@@ -478,107 +460,29 @@ class BaseAPIController(object):
 		for attribute_name in dir(self):
 			attribute = getattr(self, attribute_name)
 			if callable(attribute) and hasattr(attribute, 'route_kwargs'):
+				# hack da bi mogao da omogucim da bude method:str u mesto method:list koji je u fast api default
+				try:
+					attribute.route_kwargs['methods'] = [attribute.route_kwargs['method']]
+					del attribute.route_kwargs['method']
+				except:
+					pass
 				route_kwargs = attribute.route_kwargs
 				self.router.add_api_route(endpoint=attribute,**route_kwargs)
-	
-	async def ws_emit(self, event, data={''}, room=None):
-		await emit(event=event, data=data, room=room, connection=self.sio_connection)
 		
 	@api(
+		method='GET',
 		path='/healthy',
 	)
 	async def healthy(self, request: Request):
 		return {'status': 'ok'}
-	
-	# @api(
-	# 	methods=['GET', 'POST'],
-	# 	path='/options/key/{key}',
-	# 	response_model=Dict[str, str]
-	# )
-	# async def get_by_key(self, request: Request, key: str) -> dict:
-	# 	if request.method == 'GET':
-	# 		return await self.service.OptionService().get_option_by_key(key)
-	# 	elif request.method == 'POST':
-	# 		return await self.service.OptionService().create_option(key, request)
-	
-	@api(
-		roles=[],
-		path='/search',
-		methods=['GET'],
-		response_model=Dict[str, Any]
-	)
-	async def search(self, request: Request, data: Optional[Dict[str, Any]] = None):
-		# todo
-		return {'search': 'ok'}
 
-	@api(
-		roles=[],
-		path='/id/{_id}',
-		methods=['GET'],
-	)
-	async def get_by_id(self, request: Request, _id: uuid.UUID):
-		return await self.base_service_class.get_single(item_id=_id, request=request)
-	
-	@api(
-		roles=[],
-		path='/{_id}/{field}',
-		methods=['GET'],
-	)
-	async def get_by_field(self, request: Request, _id: uuid.UUID, field: str):
-		return await self.base_service_class.get_single_field(_id, field, request)
 
-	@api(
-		roles=[],
-		path='/{item_id}/validate',
-		methods=['GET'],
-	)
-	async def validate(self, request: Request, item_id: uuid.UUID, field: str):
-		return await self.base_service_class.validate(self.session.user_id, item_id=item_id, request=request)
-
-	# @api(
-	# 	roles=[],
-	# 	path='',
-	# 	methods=['POST'],
-	# )
-	# async def create(self, request: Request, payload:schemas, response: Response, key_id: str = Query(None)) -> Any:
-	# 	if key_id:
-	# 		key_id = key_id.split(',')
-	# 		return await self.services.create_or_update(self.session.user_id, key_id, payload, request, response)
-	#
-	# 	try:
-	# 		res = await self.base_service_class.create(self.session.user_id, payload, request)
-	# 	except tortoise.exceptions.IntegrityError as e:
-	# 		raise HTTPException(status_code=406, detail={"code": "NOT_ACCEPTABLE", "parameter": None, "message": f"Integrity error"})
-	# 	except Exception as e:
-	# 		raise
-	#
-	# 	response.status_code = 201
-	# 	if isinstance(res, tortoise.models.Model):
-	# 		return {'id': res.id, 'action': 'created'}
-	# 	return res
-	
-	# @api(
-	# 	roles=[],
-	# 	path='/{id}',
-	# 	methods=['PATCH'],
-	# )
-	# async def update(self, request: Request, _id: uuid.UUID, payload: schema) -> Dict:
-	# 	updated = await self.base_service_class.update(self.sessions.user_id, _id, payload, request)
-	# 	return {'deleted': updated}
-	
-	@api(
-		roles=[],
-		path='/{id}',
-		methods=['DELETE'],
-	)
-	async def delete(self, request: Request, _id: uuid.UUID) -> Dict:
-		await self.base_service_class.delete(self.sessions.user_id, _id, request)
-		return {'deleted': _id}
+class BaseUploadFileHandler(object):
 	
 	@api(
 		roles=[],
 		path='/upload',
-		methods=['POST'],
+		method='POST',
 		upload_allowed_file_types=["image/jpeg", "image/png", "image/svg"],
 		upload_max_file_size=5 * 1024 * 1024,  # 5 MB
 		upload_max_files=5,
@@ -600,7 +504,9 @@ class BaseAPIController(object):
 			content = await file.read()
 			hash_md5 = hashlib.md5()
 			hash_md5.update(content)
-			with open(f"{full_upload_dir}/{hash_md5.hexdigest()}-{int(time.time())}.{file.filename.split('.')[-1]}", "wb") as buffer:
+			with open(
+					f"{full_upload_dir}/{hash_md5.hexdigest()}-{int(time.time())}.{file.filename.split('.')[-1]}", "wb"
+			) as buffer:
 				buffer.write(content)
 			response[file.filename] = {
 				"content_type": file.content_type,
@@ -608,3 +514,10 @@ class BaseAPIController(object):
 				"description":  metadata,
 			}
 		return response
+
+
+class BaseWebSocketHandler(object):
+	sio_connection = sio_connection
+	
+	async def ws_emit(self, event, data={}, room=None):
+		await emit(event=event, data=data, room=room, connection=self.sio_connection)

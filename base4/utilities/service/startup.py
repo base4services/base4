@@ -5,7 +5,7 @@ import signal
 import sys
 from contextlib import asynccontextmanager
 from typing import AnyStr, Dict, List, Optional
-
+from tortoise.contrib.fastapi import register_tortoise
 import asyncpg
 import pydash
 import uvicorn
@@ -25,7 +25,6 @@ _conn = None
 async def lifespan(service: FastAPI) -> None:
 
     print("APPSTART")
-    print("-" * 100)
     for route in service.routes:
         print(route.path)
 
@@ -53,11 +52,8 @@ def get_service() -> FastAPI:
     docs_path = pydash.get(cfg, 'general.docs.docs_path', f'{api_prefix}{_docs}')
     openapi_path = pydash.get(cfg, 'general.docs.openapi_path', f'{api_prefix}{_openapi}')
     redoc_path = pydash.get(cfg, 'general.docs.redoc_path', f'{api_prefix}{_redoc}')
-
     service: FastAPI = FastAPI(lifespan=lifespan, openapi_url=openapi_path, docs_url=docs_path, redoc_url=redoc_path)
-
     get_service.service: FastAPI = service
-
     return service
 
 
@@ -205,14 +201,19 @@ async def _initialize_tortoise_models(conf: Optional[DatabaseConfig] = None, con
         for conn in TORTOISE_ORM['connections']:
             TORTOISE_ORM['connections'][conn] = TORTOISE_ORM['connections']['conn_test']
         ...
-
+    
+    # register_tortoise(
+    #     service,
+    #     config=TORTOISE_ORM,
+    #     generate_schemas=True,
+    #     add_exception_handlers=True,
+    # )
     try:
         await Tortoise.init(config=TORTOISE_ORM)
-
         await Tortoise.generate_schemas()
-    except Exception:
+    except Exception as e:
+        print(e)
         raise
-
     return
 
 
@@ -229,8 +230,8 @@ class GracefulShutdown:
         self.exit_code = signum  # Standard exit code for signals
 
 
-def load_services(app, single_service=None):
-    # todo, igore ovde nisi opet push svoje izmene
+def load_services(single_service=None):
+
     api_prefix = os.getenv('GENERAL_API_PREFIX', None)
 
     if not api_prefix:
@@ -240,19 +241,19 @@ def load_services(app, single_service=None):
 
         services = yaml.safe_load(f)
         for service in services['services']:
-            svc_name = list(service.keys())[0]
+            if isinstance(service, str):
+                svc_name = service
+            else:
+                svc_name = list(service.keys())[0]
+            
+            if not single_service:
+                importlib.import_module(f"services.{svc_name}.api.run")
+            else:
+                # todo, postoji sada problem kada pokrenem jedan servis
 
-            if single_service and svc_name != single_service:
-                continue
-
-            try:
-                module = importlib.import_module(f"services.{svc_name}.api")
-                app.include_router(module.router, prefix=f"{api_prefix}/{svc_name}", tags=[svc_name.capitalize()])
-            except Exception as e:
-                raise
-                # ...
-                # importlib.import_module(f"base4services.services.{svc_name}.api")
-                # ...
+                # if service != single_service:
+                #     continue
+                importlib.import_module(f"services.{svc_name}.api.run")
 
 
 def run_server(config, single_service=None):
@@ -266,7 +267,7 @@ def run_server(config, single_service=None):
     server.force_exit = False
     server.custom_on_tick = custom_on_tick
 
-    load_services(service, single_service=single_service)
+    load_services(single_service=single_service)
 
     try:
         server.run()
