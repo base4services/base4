@@ -81,7 +81,10 @@ else
     exit 1
 fi
 
-# Idi u radni direktorijum i napravi folder za aplikaciju
+if [ "$workdir" != "." ]; then
+    mkdir -p "$workdir"
+fi
+
 cd "$workdir" || exit
 mkdir -p "$app"
 cd "$app" || exit
