@@ -250,13 +250,23 @@ def load_services(single_service=None):
                 try:
                     importlib.import_module(f"services.{svc_name}.api.run")
                 except Exception as e:
-                    importlib.import_module(f"services.{svc_name}.api")
+                    try:
+                        importlib.import_module(f"services.{svc_name}.api")
+                    except Exception as e:
+                        raise
+                        
             else:
                 # todo, postoji sada problem kada pokrenem jedan servis
 
                 # if service != single_service:
                 #     continue
-                importlib.import_module(f"services.{svc_name}.api.run")
+                try:
+                    importlib.import_module(f"services.{svc_name}.api.run")
+                except Exception as e:
+                    try:
+                        importlib.import_module(f"services.{svc_name}.api")
+                    except Exception as e:
+                        raise
 
 
 def run_server(config, single_service=None):
