@@ -14,6 +14,20 @@ if [ -d "$app" ]; then
   exit 0
 fi
 
+if [ "$#" -eq 2 ]; then
+    second_param=$2
+    if [[ "$second_param" == dev* || "$second_param" == main* ]]; then
+        branch=$second_param
+        workdir="."
+    else
+        branch="main"
+        workdir=$second_param
+    fi
+else
+    branch=${2:-main}
+    workdir=${3:-.}
+fi
+
 echo "================================================================================"
 echo "[*] Application name: $app"
 echo "[*] Working directory: $workdir"
