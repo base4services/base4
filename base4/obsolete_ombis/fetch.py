@@ -10,7 +10,7 @@ from base4.utilities.common import split_list
 
 current_file_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(current_file_dir + '/..')  # src
-import base4.ombis.ombis_util as ombis
+import shared.ombis.ombis_util as ombis
 from base4.utilities.files import get_file_path
 
 
