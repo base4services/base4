@@ -247,7 +247,10 @@ def load_services(single_service=None):
                 svc_name = list(service.keys())[0]
             
             if not single_service:
-                importlib.import_module(f"services.{svc_name}.api.run")
+                try:
+                    importlib.import_module(f"services.{svc_name}.api.run")
+                except Exception as e:
+                    importlib.import_module(f"services.{svc_name}.api")
             else:
                 # todo, postoji sada problem kada pokrenem jedan servis
 
