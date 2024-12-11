@@ -1,19 +1,25 @@
 #!/bin/bash
 
 # Proverite da li su prosleđena dva argumenta
-if [ "$#" -lt 1 ]; then
-    echo "Usage: $0 <app> [workdir]"
+if [ "$#" -lt 2 ]; then
+    echo "Usage: $0 <app> <workdir> [branch]"
     exit 1
 fi
-
 app=$1
-workdir=${2:-.} 
+workdir=$2           # Drugi argument mora biti prosleđen
+branch=${3:-main}    # Treći argument opcionalan, podrazumevano 'main'
 
 # Proveri da li direktorijum postoji
 if [ -d "$app" ]; then
   echo "[*] '$app' already exists. Please choose a different name."
   exit 0
 fi
+
+echo "================================================================================"
+echo "[*] Application name: $app"
+echo "[*] Working directory: $workdir"
+echo "[*] Branch: $branch"
+echo "================================================================================"
 
 GITHUB_HOST=github2
 #GITHUB_HOST=github.com
@@ -107,7 +113,7 @@ if ! git clone git+ssh://git@$GITHUB_HOST/base4services/base4.git > /dev/null 2>
   exit 1
 fi
 cd base4 || exit
-git checkout dev-api-v2 > /dev/null 2>&1;
+git checkout "${branch}" > /dev/null 2>&1;
 echo "[*] installing base4 dependencies..."
 pip3 install -e . #-q
 cd ../../ || exit
@@ -121,7 +127,7 @@ if ! git clone git+ssh://git@$GITHUB_HOST/base4services/base4project.git > /dev/
 fi
 
 cd base4project || exit
-git checkout dev-api-v2;
+git checkout main;
 cd .. || exit
 mv base4project/* base4project/.[^.]* ./
 rm -rf  base4project
