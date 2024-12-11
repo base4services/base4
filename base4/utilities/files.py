@@ -1,9 +1,9 @@
 # base4/utils/file_utils.py
 
+import importlib.metadata
 import os
 import sys
 from pathlib import Path
-import importlib.metadata
 
 
 def is_installed_package():

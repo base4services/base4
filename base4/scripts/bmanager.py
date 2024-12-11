@@ -10,7 +10,8 @@ import base4.scripts.gen_model as gen_model
 import base4.scripts.gen_schemas as gen_schemas
 import base4.scripts.gen_tables as gen_tables
 
-# import asyncclick as click
+import dotenv
+
 import click
 import git
 import yaml
@@ -20,6 +21,7 @@ from base4.scripts.pip.up import do as p_up
 from base4.scripts.yaml_compiler import compile_main_config
 from base4.utilities.config import yaml_to_env
 from base4.utilities.files import get_project_root
+dotenv.load_dotenv()
 
 project_root = str(get_project_root())
 
@@ -83,6 +85,9 @@ def do():
 @click.option('--verbose', '-v', is_flag=True, default=False, help='Verbose output')
 @click.option('--gen-type', '-g', default='models,schemas', help='Components to generate (comma-separated: models,schemas,tables)')
 def new_service(service_name, service_template, verbose, gen_type):
+    """
+    Create new service
+    """
     v = '> /dev/null 2>&1' if verbose else ''
 
     if not service_name:
@@ -186,6 +191,9 @@ def new_service(service_name, service_template, verbose, gen_type):
 @do.command('reset-service')
 @click.option('--service-name', '-s', help='Service name to generate or reset')
 def reset_service(service_name):
+    """
+    Reset service
+    """
     os.system('git checkout .')
     try:
         shutil.rmtree(project_root + f'/src/services/{service_name}')
@@ -196,11 +204,17 @@ def reset_service(service_name):
 
 @do.command('compile-env')
 def compile_env():
+    """
+    Compile .env from config/env.yaml
+    """
     yaml_to_env('env')
     print(f'[*] {project_root}/.env configuration generated!')
 
 @do.command('list-templates')
 def list_templates():
+    """
+    List available service templates
+    """
     for i, j in enumerate(existing_service_templates, start=1):
         print(f'->: {j}')
 
@@ -208,7 +222,9 @@ def list_templates():
 @click.option('--aerich', '-a', help='aerich command to execute')
 @click.option('--service_name', '-s', help='service')
 def perform_aerich(aerich, service_name):
-
+    """
+    Perform aerich migration
+    """
     if aerich not in ('init', 'init-db', 'migrate', 'upgrade', 'downgrade'):
         print(f'[*] please provide valid aerich command')
         return
@@ -220,6 +236,9 @@ def perform_aerich(aerich, service_name):
 
 @do.command('test')
 def do_test():
+    """
+    Run all tests
+    """
     os.system(
                 f'''
             cd {project_root}
@@ -230,26 +249,53 @@ def do_test():
 
 @do.command('pip-up')
 def pip_up():
+    """
+    Upgrade all PIP packages
+    """
     return p_up()
 
 @do.command('pip-down')
 def pip_down():
+    """
+    Downgrade all PIP packages
+    """
     return p_down()
 
 
 @do.command('base-lib-update')
 def base_lib_update():
+    """
+    Update base4 library
+    """
     print('[*] Updating base4 library...')
     os.system(f'''cd {project_root}/lib/base4 && git pull''')
 
 @do.command('fmt')
 def fmt():
+    """
+    Run black and isort tools for code formatting
+    """
     os.system(f'black --target-version py312 --line-length 160 --skip-string-normalization {project_root}')
     os.system(f'isort {project_root} --profile black --line-length 160')
     return
 
+@do.command('dbinit')
+def dbinit():
+    """
+        Create database and user from env variables
+    """
+    db_user = os.getenv('DB_POSTGRES_USER')
+    password = os.getenv('DB_POSTGRES_PASSWORD')
+    test_db = os.getenv('DB_TEST')
+    os.system(f'psql -U postgres -d template1 -c "CREATE ROLE {db_user} WITH CREATEDB LOGIN PASSWORD \'{password}\';"')
+    os.system(f'psql -U {db_user} -d template1 -c "create database {test_db};"')
+
+
 @do.command('services')
 def services():
+    """
+        List available services
+    """
     print(f'[*] Available services:')
     for i, j in enumerate(get_service_names(), start=1):
         print(j)
@@ -290,6 +336,6 @@ def _compile_yaml(yaml_file: str, service_name: str, gen_type: str):
 @click.option('--gen-type', '-g', default='models,schemas', help='Components to generate (comma-separated: models,schemas,tables)')
 def compile_yaml(yaml_file: str, service_name: str, gen_type: str):
     """
-    Compile YAML
+    Compile config/gen.yaml
     """
     _compile_yaml(yaml_file, service_name, gen_type)

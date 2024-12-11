@@ -5,7 +5,7 @@ import signal
 import sys
 from contextlib import asynccontextmanager
 from typing import AnyStr, Dict, List, Optional
-from tortoise.contrib.fastapi import register_tortoise
+
 import asyncpg
 import pydash
 import uvicorn
@@ -15,6 +15,7 @@ from base4.utilities.db.base import TORTOISE_ORM
 from base4.utilities.files import get_project_config_folder
 from fastapi import APIRouter, FastAPI, WebSocket, WebSocketDisconnect
 from tortoise import Tortoise
+from tortoise.contrib.fastapi import register_tortoise
 
 _test: Optional[AnyStr] = os.getenv('TEST_MODE', None)
 _database_to_use: Optional[AnyStr] = os.getenv('TEST_DATABASE', None)
