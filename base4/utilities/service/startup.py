@@ -249,7 +249,7 @@ def load_services(single_service=None):
             
             if not single_service:
                 try:
-                    importlib.import_module(f"services.{svc_name}.api.run")
+                    importlib.import_module(f"services.{svc_name}.api.handlers")
                 except Exception as e:
                     try:
                         importlib.import_module(f"services.{svc_name}.api")
@@ -262,7 +262,7 @@ def load_services(single_service=None):
                 # if service != single_service:
                 #     continue
                 try:
-                    importlib.import_module(f"services.{svc_name}.api.run")
+                    importlib.import_module(f"services.{svc_name}.api.handlers")
                 except Exception as e:
                     try:
                         importlib.import_module(f"services.{svc_name}.api")
