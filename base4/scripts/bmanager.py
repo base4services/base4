@@ -119,7 +119,7 @@ def new_service(service_name, service_template, verbose, gen_type):
             os.system(
                 f'''
                 mkdir -p {project_root}/src/services/tenants
-                git clone git+ssh://git@github2/base4services/base4tenants.git {v}
+                git clone https://github.com/base4services/base4tenants.git {v}
                 cd base4tenants
                 git checkout main
                 cd ..
@@ -133,7 +133,7 @@ def new_service(service_name, service_template, verbose, gen_type):
         elif service_template == 'base4ws':
             os.system(
                 f'''
-                git clone git+ssh://git@github2/base4services/base4ws.git {v}
+                git clone https://github.com/base4services/base4ws.git {v}
                 cp -R base4ws/ws {project_root}/src
                 rm -rf base4ws
                 '''
@@ -142,7 +142,7 @@ def new_service(service_name, service_template, verbose, gen_type):
             os.system(
                 f'''
                 mkdir -p {project_root}/src/services/sendmail
-                git clone git+ssh://git@github2/base4services/base4sendmail.git {v}
+                git clone https://github.com/base4services/base4sendmail.git {v}
                 cp -R sendmail/* {project_root}/src/services/sendmail
                 rm -rf sendmail
                 '''
@@ -152,7 +152,7 @@ def new_service(service_name, service_template, verbose, gen_type):
             os.system(
                 f'''
                 mkdir -p {project_root}/src/services/{service_name}
-                git clone git+ssh://git@github2/base4services/base4service_template.git {v}
+                git clone https://github.com/base4services/base4service_template.git {v}
                 cd base4service_template
                 git checkout main
                 cd ..

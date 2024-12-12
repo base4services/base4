@@ -124,7 +124,7 @@ cd lib || exit
 
 
 echo "[*] cloning base4 repository..."
-if ! git clone git+ssh://git@$GITHUB_HOST/base4services/base4.git > /dev/null 2>&1; then
+if ! git clone https://github.com/base4services/base4.git > /dev/null 2>&1; then
   echo "check permissions or if the repository exists."
   exit 1
 fi
@@ -136,7 +136,7 @@ cd ../../ || exit
 
 
 echo "[*] cloning base4project repository..."
-if ! git clone git+ssh://git@$GITHUB_HOST/base4services/base4project.git > /dev/null 2>&1; then
+if ! git clone https://github.com/base4services/base4project.git > /dev/null 2>&1; then
   echo "check permissions or if the repository exists."
   exit 1
 
