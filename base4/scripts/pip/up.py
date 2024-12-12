@@ -53,7 +53,7 @@ def extract_dependencies(toml_file):
                     dep = dep.strip().strip("'").strip('"')
                     dependencies.append(dep)
                     freeze += f'{dep}\n'
-
+    print(dependencies)
     # backup versions from toml
     try:
         with open(f'requirements-old.txt', 'w') as f:
@@ -64,12 +64,14 @@ def extract_dependencies(toml_file):
     # upgrade libs
     pkg_list = ''
     for package in dependencies:
+        if '#' in package:
+            continue
         pkg_list += package.split('==')[0] + ' '
     os.system(f'pip install {pkg_list} -U')
 
     upgraded = set(find_upgraded_packages(dependencies))
 
-    print(f'\ncopy --> {get_project_root()}/pyproject.toml')
+    print(f'\ncopy --> {get_project_root()}/lib/base4/base4/pyproject.toml')
     print('-' * 50)
     print(f'\t# GENERATED ON: {datetime.datetime.now().replace(microsecond=0)}')
     for u in upgraded:
@@ -84,7 +86,7 @@ def extract_dependencies(toml_file):
 def do():
     os.system('pip install wheel setuptools pip -U')
     extract_dependencies(f"{get_project_root()}/lib/base4/pyproject.toml")
-
+    os.system('pip install -r requirements-upgraded.txt')
 
 if __name__ == '__main__':
     do()
