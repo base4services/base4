@@ -293,11 +293,15 @@ def dbinit():
 
 @do.command('dbinit')
 def dbinit():
+    """
+        Initialize database
+    """
     db_user = os.getenv('DB_POSTGRES_USER')
     password = os.getenv('DB_POSTGRES_PASSWORD')
     test_db = os.getenv('DB_TEST')
     os.system(f'psql -U postgres -d template1 -c "CREATE ROLE {db_user} WITH CREATEDB LOGIN PASSWORD \'{password}\';"')
     os.system(f'psql -U {db_user} -d template1 -c "create database {test_db};"')
+    print(f'[*] created database {test_db} with user {db_user}')
 
 
 @do.command('services')
