@@ -31,11 +31,8 @@ fi
 echo "================================================================================"
 echo "[*] Application name: $app"
 echo "[*] Working directory: $workdir"
-echo "[*] Branch: $branch"
+echo "[*] lib/base4 Branch: $branch"
 echo "================================================================================"
-
-GITHUB_HOST=github2
-#GITHUB_HOST=github.com
 
 # Function to check for the presence of the line in the configuration file
 check_and_add_line() {
