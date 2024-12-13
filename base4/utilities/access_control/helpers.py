@@ -1,30 +1,17 @@
-import yaml
-import os
-from functools import wraps
+from base4.utilities.config import load_yaml_config
 from datetime import datetime, time
 from ipaddress import ip_network, ip_address
 import time as ttime
 import importlib
 
-# Keš za module da izbegnemo višestruki import istog modula u _import_middleware_function
 _module_cache = {}
 
-# Keš za rate limit, ključ = user:role:handler, vrednost = {"calls": X, "start_time": epoch}
 rate_limit_cache = {}
 
 
-def load_config(yaml_file: str):
-	"""Učitaj YAML konfiguraciju iz fajla."""
-	with open(yaml_file, "r") as file:
-		return yaml.safe_load(file)
-
-
 def _preprocess_roles(roles_config):
-	"""
-	Preprocesiraj role tako da se sve nasleđene permisije, atributi i rate-limiti
-	"flatten-u" u jednu finalnu strukutru za svaku rolu.
-	"""
 	merged_roles = {}
+	
 	def merge_permissions(role_name):
 		if role_name in merged_roles:
 			return merged_roles[role_name]
@@ -202,12 +189,12 @@ def _get_api_handler_class_path(obj):
 	return f"{obj_class.__module__}.{obj_class.__name__}"
 
 
-def is_rate_limited(api_handler, user_id, role, rate_limit):
+def is_rate_limited(api_handler, session, rate_limit):
 	"""
 	Proveri da li je korisnik prekoračio broj poziva za zadati api_handler, user_id i rolu.
 	"""
 	current_time = int(ttime.time())
-	cache_key = f"{user_id}:{role}:{api_handler}"
+	cache_key = f"{session.user_id}:{session.role}:{api_handler}"
 	data = rate_limit_cache.get(cache_key)
 	
 	period = rate_limit["period"]
@@ -234,18 +221,16 @@ def is_rate_limited(api_handler, user_id, role, rate_limit):
 	return False
 
 
-def _parse_middlewares_config(middlewares_config):
-
+def _parse_middlewares_config(MIDDLEWARES):
 	mw_dict = {}
 	known_keys = {"function"}
 	
-	for mw_item in middlewares_config:
+	for mw_item in MIDDLEWARES:
 		mw_name = None
 		function_str = None
 		
 		for key, value in mw_item.items():
 			if key not in known_keys:
-				# Pretpostavimo da je to ime middleware-a
 				mw_name = key
 				function_str = value
 		
@@ -267,89 +252,17 @@ def _import_middleware_function(func_str):
 	return getattr(mod, func_name)
 
 
-def _apply_middleware(current_user, middlewares_list, middlewares_dict):
-	"""
-	Primeni middlewares u redosledu kako su navedeni.
-	Ako neki middleware vrati False ili digne grešku,
-	prekida se obrada.
-	"""
+def _apply_middleware(current_user, middlewares_list, MIDDLEWARES):
 	for mw_name in middlewares_list:
-		mw_data = middlewares_dict.get(mw_name)
+		mw_data = MIDDLEWARES.get(mw_name)
 		if not mw_data:
 			raise ValueError(f"MIDDLEWARE '{mw_name}' NOT_FOUND")
-		
 		mw_func = _import_middleware_function(mw_data["function"])
 		return mw_func(current_user)
-	
-
-# Putanja do config fajla
-config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ac.yaml")
-config = load_config(config_path)
-api_handlers = config.get("api_handlers", {})
-roles = _preprocess_roles(config["roles"])
-attributes_config = config.get("attributes", {})
-middlewares_config = config.get("middlewares", [])
-middlewares_dict = _parse_middlewares_config(middlewares_config)
 
 
-def api():
-	"""
-	Dekorator za API endpoint metode.
-	Validira permisije, atribute, middlewares i rate-limit pre poziva originalne funkcije.
-	"""
-	
-	def decorator(func):
-		@wraps(func)
-		def wrapper(api_instance, *args, **kwargs):
-			func_name = func.__name__
-			class_path = _get_api_handler_class_path(api_instance)
-			full_api_handler_class_path = f"{class_path}.{func_name}"
-			api_module_name = full_api_handler_class_path.split(".", 1)[0]
-			
-			api_handler = api_handlers.get(api_module_name)
-			if api_handler is None:
-				raise ValueError(f"API handler for method '{func_name}' not found in configuration.")
-			
-			current_user = api_instance.current_user
-			current_role = current_user["role"]
-			user_id = current_user["id"]
-			
-			role_config = roles.get(current_role)
-			if role_config is None:
-				raise PermissionError(f"Permission '{func_name}' denied for role '{current_role}'.")
-			
-			permissions = role_config["permissions"]
-			target_permission_name = f"{api_module_name}.{func_name}"
-			
-			permission = None
-			for perm in permissions:
-				if perm["name"] == target_permission_name:
-					permission = perm
-					break
-			
-			if permission is None:
-				raise PermissionError(f"Permission '{func_name}' denied for role '{current_role}'.")
-			
-			context = kwargs.get("context", {})
-			
-			# Evaluacija atributa
-			for attr in permission.get("attributes", []):
-				if not _evaluate_attribute(attr, context, attributes_config):
-					raise PermissionError(f"Attribute conditions not satisfied for role '{current_role}'.")
-			
-			# Middlewares
-			permission_middlewares = permission.get("middlewares", [])
-			if permission_middlewares:
-				if not _apply_middleware(current_user, permission_middlewares, middlewares_dict):
-					raise PermissionError(f"Middleware error occurred for role '{current_role}'.")
-			
-			# Rate limit
-			p_rl = permission.get("rate_limit") or role_config.get("rate_limit")
-			if p_rl and is_rate_limited(api_handler, user_id, current_role, p_rl):
-				raise PermissionError(f"Rate limit exceeded for role '{current_role}'.")
-			
-			return func(api_instance, *args, **kwargs)
-		
-		return wrapper
-	
-	return decorator
+AC_CONFIG = load_yaml_config("ac.yaml")
+API_HANDLERS = AC_CONFIG.get("api_handlers", {})
+ROLES = _preprocess_roles(AC_CONFIG["roles"])
+ATTRIBUTES = AC_CONFIG.get("attributes", {})
+MIDDLEWARES = _parse_middlewares_config(AC_CONFIG.get("middlewares", []))

@@ -13,6 +13,8 @@ import tortoise
 import tortoise.timezone
 import ujson as json
 from base4.schemas.base import NOT_SET
+from base4.utilities.access_control.helpers import _evaluate_attribute, _apply_middleware, is_rate_limited, \
+	_get_api_handler_class_path, API_HANDLERS, ROLES, ATTRIBUTES, AC_CONFIG, MIDDLEWARES
 from base4.utilities.db.redis import RedisClientHandler
 from base4.utilities.files import get_project_root
 from base4.utilities.security.jwt import decode_token
@@ -400,6 +402,71 @@ def api(roles: Optional[List[str]] = None, cache: int = 0, exposed: bool = True,
 					raise HTTPException(
 						status_code=status.HTTP_401_UNAUTHORIZED,
 						detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"}
+					)
+				
+				func_name = func.__name__
+				class_path = _get_api_handler_class_path(self)
+				full_api_handler_class_path = f"{class_path}.{func_name}"
+				api_module_name = full_api_handler_class_path.split(".", 1)[0]
+				
+				api_handler = API_HANDLERS.get(api_module_name)
+				if api_handler is None:
+					# "API handler for method '{func_name}' not found in configuration."
+					raise HTTPException(
+						status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+						detail={"code": "INTERNAL_SERVER_ERROR"}
+					)
+				
+				user_role_config = ROLES.get(self.session.role)
+				if user_role_config is None:
+					# "Permission '{func_name}' denied for role '{current_role}'.")
+					raise HTTPException(
+						status_code=status.HTTP_403_FORBIDDEN,
+						detail={"code": "HTTP_403_FORBIDDEN"}
+					)
+				
+				permissions = user_role_config["permissions"]
+				target_permission_name = f"{api_module_name}.{func_name}"
+				
+				permission = None
+				for perm in permissions:
+					if perm["name"] == target_permission_name:
+						permission = perm
+						break
+				
+				if permission is None:
+					# raise "Permission '{func_name}' denied for role '{current_role}'
+					raise HTTPException(
+						status_code=status.HTTP_403_FORBIDDEN,
+						detail={"code": "HTTP_403_FORBIDDEN"}
+					)
+				
+				context = kwargs.get("context", {})
+				
+				# attribue evaluation
+				for attr in permission.get("attributes", []):
+					if not _evaluate_attribute(attr, context, ATTRIBUTES):
+						# f"Attribute conditions not satisfied for role '{current_role}'.")
+						raise HTTPException(
+							status_code=status.HTTP_403_FORBIDDEN,
+							detail={"code": "HTTP_403_FORBIDDEN"}
+						)
+				
+				# Middlewares
+				permission_middlewares = permission.get("middlewares", [])
+				if permission_middlewares:
+					if not _apply_middleware(self.session, permission_middlewares, MIDDLEWARES):
+						raise HTTPException(
+							status_code=status.HTTP_400_BAD_REQUEST,
+							detail={"code": "HTTP_400_BAD_REQUEST"}
+						)
+				
+				# Rate limit
+				p_rl = permission.get("rate_limit") or user_role_config.get("rate_limit")
+				if p_rl and is_rate_limited(api_handler, self.session, p_rl):
+					raise HTTPException(
+						status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+						detail={"code": "HTTP_429_TOO_MANY_REQUESTS"}
 					)
 
 			#####################################
