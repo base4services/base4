@@ -427,7 +427,11 @@ def api(roles: Optional[List[str]] = None, cache: int = 0, exposed: bool = True,
 			#####################################
 			# call api handler that not have cache
 			#####################################
-			response = await func(self, **request.path_params)
+			try:
+				response = await func(self, **request.path_params)
+				...
+			except Exception as e:
+				raise
 			# todo, uhvati exc ako se desi na api i to da udje u accesslog na exc
 			await api_accesslog(request, response, self.session, start_time, accesslog, exc=None)
 			return response
