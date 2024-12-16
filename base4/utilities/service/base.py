@@ -330,16 +330,15 @@ async def api_accesslog(request, response, session, start_time, accesslog, exc=N
 # rdb.lpush(f'ACCESSLOG-{config.PROJECT_NAME}', json_dumps(payload, usepickle=True))
 
 
-def api(roles: Optional[List[str]] = None, cache: int = 0, exposed: bool = True, accesslog: bool = True,
+def api(cache: int = 0, is_authorized: bool = False, accesslog: bool = True,
 		headers: Optional[dict] = None,
 		upload_allowed_file_types: Optional[List[str]] = None, upload_max_file_size: Optional[int] = None,
 		upload_max_files: Optional[int] = None, **route_kwargs):
 	
 	def decorator(func: Callable):
 		func.route_kwargs = route_kwargs
-		func.roles = roles
 		func.cache = cache
-		func.exposed = exposed
+		func.is_authorized = is_authorized
 		func.accesslog = accesslog
 		func.headers = headers
 		func.upload_allowed_file_types = upload_allowed_file_types
@@ -387,87 +386,87 @@ def api(roles: Optional[List[str]] = None, cache: int = 0, exposed: bool = True,
 			# permission check
 			#####################################
 			token = request.headers.get("Authorization")
-			if token and token.startswith("Bearer "):
-				token = token.replace("Bearer ", "")
+			if is_authorized:
+				if token and token.startswith("Bearer "):
+					token = token.replace("Bearer ", "")
 			
-				try:
-					self.session = decode_token(token)
-				except Exception:
-					raise HTTPException(
-						status_code=status.HTTP_401_UNAUTHORIZED,
-						detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token"}
-					)
-				
-				if getattr(self.session, 'expired', False):
-					raise HTTPException(
-						status_code=status.HTTP_401_UNAUTHORIZED,
-						detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"}
-					)
-				
-				func_name = func.__name__
-				class_path = _get_api_handler_class_path(self)
-				full_api_handler_class_path = f"{class_path}.{func_name}"
-				api_module_name = full_api_handler_class_path.split(".", 1)[0]
-				
-				api_handler = API_HANDLERS.get(api_module_name)
-				if api_handler is None:
-					# "API handler for method '{func_name}' not found in configuration."
-					raise HTTPException(
-						status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-						detail={"code": "INTERNAL_SERVER_ERROR"}
-					)
-				
-				user_role_config = ROLES.get(self.session.role)
-				if user_role_config is None:
-					# "Permission '{func_name}' denied for role '{current_role}'.")
-					raise HTTPException(
-						status_code=status.HTTP_403_FORBIDDEN,
-						detail={"code": "HTTP_403_FORBIDDEN"}
-					)
-				
-				permissions = user_role_config["permissions"]
-				target_permission_name = f"{api_module_name}.{func_name}"
-				
-				permission = None
-				for perm in permissions:
-					if perm["name"] == target_permission_name:
-						permission = perm
-						break
-				
-				if permission is None:
-					# raise "Permission '{func_name}' denied for role '{current_role}'
-					raise HTTPException(
-						status_code=status.HTTP_403_FORBIDDEN,
-						detail={"code": "HTTP_403_FORBIDDEN"}
-					)
-				
-				context = kwargs.get("context", {})
-				
-				# attribue evaluation
-				for attr in permission.get("attributes", []):
-					if not _evaluate_attribute(attr, context, ATTRIBUTES):
-						# f"Attribute conditions not satisfied for role '{current_role}'.")
+					try:
+						self.session = decode_token(token)
+					except Exception:
+						raise HTTPException(
+							status_code=status.HTTP_401_UNAUTHORIZED,
+							detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token"}
+						)
+					
+					if getattr(self.session, 'expired', False):
+						raise HTTPException(
+							status_code=status.HTTP_401_UNAUTHORIZED,
+							detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"}
+						)
+					
+					func_name = func.__name__
+					class_path = _get_api_handler_class_path(self)
+					full_api_handler_class_path = f"{class_path}.{func_name}"
+					api_module_name = full_api_handler_class_path.split(".", 2)[1]
+					
+					api_handler = API_HANDLERS.get(api_module_name)
+					if api_handler is None:
+						# "API handler for method '{func_name}' not found in configuration."
+						raise HTTPException(
+							status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+							detail={"code": "INTERNAL_SERVER_ERROR"}
+						)
+					
+					user_role_config = ROLES.get(self.session.role)
+					if user_role_config is None:
+						# "Permission '{func_name}' denied for role '{current_role}'.")
 						raise HTTPException(
 							status_code=status.HTTP_403_FORBIDDEN,
 							detail={"code": "HTTP_403_FORBIDDEN"}
 						)
-				
-				# Middlewares
-				permission_middlewares = permission.get("middlewares", [])
-				if permission_middlewares:
-					if not _apply_middleware(self.session, permission_middlewares, MIDDLEWARES):
+					
+					permissions = user_role_config["permissions"]
+					target_permission_name = f"{api_module_name}.{func_name}"
+					
+					permission = None
+					for perm in permissions:
+						if perm["name"] == target_permission_name:
+							permission = perm
+							break
+					
+					if permission is None:
+						# raise "Permission '{func_name}' denied for role '{current_role}'
 						raise HTTPException(
-							status_code=status.HTTP_400_BAD_REQUEST,
-							detail={"code": "HTTP_400_BAD_REQUEST"}
+							status_code=status.HTTP_403_FORBIDDEN,
+							detail={"code": "HTTP_403_FORBIDDEN"}
 						)
-				
-				# Rate limit
-				p_rl = permission.get("rate_limit") or user_role_config.get("rate_limit")
-				if p_rl and is_rate_limited(api_handler, self.session, p_rl):
-					raise HTTPException(
-						status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-						detail={"code": "HTTP_429_TOO_MANY_REQUESTS"}
-					)
+					
+					context = kwargs.get("context", {})
+					
+					# attribue evaluation
+					for attr in permission.get("attributes", []):
+						if not _evaluate_attribute(attr, context, ATTRIBUTES):
+							raise HTTPException(
+								status_code=status.HTTP_403_FORBIDDEN,
+								detail={"code": "HTTP_403_FORBIDDEN"}
+							)
+					
+					# Middlewares
+					permission_middlewares = permission.get("middlewares", [])
+					if permission_middlewares:
+						if not _apply_middleware(self.session, permission_middlewares, MIDDLEWARES):
+							raise HTTPException(
+								status_code=status.HTTP_400_BAD_REQUEST,
+								detail={"code": "HTTP_400_BAD_REQUEST"}
+							)
+					
+					# Rate limit
+					p_rl = permission.get("rate_limit") or user_role_config.get("rate_limit")
+					if p_rl and is_rate_limited(api_handler, self.session, p_rl):
+						raise HTTPException(
+							status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+							detail={"code": "HTTP_429_TOO_MANY_REQUESTS"}
+						)
 
 			#####################################
 			# cache mechanism
@@ -537,6 +536,7 @@ class BaseAPIHandler(object):
 				self.router.add_api_route(endpoint=attribute,**route_kwargs)
 		
 	@api(
+		is_authorized=False,
 		method='GET',
 		path='/healthy',
 	)

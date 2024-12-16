@@ -138,7 +138,7 @@ def gen_models(fname):
         model_definition = yaml.safe_load(f)
 
     res = f'''# THIS IS AN AUTO-GENERATED AND PROTECTED FILE. PLEASE USE
-# THE gen_model.py SCRIPT TO GENERATE THIS FILE. DO NOT EDIT DIRECTLY
+# THE bmanager compile-env SCRIPT TO GENERATE THIS FILE. DO NOT EDIT DIRECTLY
 # AS IT CAN BE OVERWRITTEN. 
 #
 # FILE GENERATED ON: {datetime.datetime.now()}

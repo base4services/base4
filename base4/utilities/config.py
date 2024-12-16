@@ -56,7 +56,7 @@ def yaml_to_env(yaml_cfg):
     with open(env_path, 'w+') as env_file:
         env_file.write(
             f'''# THIS IS AN AUTO-GENERATED AND PROTECTED FILE. PLEASE USE
-# THE 'gen --env' SCRIPT TO GENERATE THIS FILE. DO NOT EDIT DIRECTLY
+# THE bmanager compile-env SCRIPT TO GENERATE THIS FILE. DO NOT EDIT DIRECTLY
 # AS IT CAN BE OVERWRITTEN.
 #
 # FILE GENERATED ON: {datetime.datetime.now()}
