@@ -211,7 +211,7 @@ def reset_service(service_name):
 @do.command('compile-ac')
 def compile_ac():
     """
-    Register all API handlers to access control - config/env.yaml
+    Register all API handlers to access control at config/ac.yaml
     """
     update_config_ac()
     print(f'[*] ac.yaml configuration updated!')
