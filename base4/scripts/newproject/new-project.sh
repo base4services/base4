@@ -31,8 +31,31 @@ fi
 echo "================================================================================"
 echo "[*] Application name: $app"
 echo "[*] Working directory: $workdir"
-echo "[*] lib/base4 Branch: $branch"
+echo "[*] Base4 branch: $branch"
 echo "================================================================================"
+
+# Prompt for installation type with a default option
+echo "Choose installation type (default is 'lib'):"
+echo "1. lib"
+echo "2. venv"
+
+# Read user input with a default value
+read -p "[*] Enter 1 or 2 (press enter to use 'lib'): " choice
+
+# Determine the installation type
+case "$choice" in
+    1|"") # Empty input defaults to 'lib'
+        install_type="lib"
+        ;;
+    2)
+        install_type="venv"
+        ;;
+    *)
+        echo "[*] Invalid choice. Defaulting to 'lib'."
+        install_type="lib"
+        ;;
+esac
+echo "[*] Installation type selected: $install_type"
 
 # Function to check for the presence of the line in the configuration file
 check_and_add_line() {
@@ -45,12 +68,10 @@ check_and_add_line() {
     else
         echo "$line not found in $config_file. Adding it..."
         echo "$line" >> "$config_file"
-        echo "Line successfully added to $config_file"
     fi
 }
 
-
-echo "[*] installing direnv..."
+echo "[*] Installing direnv..."
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
       # Add the line to the appropriate configuration file (.bashrc or .zshrc)
     if [[ -f "$HOME/.bashrc" ]]; then
@@ -73,7 +94,7 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 
 elif [[ "$OSTYPE" == "darwin"* ]]; then
     if ! command -v brew &>/dev/null; then
-        echo "[*] brew not found. Installing Homebrew..."
+        echo "[*] Brew not found. Installing Homebrew..."
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     fi
 
@@ -112,31 +133,33 @@ current_folder=$(pwd)
 echo "$current_folder/src" >> "$current_folder/.venv/lib/$PYTHON/site-packages/pythonpaths.pth"
 
 # Nadogradi pip
-echo "[*] upgrading pip..."
+echo "[*] Upgrading pip..."
 pip3 install --upgrade pip #-q
 
-# Napravi i pređi u folder lib
-mkdir lib
-cd lib || exit
 
+if [ "$install_type" == "lib" ]; then
+  mkdir lib
+  cd lib || exit
 
-echo "[*] cloning base4 repository..."
-if ! git clone https://github.com/base4services/base4.git > /dev/null 2>&1; then
-  echo "check permissions or if the repository exists."
-  exit 1
+  echo "[*] Cloning base4 repository..."
+  if ! git clone https://github.com/base4services/base4.git > /dev/null 2>&1; then
+    echo "Check permissions or if the repository exists."
+    exit 1
+  fi
+  cd base4 || exit
+  git checkout "${branch}" > /dev/null 2>&1;
+  echo "[*] Installing base4 dependencies..."
+  pip3 install -e . #-q
+  cd ../../ || exit
+
+elif [ "$install_type" == "venv" ]; then
+  pip install git+https://github.com/base4services/base4.git@${branch} > /dev/null 2>&1;
 fi
-cd base4 || exit
-git checkout "${branch}" > /dev/null 2>&1;
-echo "[*] installing base4 dependencies..."
-pip3 install -e . #-q
-cd ../../ || exit
 
-
-echo "[*] cloning base4project repository..."
+echo "[*] Cloning base4project repository..."
 if ! git clone https://github.com/base4services/base4project.git > /dev/null 2>&1; then
   echo "check permissions or if the repository exists."
   exit 1
-
 fi
 
 cd base4project || exit
@@ -156,18 +179,18 @@ git add .  > /dev/null 2>&1;
 git commit -m "initial commit" > /dev/null 2>&1;
 
 # security keys
-echo "[*] generating security keys..."
+echo "[*] Generating security keys..."
 cd security || exit
 ./mk_keys.sh > /dev/null 2>&1;
 cd .. || exit
 
-echo "[*] generating env file..."
+echo "[*] Generating env file..."
 bmanager compile-env > /dev/null 2>&1;
 
-echo "[*] linking docker-compose.yaml..."
+echo "[*] Linking docker-compose.yaml..."
 ln -sf infrastructure/docker-compose.yaml docker-compose.yaml
 
-echo "[*] allow direnv..."
+echo "[*] Allow direnv..."
 direnv allow
 
 echo "================================================================================"
