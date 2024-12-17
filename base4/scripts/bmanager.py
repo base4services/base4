@@ -207,7 +207,15 @@ def reset_service(service_name):
         sys.exit(f'[*] service -> {service_name} files are reset.')
     except Exception as e:
         pass
-
+    
+@do.command('compile-ac')
+def compile_ac():
+    """
+    Register all API handlers to access control - config/env.yaml
+    """
+    compile_ac('ac')
+    print(f'[*] ac.yaml configuration updated!')
+    
 @do.command('compile-env')
 def compile_env():
     """
@@ -295,19 +303,6 @@ def dbinit():
     test_db = os.getenv('DB_TEST')
     os.system(f'psql -U postgres -d template1 -c "CREATE ROLE {db_user} WITH CREATEDB LOGIN PASSWORD \'{password}\';"')
     os.system(f'psql -U {db_user} -d template1 -c "create database {test_db};"')
-
-
-@do.command('dbinit')
-def dbinit():
-    """
-        Initialize database
-    """
-    db_user = os.getenv('DB_POSTGRES_USER')
-    password = os.getenv('DB_POSTGRES_PASSWORD')
-    test_db = os.getenv('DB_TEST')
-    os.system(f'psql -U postgres -d template1 -c "CREATE ROLE {db_user} WITH CREATEDB LOGIN PASSWORD \'{password}\';"')
-    os.system(f'psql -U {db_user} -d template1 -c "create database {test_db};"')
-    print(f'[*] created database {test_db} with user {db_user}')
 
 
 @do.command('services')
