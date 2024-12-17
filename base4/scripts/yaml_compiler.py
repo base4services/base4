@@ -1,5 +1,6 @@
 import importlib
 import inspect
+import os
 from base4.utilities.files import get_project_root
 
 project_root = get_project_root()
@@ -109,9 +110,16 @@ def update_config_env(service_name: str):
 
 
 def update_config_ac():
-	...
-	# todo, finish logic
-	
+	for service in os.listdir(f"{project_root}/src/services"):
+		if os.path.isdir(f"{project_root}/src/services/{service}"):
+			if os.path.exists(f"{project_root}/src/services/{service}/api/handlers.py"):
+				module = importlib.import_module(f'services.{service}.api.handlers')
+				print(module)
+				# with open(f"{project_root}/src/services/{service}/api/handlers.py") as f:
+				# 	content = f.read()
+				# 	if 'router' in content:
+				# 		...
+				
 	# for service in self.services:
 	# 	module = importlib.import_module(f'services.{service}.api.handlers')
 	# 	for api_handler in inspect.getmembers(module):
