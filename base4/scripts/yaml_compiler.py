@@ -1,3 +1,5 @@
+import importlib
+import inspect
 from base4.utilities.files import get_project_root
 
 project_root = get_project_root()
@@ -139,29 +141,20 @@ def update_config_env(service_name: str):
 
 
 def update_config_ac():
-	# Učitaj postojeći sadržaj fajla kao string
-	with open(project_root / 'config/env.yaml', 'r') as f:
-		content = f.read()
+	...
+	# todo, finish logic
 	
-	# Ukloni jednostruke navodnike iz celog sadržaja
-	content = content.replace("'", "")
-	
-	# Kreiraj liniju za novi servis
-	new_service_line = f"      - {service_name}\n"
-	
-	# Proveri da li sekcija 'services' postoji
-	if 'databases:' in content:
-		# Ako sekcija postoji, proveri da li servis već postoji
-		if new_service_line not in content:
-			# Dodaj novi servis u postojeću 'services' sekciju
-			content = content.replace('databases:\n', 'databases:\n' + new_service_line)
-	else:
-		# Ako sekcija ne postoji, dodaj novu sekciju 'services' sa prvim servisom
-		content += f"\ndatabases:\n{new_service_line}"
-	
-	# Snimi ažurirani sadržaj nazad u fajl
-	with open(project_root / 'config/env.yaml', 'w') as f:
-		f.write(content)
+	# for service in self.services:
+	# 	module = importlib.import_module(f'services.{service}.api.handlers')
+	# 	for api_handler in inspect.getmembers(module):
+	# 		try:
+	# 			instance = api_handler[1]
+	# 			if hasattr(instance, 'router'):
+	# 				...
+	# 		except Exception as e:
+	# 			continue
+	# # with open(project_root / 'config/ac.yaml', 'w') as f:
+	# 	f.write(content)
 		
 def compile_main_config(service_name: str, gen_items: list):
 	update_config_gen(service_name, gen_items)

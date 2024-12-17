@@ -18,7 +18,7 @@ import yaml
 from base4 import configuration
 from base4.scripts.pip.down import do as p_down
 from base4.scripts.pip.up import do as p_up
-from base4.scripts.yaml_compiler import compile_main_config
+from base4.scripts.yaml_compiler import compile_main_config, update_config_ac
 from base4.utilities.config import yaml_to_env
 from base4.utilities.files import get_project_root
 dotenv.load_dotenv()
@@ -213,7 +213,7 @@ def compile_ac():
     """
     Register all API handlers to access control - config/env.yaml
     """
-    compile_ac('ac')
+    update_config_ac()
     print(f'[*] ac.yaml configuration updated!')
     
 @do.command('compile-env')
