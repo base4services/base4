@@ -114,21 +114,14 @@ def update_config_ac():
 		if os.path.isdir(f"{project_root}/src/services/{service}"):
 			if os.path.exists(f"{project_root}/src/services/{service}/api/handlers.py"):
 				module = importlib.import_module(f'services.{service}.api.handlers')
-				print(module)
-				# with open(f"{project_root}/src/services/{service}/api/handlers.py") as f:
-				# 	content = f.read()
-				# 	if 'router' in content:
-				# 		...
-				
-	# for service in self.services:
-	# 	module = importlib.import_module(f'services.{service}.api.handlers')
-	# 	for api_handler in inspect.getmembers(module):
-	# 		try:
-	# 			instance = api_handler[1]
-	# 			if hasattr(instance, 'router'):
-	# 				...
-	# 		except Exception as e:
-	# 			continue
+				for api_handler in inspect.getmembers(module):
+					try:
+						instance = api_handler[1]
+						if hasattr(instance, 'router'):
+							print('router found')
+					except Exception as e:
+						pass
+	# for service in sel
 	# # with open(project_root / 'config/ac.yaml', 'w') as f:
 	# 	f.write(content)
 	
