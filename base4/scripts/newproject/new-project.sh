@@ -40,7 +40,7 @@ echo "1. lib"
 echo "2. venv"
 
 # Read user input with a default value
-read -p "[*] Enter 1 or 2 (press enter to use 'lib'): " choice
+read -p "[*] Enter 1 or 2 (press enter to use 'lib'): " choice </dev/tty
 
 # Determine the installation type
 case "$choice" in
