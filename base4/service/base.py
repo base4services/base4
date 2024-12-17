@@ -601,7 +601,10 @@ class BaseService[ModelType]:
             await self.validate(logged_user_id, item_id, request, quiet=False)
 
             if self.c11:
-                await self.mk_cache(request, 'c11', model_item.cache11, model_item)
+                try:
+                    await self.mk_cache(request, 'c11', model_item.cache11, model_item)
+                except Exception as e:
+                    raise
             if self.c1n:
                 ...
                 # TODO: Update cache for c1n

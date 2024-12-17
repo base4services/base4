@@ -25,6 +25,35 @@ class RedisClientHandler:
     def get_redis_client(redis_instance: Optional[redis.StrictRedis] = None, port: int = 6379, db: int = 0) -> 'RedisClientHandler':
         return RedisClientHandler(redis_instance, port, db)
 
+    def set(self, key: str, value: Any) -> bool:
+        """
+        Set a key-value pair in Redis.
+
+        :param key: Key
+        :param value: Value
+        :return: True if successful, False otherwise
+        """
+        try:
+            self.redis_client.set(key, json.dumps(value))
+            return True
+        except Exception as e:
+            print(f"Error setting key {key}: {e}")
+            raise Exception("FAILED TO SET REDIS KEY")
+
+    def get(self, key: str) -> Any:
+        """
+        Get a value from Redis.
+
+        :param key: Key
+        :return: Value if found, None otherwise
+        """
+        try:
+            value = self.redis_client.get(key)
+            return json.loads(value) if value else None
+        except Exception as e:
+            print(f"Error getting key {key}: {e}")
+            raise Exception("FAILED TO GET REDIS KEY")
+
     def push_message(self, queue_name: str, message: Any) -> bool:
         """
         Push a message to a specified Redis queue.
