@@ -105,13 +105,18 @@ def new_service(service_name, service_template, verbose, gen_type):
         return
 
     if service_template:
+        if '@' not in service_template:
+            branch = 'main'
+        else:
+            service_template, branch = service_template.split('@')
+            
         if service_template not in existing_service_templates:
             print(f'[*] please choose template')
             for i, j in enumerate(existing_service_templates, start=1):
                 print(f'->: {j}')
             return
 
-        if service_template == 'base4tenants':
+        if 'base4tenants' in service_template:
             if service_name != 'tenants':
                 sys.exit(f'[*] Tenants service name can not be renamed! \nIf you want to create your version of tenants service, use:\n'
                          f'bmanager new-service -s {service_name} -t base4service_template ')
@@ -121,7 +126,7 @@ def new_service(service_name, service_template, verbose, gen_type):
                 mkdir -p {project_root}/src/services/tenants
                 git clone https://github.com/base4services/base4tenants.git {v}
                 cd base4tenants
-                git checkout main
+                git checkout {branch}
                 cd ..
                 cp -R base4tenants/src/services/tenants/* {project_root}/src/services/tenants/
                 cp -R base4tenants/tests/test_base_tenants.py {project_root}/tests/
@@ -130,7 +135,7 @@ def new_service(service_name, service_template, verbose, gen_type):
                 '''
             )
             
-        elif service_template == 'base4ws':
+        elif 'base4ws' in service_template:
             os.system(
                 f'''
                 git clone https://github.com/base4services/base4ws.git {v}
@@ -138,7 +143,7 @@ def new_service(service_name, service_template, verbose, gen_type):
                 rm -rf base4ws
                 '''
             )
-        elif service_template == 'base4sendmail':
+        elif 'base4sendmail' in service_template:
             os.system(
                 f'''
                 mkdir -p {project_root}/src/services/sendmail
@@ -147,14 +152,15 @@ def new_service(service_name, service_template, verbose, gen_type):
                 rm -rf sendmail
                 '''
             )
-        elif service_template == 'base4service_template':
+        elif 'base4service_template' in service_template:
+
             print('[*] creating service from default template...')
             os.system(
                 f'''
                 mkdir -p {project_root}/src/services/{service_name}
                 git clone https://github.com/base4services/base4service_template.git {v}
                 cd base4service_template
-                git checkout main
+                git checkout {branch}
                 cd ..
                 cp -R base4service_template/services/template/* {project_root}/src/services/{service_name}
                 cp base4service_template/tests/test_template.py {project_root}/tests/test_{service_name}.py
