@@ -261,7 +261,7 @@ def _apply_middleware(current_user, middlewares_list, MIDDLEWARES):
 		return mw_func(current_user)
 
 
-AC_CONFIG = load_yaml_config("ac.yaml")
+AC_CONFIG = load_yaml_config("ac")
 API_HANDLERS = AC_CONFIG.get("api_handlers", {})
 ROLES = _preprocess_roles(AC_CONFIG["roles"])
 ATTRIBUTES = AC_CONFIG.get("attributes", {})
