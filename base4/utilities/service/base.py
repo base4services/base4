@@ -396,11 +396,11 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
 			# permission check
 			#####################################
 			token = request.headers.get("Authorization")
-			if not is_authorized:
+			if not is_authorized and 'healthy' not in route_kwargs.get('path', ''):
 				self.id_tenant = request.headers.get("X-Tenant-ID")
 				if not self.id_tenant:
 					raise HTTPException(
-						status_code=400,
+						status_code=401,
 						detail=f"Provide valid X-Tenant-ID"
 					)
 				
