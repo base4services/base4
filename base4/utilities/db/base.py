@@ -1,4 +1,5 @@
 import dotenv
+
 from base4.utilities.files import get_project_root
 
 dotenv.load_dotenv(get_project_root() / '.env')
@@ -8,9 +9,10 @@ import os
 import uuid
 from typing import Any, Dict, List, TypeVar
 
-from base4.utilities.config import load_yaml_config
 from fastapi import HTTPException, Request
 from tortoise import Tortoise
+
+from base4.utilities.config import load_yaml_config
 
 SchemaType = TypeVar('SchemaType')
 

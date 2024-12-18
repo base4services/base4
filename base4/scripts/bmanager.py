@@ -6,21 +6,21 @@ import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+import click
+import dotenv
+import git
+import yaml
+
 import base4.scripts.gen_model as gen_model
 import base4.scripts.gen_schemas as gen_schemas
 import base4.scripts.gen_tables as gen_tables
-
-import dotenv
-
-import click
-import git
-import yaml
 from base4 import configuration
 from base4.scripts.pip.down import do as p_down
 from base4.scripts.pip.up import do as p_up
 from base4.scripts.yaml_compiler import compile_main_config, update_config_ac
 from base4.utilities.config import yaml_to_env
 from base4.utilities.files import get_project_root
+
 dotenv.load_dotenv()
 
 project_root = str(get_project_root())

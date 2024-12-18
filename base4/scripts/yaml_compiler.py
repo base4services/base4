@@ -1,8 +1,10 @@
 import importlib
 import inspect
 import os
-from base4.utilities.files import get_project_root
+
 import yaml
+
+from base4.utilities.files import get_project_root
 
 project_root = get_project_root()
 

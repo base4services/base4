@@ -15,8 +15,9 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 from base4.utilities.files import get_project_root
 
 current_file_path = str(get_project_root())
-from base4.utilities.files import read_file
 from fastapi import Depends, HTTPException
+
+from base4.utilities.files import read_file
 
 private_key = read_file('security/private_key.pem')
 public_key = read_file('security/public_key.pem')

@@ -3,10 +3,15 @@ import importlib
 import uuid
 from typing import Any, Dict, Generic, List, Type, TypeVar, get_args, get_origin
 
-import base4.schemas.universal_table as universal_table
 import pydantic
 import tortoise.fields
 import tortoise.timezone
+from fastapi import HTTPException, Response
+from fastapi.requests import Request
+from tortoise.queryset import Q
+from tortoise.transactions import in_transaction
+
+import base4.schemas.universal_table as universal_table
 from base4.debug import debug_info
 from base4.models.utils import find_field_in_q
 from base4.schemas.base import NOT_SET
@@ -16,10 +21,6 @@ from base4.utilities.parsers.str2q import transform_filter_param_to_Q
 from base4.utilities.service.base import BaseServiceUtils
 from base4.utilities.service.base_pre_and_post import BaseServicePreAndPostUtils
 from base4.utilities.ws import emit, sio_client_manager
-from fastapi import HTTPException, Response
-from fastapi.requests import Request
-from tortoise.queryset import Q
-from tortoise.transactions import in_transaction
 
 SchemaType = TypeVar('SchemaType')
 ModelType = TypeVar('ModelType', bound=tortoise.models.Model)
@@ -645,9 +646,9 @@ class BaseService[ModelType]:
 
     async def mk_cache(self, request: Request, cache_type, citem, item, conn=None, ):
 
-        from base4.project_specifics import lookups_module
-
         import shared.ipc as ipc  # DO NOT REMOVE THIS IMPORT, IT IS USED BY EVAL FUNCTION
+
+        from base4.project_specifics import lookups_module
 
         # lookups = lookups_module.Lookups
 

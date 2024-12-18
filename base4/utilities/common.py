@@ -8,8 +8,9 @@ from pathlib import Path
 from typing import Any, Dict
 
 import bcrypt
-from base4.service.exceptions import ServiceException
 from fastapi import Request
+
+from base4.service.exceptions import ServiceException
 
 
 def is_test_mode():
