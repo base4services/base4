@@ -340,7 +340,7 @@ async def api_accesslog(request, response, session, start_time, accesslog, exc=N
 # rdb.lpush(f'ACCESSLOG-{config.PROJECT_NAME}', json_dumps(payload, usepickle=True))
 
 
-def api(cache: int = 0, is_authorized: bool = False, accesslog: bool = True,
+def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
 		headers: Optional[dict] = None,
 		upload_allowed_file_types: Optional[List[str]] = None, upload_max_file_size: Optional[int] = None,
 		upload_max_files: Optional[int] = None, **route_kwargs):
@@ -396,7 +396,15 @@ def api(cache: int = 0, is_authorized: bool = False, accesslog: bool = True,
 			# permission check
 			#####################################
 			token = request.headers.get("Authorization")
-			if is_authorized:
+			if not is_authorized and 'healthy' not in route_kwargs.get('path', ''):
+				self.id_tenant = request.headers.get("X-Tenant-ID")
+				if not self.id_tenant:
+					raise HTTPException(
+						status_code=401,
+						detail=f"Provide valid X-Tenant-ID"
+					)
+				
+			elif is_authorized:
 				if token and token.startswith("Bearer "):
 					token = token.replace("Bearer ", "")
 			
