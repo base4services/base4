@@ -147,4 +147,3 @@ def compile_main_config(service_name: str, gen_items: list):
     update_config_services(service_name)
     update_config_db(service_name)
     update_config_env(service_name)
-    update_config_ac()
