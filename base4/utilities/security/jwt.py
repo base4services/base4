@@ -27,6 +27,7 @@ class DecodedToken(pydantic.BaseModel):
     user_id: uuid.UUID
     tenant_id: uuid.UUID
     expire_at: datetime
+    role: str
     expired: bool
 
 
@@ -65,7 +66,7 @@ def decode_token(token: str) -> DecodedToken:
     return DecodedToken(
         user_id=decoded_payload['id_user'],
         tenant_id=decoded_payload['id_tenant'],
-        #        tenant_id='3acd0b70-6bdd-4519-8b8b-851f0114c89c', #decoded_payload['id_tenant']
+        role=decoded_payload['role'],
         expire_at=datetime.fromtimestamp(exp, tz=timezone.utc),
         expired=int(time.time()) > exp,
     )
@@ -93,6 +94,7 @@ def open_api_call() -> DecodedToken:  # token: Optional[str] = Depends(oauth2_sc
     return DecodedToken(
         user_id='00000000-0000-0000-0000-000000000000',
         tenant_id='00000000-0000-0000-0000-000000000000',
+        role='user',
         expire_at=datetime.fromtimestamp(0, tz=timezone.utc),
         expired=False,
     )
