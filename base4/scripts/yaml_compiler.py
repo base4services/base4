@@ -2,6 +2,7 @@ import importlib
 import inspect
 import os
 from base4.utilities.files import get_project_root
+import yaml
 
 project_root = get_project_root()
 
@@ -19,16 +20,16 @@ db_{db_name}: &db_{db_name}
 """
 	
 	new_connection_section = f"""
-    conn_{db_name}:
-      engine: tortoise.backends.asyncpg
-      credentials: *db_{db_name}
+	conn_{db_name}:
+	  engine: tortoise.backends.asyncpg
+	  credentials: *db_{db_name}
 """
 	
 	new_app_section = f"""
-    {db_name}:
-      models:
-        - services.{db_name}.models
-      default_connection: conn_{db_name}
+	{db_name}:
+	  models:
+		- services.{db_name}.models
+	  default_connection: conn_{db_name}
 """
 	
 	if 'tortoise:' in content:
@@ -76,9 +77,9 @@ def update_config_gen(service_name: str, gen_items: list):
 	gen_section = "\n".join([f"      - {item}" for item in gen_items])
 	new_block = f"""
   - name: {service_name}
-    singular: {service_name}
-    location: src/services/{service_name}
-    gen:
+	singular: {service_name}
+	location: src/services/{service_name}
+	gen:
 {gen_section}
 """
 	
@@ -110,20 +111,33 @@ def update_config_env(service_name: str):
 
 
 def update_config_ac():
+	with open(project_root / 'config/ac.yaml', 'r') as f:
+		existing_data = yaml.safe_load(f)
+	
+	new_api_handlers = {}
 	for service in os.listdir(f"{project_root}/src/services"):
 		if os.path.isdir(f"{project_root}/src/services/{service}"):
-			if os.path.exists(f"{project_root}/src/services/{service}/api/handlers.py"):
-				module = importlib.import_module(f'services.{service}.api.handlers')
-				for api_handler in inspect.getmembers(module):
-					try:
-						instance = api_handler[1]
-						if hasattr(instance, 'router'):
-							print('router found')
-					except Exception as e:
-						pass
-	# for service in sel
-	# # with open(project_root / 'config/ac.yaml', 'w') as f:
-	# 	f.write(content)
+			if '__' not in service:
+				for api_handler_file in os.listdir(f"{project_root}/src/services/{service}/api"):
+					if '__' not in api_handler_file:
+						module = importlib.import_module(f'services.{service}.api.{api_handler_file[:-3]}')
+						for api_handler in inspect.getmembers(module):
+							if hasattr(api_handler[1], 'router'):
+								obj = api_handler[1]
+								methods = {
+									method_name: f"{obj.__module__}.{obj.__class__.__name__}.{method_name}"
+									for method_name, method_obj in inspect.getmembers(obj, predicate=inspect.ismethod)
+									if method_name not in ("register_routes", "__init__")
+								}
+								
+								if service not in new_api_handlers:
+									new_api_handlers[service] = {}
+								new_api_handlers[service].update(methods)
+
+	existing_data["api_handlers"] = new_api_handlers
+	
+	with open(project_root / 'config/ac.yaml', "w") as yaml_file:
+		yaml.dump(existing_data, yaml_file, default_flow_style=False)
 	
 	
 def compile_main_config(service_name: str, gen_items: list):
@@ -131,3 +145,4 @@ def compile_main_config(service_name: str, gen_items: list):
 	update_config_services(service_name)
 	update_config_db(service_name)
 	update_config_env(service_name)
+	update_config_ac()
