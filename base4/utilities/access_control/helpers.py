@@ -29,7 +29,6 @@ def _preprocess_roles(roles_config):
 		
 		for perm in role_permissions:
 			if isinstance(perm, str):
-				# Nema lokalnog override-a
 				permissions.append(
 					{
 						"name":        perm,
