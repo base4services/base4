@@ -244,6 +244,7 @@ def load_services(single_service=None):
         services = yaml.safe_load(f)
         if not services:
             return
+        print(services)
         for service in services['services']:
             if isinstance(service, str):
                 svc_name = service
