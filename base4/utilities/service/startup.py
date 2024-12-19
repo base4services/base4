@@ -73,7 +73,7 @@ async def startup_event(services: List[str] = None) -> None:
         services = []
 
         with open(get_project_config_folder() / 'services.yaml') as f:
-            services = yaml.safe_load(f)['services']
+            services = yaml.safe_load(f)['services'] or []
             services = [list(s.keys())[0] if type(s) == dict else s for s in services]
 
     if isinstance(_test, str):
