@@ -242,9 +242,8 @@ def load_services(single_service=None):
     with open(get_project_config_folder() / 'services.yaml') as f:
 
         services = yaml.safe_load(f)
-        if not services:
+        if not services['services']:
             return
-        print(services)
         for service in services['services']:
             if isinstance(service, str):
                 svc_name = service
