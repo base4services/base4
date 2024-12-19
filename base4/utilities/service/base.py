@@ -345,6 +345,7 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
 		upload_max_file_size: Optional[int] = None, upload_max_files: Optional[int] = None,
 		is_public: bool = True, **route_kwargs):
 	
+	
 	def decorator(func: Callable):
 		func.route_kwargs = route_kwargs
 		func.cache = cache
