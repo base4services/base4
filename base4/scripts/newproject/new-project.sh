@@ -134,7 +134,7 @@ echo "$current_folder/src" >> "$current_folder/.venv/lib/$PYTHON/site-packages/p
 
 # Nadogradi pip
 echo "[*] Upgrading pip..."
-pip3 install --upgrade pip #-q
+pip3 install --upgrade pip -q
 
 
 if [ "$install_type" == "lib" ]; then
