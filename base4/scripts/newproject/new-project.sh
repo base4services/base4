@@ -103,7 +103,7 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     fi
 
     if brew list | grep -q direnv; then
-        :
+:
     else
         brew install direnv > /dev/null 2>&1
     fi
@@ -121,16 +121,15 @@ cd "$workdir" || exit
 mkdir -p "$app"
 cd "$app" || exit
 
-# Postavi verziju Python-a
 PYTHON=python3
 
-# Kreiraj virtualno okruženje
 $PYTHON -m venv .venv
 source .venv/bin/activate
 
-# Dodaj trenutni direktorijum u Python path
 current_folder=$(pwd)
-echo "$current_folder/src" >> "$current_folder/.venv/lib/$PYTHON/site-packages/pythonpaths.pth"
+site_packages="$current_folder/.venv/lib/$(python3 -c "import sys; print('python' + sys.version[:4])")/site-packages"
+echo "$current_folder/src" >> "$site_packages/pythonpaths.pth"
+
 
 # Nadogradi pip
 echo "[*] Upgrading pip..."
