@@ -227,6 +227,23 @@ def _apply_middleware(current_user, middlewares_list, MIDDLEWARES):
 		mw_func = _import_middleware_function(mw_data["function"])
 		return mw_func(current_user)
 
+def _merge_with_user_permissions(static_permissions, user_permissions):
+	to_remove = {item[1:] for item in user_permissions if item[:1] == '-'}
+	to_add = {item for item in user_permissions if item[:1] != '-'}
+	roles_dict = {role['name']: role for role in static_permissions}
+	for name in to_remove:
+		roles_dict.pop(name, None)
+	for name in to_add:
+		if name not in roles_dict:
+			roles_dict[name] = {
+				'name':        name,
+				'attributes':  [],
+				'rate_limit':  {'calls': 1000, 'period': 3600},
+				'middlewares': []
+			}
+	static_permissions.clear()
+	static_permissions.extend(roles_dict.values())
+
 
 AC_CONFIG = load_yaml_config("ac")
 API_HANDLERS = AC_CONFIG.get("api_handlers", {})

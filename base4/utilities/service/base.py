@@ -24,7 +24,7 @@ from base4.utilities.access_control.helpers import (
 	_apply_middleware,
 	_evaluate_attribute,
 	_get_api_handler_class_path,
-	is_rate_limited#, _merge_with_user_permissions,
+	is_rate_limited, _merge_with_user_permissions,
 )
 from base4.utilities.db.redis import RedisClientHandler
 from base4.utilities.files import get_project_root
@@ -458,9 +458,9 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
 						
 						#todo,  ovde treba da se uzme korisnik iz redisa posto je uspesno ulogovan i da se merge njegove permisisje
 						# do sada je bio to iz jwt ali je sklonjeno
-						# user_permissions = []
-						# if user_permissions:
-						# 	_merge_with_user_permissions(static_permissions=permissions, user_permissions=user_permissions)
+						user_permissions = []
+						if user_permissions:
+							_merge_with_user_permissions(static_permissions=permissions, user_permissions=user_permissions)
 						
 						permission = None
 						for perm in permissions:
