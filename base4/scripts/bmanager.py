@@ -135,15 +135,8 @@ def new_service(service_name, service_template, verbose, gen_type):
                 '''
             )
             
-        elif 'base4ws' in service_template:
-            os.system(
-                f'''
-                git clone https://github.com/base4services/base4ws.git {v}
-                cp -R base4ws/ws {project_root}/src
-                rm -rf base4ws
-                '''
-            )
-        elif 'base4sendmail' in service_template:
+
+        elif 'base4emails' in service_template:
             os.system(
                 f'''
                 mkdir -p {project_root}/src/services/sendmail
@@ -152,6 +145,7 @@ def new_service(service_name, service_template, verbose, gen_type):
                 rm -rf sendmail
                 '''
             )
+
         elif 'base4service_template' in service_template:
 
             print('[*] creating service from default template...')
@@ -186,10 +180,8 @@ def new_service(service_name, service_template, verbose, gen_type):
                 print(f'->: {j}')
             return
 
-        # generate main config yaml
         compile_main_config(service_name, gen_items=gen_type.split(','))
 
-        # continue with another command
         _compile_yaml(yaml_file='gen.yaml', service_name=service_name, gen_type=gen_type)
         yaml_to_env('env')
 

@@ -11,3 +11,4 @@ base4/config/.env
 **/schemas/generated_*schema.py
 **/schemas/generated_universal_tables_schema_*.py
 .DS_Store
+.python-version
