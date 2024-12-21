@@ -10,7 +10,7 @@ authors = [
     { name = "Digital CUBE", email = "info@digitalcube.rs" }
 ]
 readme = "README.md"
-requires-python = ">=3.12.6"
+requires-python = ">=3.13.0"
 dependencies = [
 	# GENERATED ON: 2024-12-12 13:16:53
 	'redis==5.2.0',
