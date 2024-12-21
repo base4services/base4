@@ -122,7 +122,7 @@ mkdir -p "$app"
 cd "$app" || exit
 
 # Postavi verziju Python-a
-PYTHON=python3.13
+PYTHON=python3
 
 # Kreiraj virtualno okruženje
 $PYTHON -m venv .venv
