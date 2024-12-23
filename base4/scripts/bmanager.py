@@ -105,6 +105,71 @@ def new_service(service_name, service_template, verbose, gen_type):
         return
 
     if service_template:
+        def _base4emails(service_name):
+            os.system(
+                f'''
+                mkdir -p {project_root}/src/services/sendmail
+                git clone https://github.com/base4services/base4sendmail.git {v}
+                cd sendmail
+                git checkout {branch}
+                cd ..
+                cp -R sendmail/src/services/tenants/* {project_root}/src/services/sendmail/
+                cp -R sendmail/tests/test_sendmail.py {project_root}/tests/test_sendmail.py
+                cp -R sendmail/shared/services/* {project_root}/src/shared/services/
+                pip3 install -r sendmail/requirements.txt -q
+                rm -rf sendmail
+                '''
+            )
+
+        def _base4tenants(service_name):
+            # if service_name != 'tenants':
+            #     sys.exit(f'[*] Tenants service name can not be renamed! \nIf you want to create your version of tenants service, use:\n'
+            #              f'bmanager new-service -s {service_name} -t base4service_template ')
+
+            os.system(
+                f'''
+                mkdir -p {project_root}/src/services/tenants
+                git clone https://github.com/base4services/base4tenants.git {v}
+                cd base4tenants
+                git checkout {branch}
+                cd ..
+                cp -R base4tenants/src/services/tenants/* {project_root}/src/services/tenants/
+                cp -R base4tenants/tests/test_base_tenants.py {project_root}/tests/
+                cp -R base4tenants/tests/test_tenants.py {project_root}/tests/test_tenants.py
+                cp -R base4tenants/shared/services/* {project_root}/src/shared/services/
+                pip3 install -r base4tenants/requirements.txt -q
+                rm -rf base4tenants
+                '''
+            )
+
+        def _base4service_template(service_name):
+            print('[*] creating service from default template...')
+            os.system(
+                f'''
+                mkdir -p {project_root}/src/services/{service_name}
+                git clone https://github.com/base4services/base4service_template.git {v}
+                cd base4service_template
+                git checkout {branch}
+                cd ..
+                cp -R base4service_template/services/template/* {project_root}/src/services/{service_name}
+                cp base4service_template/tests/test_template.py {project_root}/tests/test_{service_name}.py
+
+                cp base4service_template/rename.sh {project_root}
+
+                bash {project_root}/rename.sh {service_name} src/services
+                bash {project_root}/rename.sh {service_name} tests
+
+                rm -rf base4service_template
+                rm  {project_root}/rename.sh
+
+                cd {project_root}/src/services/{service_name}
+                mv {project_root}/src/services/{service_name}/yaml_sources/model.yaml {project_root}/src/services/{service_name}/yaml_sources/{service_name}_model.yaml
+                mv {project_root}/src/services/{service_name}/yaml_sources/schema.yaml {project_root}/src/services/{service_name}/yaml_sources/{service_name}_schema.yaml
+                '''
+            )
+            print(f'[*] service -> {service_name} created!')
+
+
         if '@' not in service_template:
             branch = 'main'
         else:
@@ -117,63 +182,15 @@ def new_service(service_name, service_template, verbose, gen_type):
             return
 
         if 'base4tenants' in service_template:
-            if service_name != 'tenants':
-                sys.exit(f'[*] Tenants service name can not be renamed! \nIf you want to create your version of tenants service, use:\n'
-                         f'bmanager new-service -s {service_name} -t base4service_template ')
-                
-            os.system(
-                f'''
-                mkdir -p {project_root}/src/services/tenants
-                git clone https://github.com/base4services/base4tenants.git {v}
-                cd base4tenants
-                git checkout {branch}
-                cd ..
-                cp -R base4tenants/src/services/tenants/* {project_root}/src/services/tenants/
-                cp -R base4tenants/tests/test_base_tenants.py {project_root}/tests/
-                cp -R base4tenants/tests/test_tenants.py {project_root}/tests/test_tenants.py
-                rm -rf base4tenants
-                '''
-            )
-            
+            _base4tenants(service_name)
+            _base4emails(service_name)
 
-        elif 'base4emails' in service_template:
-            os.system(
-                f'''
-                mkdir -p {project_root}/src/services/sendmail
-                git clone https://github.com/base4services/base4sendmail.git {v}
-                cp -R sendmail/* {project_root}/src/services/sendmail
-                rm -rf sendmail
-                '''
-            )
+        # elif 'base4emails' in service_template:
+        #     _base4emails(service_name)
 
         elif 'base4service_template' in service_template:
+            _base4service_template(service_name)
 
-            print('[*] creating service from default template...')
-            os.system(
-                f'''
-                mkdir -p {project_root}/src/services/{service_name}
-                git clone https://github.com/base4services/base4service_template.git {v}
-                cd base4service_template
-                git checkout {branch}
-                cd ..
-                cp -R base4service_template/services/template/* {project_root}/src/services/{service_name}
-                cp base4service_template/tests/test_template.py {project_root}/tests/test_{service_name}.py
-                
-                cp base4service_template/rename.sh {project_root}
-                
-                bash {project_root}/rename.sh {service_name} src/services
-                bash {project_root}/rename.sh {service_name} tests
-
-                rm -rf base4service_template
-                rm  {project_root}/rename.sh
-                
-                cd {project_root}/src/services/{service_name}
-                mv {project_root}/src/services/{service_name}/yaml_sources/model.yaml {project_root}/src/services/{service_name}/yaml_sources/{service_name}_model.yaml
-                mv {project_root}/src/services/{service_name}/yaml_sources/schema.yaml {project_root}/src/services/{service_name}/yaml_sources/{service_name}_schema.yaml
-                '''
-            )
-            print(f'[*] service -> {service_name} created!')
-            
         else:
             print(f'[*] please choose template')
             for i, j in enumerate(existing_service_templates, start=1):
