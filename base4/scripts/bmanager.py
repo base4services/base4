@@ -113,7 +113,7 @@ def new_service(service_name, service_template, verbose, gen_type):
                 cd base4sendmail
                 git checkout {branch}
                 cd ..
-                cp -R base4sendmail/services/template {project_root}/src/services/sendmail
+                cp -R base4sendmail/services/template/* {project_root}/src/services/sendmail
                 cp -R base4sendmail/tests/test_sendmail.py {project_root}/tests/test_sendmail.py
                 cp -R base4sendmail/shared/services/* {project_root}/src/shared/services/
                 pip3 install -r base4sendmail/requirements.txt #-q
