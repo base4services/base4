@@ -24,6 +24,7 @@ public_key = read_file('security/public_key.pem')
 
 
 class DecodedToken(pydantic.BaseModel):
+    session_id: uuid.UUID
     user_id: uuid.UUID
     tenant_id: uuid.UUID
     expire_at: datetime
@@ -32,6 +33,7 @@ class DecodedToken(pydantic.BaseModel):
 
 
 class CreateTokenRequest(pydantic.BaseModel):
+    id_session: Optional[uuid.UUID|None] = None
     id_user: uuid.UUID
     id_tenant: uuid.UUID
 
@@ -64,6 +66,7 @@ def decode_token(token: str) -> DecodedToken:
         exp = int(time.time()) + 24 * 60 * 60  # forever
 
     return DecodedToken(
+        session_id=decoded_payload['session'],  # ?! id_session
         user_id=decoded_payload['id_user'],
         tenant_id=decoded_payload['id_tenant'],
         role=decoded_payload['role'],
