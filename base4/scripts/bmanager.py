@@ -122,9 +122,6 @@ def new_service(service_name, service_template, verbose, gen_type):
             )
             compile_main_config(service_name, gen_items=gen_type.split(','))
 
-            _compile_yaml(yaml_file='gen.yaml', service_name=service_name, gen_type=gen_type)
-            yaml_to_env('env')
-
         def _base4tenants(service_name):
             os.system(
                 f'''
@@ -143,8 +140,6 @@ def new_service(service_name, service_template, verbose, gen_type):
             )
             compile_main_config(service_name, gen_items=gen_type.split(','))
 
-            _compile_yaml(yaml_file='gen.yaml', service_name=service_name, gen_type=gen_type)
-            yaml_to_env('env')
 
         def _base4service_template(service_name):
             print('[*] creating service from default template...')
@@ -174,8 +169,6 @@ def new_service(service_name, service_template, verbose, gen_type):
             print(f'[*] service -> {service_name} created!')
             compile_main_config(service_name, gen_items=gen_type.split(','))
 
-            _compile_yaml(yaml_file='gen.yaml', service_name=service_name, gen_type=gen_type)
-            yaml_to_env('env')
 
         if '@' not in service_template:
             branch = 'main'
@@ -189,7 +182,7 @@ def new_service(service_name, service_template, verbose, gen_type):
             return
 
         if 'base4tenants' in service_template:
-            _base4tenants(service_name)
+            _base4tenants('tenants')
             _base4emails('sendmail')
 
         # elif 'base4emails' in service_template:
@@ -204,7 +197,8 @@ def new_service(service_name, service_template, verbose, gen_type):
                 print(f'->: {j}')
             return
 
-
+        _compile_yaml(yaml_file='gen.yaml', service_name=service_name, gen_type=gen_type)
+        yaml_to_env('env')
 
 
 @do.command('reset-service')
