@@ -289,8 +289,14 @@ def base_lib_update():
     Update base4 library
     """
     print('[*] Updating base4 library...')
-    os.system(f'''cd {project_root}/lib/base4 && git pull''')
-
+    try:
+        os.system(f'''cd {project_root}/.venv/base4 && git pull''')
+    except:
+        pass
+    try:
+        os.system(f'''cd {project_root}/lib/base4 && git pull''')
+    except:
+        pass
 @do.command('fmt')
 def fmt():
     """
