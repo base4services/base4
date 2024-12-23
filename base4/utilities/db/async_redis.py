@@ -106,7 +106,7 @@ class AsyncRedis(BaseAsyncRedis):
         self.max_connections = max_connections
 
     async def flushall(self) -> None:
-        await self.flushall()
+        await self.client.flushall()
 
     async def connect(self) -> None:
         try:
@@ -343,6 +343,9 @@ class AsyncRedisFake(BaseAsyncRedis):
         await self.client.flushall()
 
 def get_redis():
+
+
+
     if os.getenv('TEST_MODE', 'False').lower() == 'true':
 
         if hasattr(get_redis, 'fake_redis'):
