@@ -290,7 +290,7 @@ def base_lib_update():
     """
     print('[*] Updating base4 library...')
     try:
-        os.system(f'''cd {project_root}/.venv/base4 && git pull''')
+        os.system(f'''cd {project_root}/.venv/lib/python3.13/site-packages/base4 && git pull''')
     except:
         pass
     try:
