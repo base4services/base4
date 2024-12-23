@@ -126,18 +126,14 @@ def new_service(service_name, service_template, verbose, gen_type):
             yaml_to_env('env')
 
         def _base4tenants(service_name):
-            # if service_name != 'tenants':
-            #     sys.exit(f'[*] Tenants service name can not be renamed! \nIf you want to create your version of tenants service, use:\n'
-            #              f'bmanager new-service -s {service_name} -t base4service_template ')
-
             os.system(
                 f'''
-                mkdir -p {project_root}/src/services/tenants
+                mkdir -p {project_root}/src/services/{service_name}
                 git clone https://github.com/base4services/base4tenants.git {v}
                 cd base4tenants
                 git checkout {branch}
                 cd ..
-                cp -R base4tenants/src/services/tenants/* {project_root}/src/services/tenants/
+                cp -R base4tenants/src/services/tenants/* {project_root}/src/services/{service_name}/
                 cp -R base4tenants/tests/test_base_tenants.py {project_root}/tests/
                 cp -R base4tenants/tests/test_tenants.py {project_root}/tests/test_tenants.py
                 cp -R base4tenants/shared/services/* {project_root}/src/shared/services/
