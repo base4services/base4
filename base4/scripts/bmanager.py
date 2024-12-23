@@ -5,7 +5,7 @@ import shutil
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
-
+import sys
 import click
 import dotenv
 import git
@@ -290,7 +290,7 @@ def base_lib_update():
     """
     print('[*] Updating base4 library...')
     try:
-        os.system(f'''cd {project_root}/.venv/lib/python3.13/site-packages/base4 && git pull''')
+        os.system(f'''cd {project_root}/.venv/lib/{'python' + sys.version[:4]}/site-packages/base4 && git pull''')
     except:
         pass
     try:
