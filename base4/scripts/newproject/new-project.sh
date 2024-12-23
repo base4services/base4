@@ -152,7 +152,7 @@ if [ "$install_type" == "lib" ]; then
   cd ../../ || exit
 
 elif [ "$install_type" == "venv" ]; then
-  pip install git+https://github.com/base4services/base4.git@${branch} > /dev/null 2>&1;
+  pip install git+https://github.com/base4services/base4.git > /dev/null 2>&1;
 fi
 
 echo "[*] Cloning base4project repository..."
@@ -162,6 +162,7 @@ if ! git clone https://github.com/base4services/base4project.git > /dev/null 2>&
 fi
 
 cd base4project || exit
+git checkout "${branch}" > /dev/null 2>&1;
 cd .. || exit
 mv base4project/* base4project/.[^.]* ./
 rm -rf  base4project
@@ -180,7 +181,7 @@ git commit -m "initial commit" > /dev/null 2>&1;
 # security keys
 echo "[*] Generating security keys..."
 cd security || exit
-./mk_keys.sh > /dev/null 2>&1;
+bash mk_keys.sh > /dev/null 2>&1;
 cd .. || exit
 
 echo "[*] Generating env file..."

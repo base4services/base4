@@ -65,3 +65,44 @@ def read_file(relative_path):
     """
     with open(get_file_path(relative_path), 'r') as f:
         return f.read()
+
+
+def root():
+    return get_project_root()
+
+def config():
+    return get_project_config_folder()
+
+def src():
+    return root() / 'src'
+
+def shared():
+    return src() / 'shared'
+
+def tests():
+    return root() / 'tests'
+
+def logs():
+    return '/var/log/sophie-docs'
+
+def env():
+    return root() / '.env'
+
+def tmp(filename=None):
+    if not filename:
+        return Path('/tmp')
+
+    return Path('/tmp') / filename
+
+def assets(service=None, asset=None):
+
+    if not service and not asset:
+        return src() / 'assets'
+
+    if not service:
+        return src() / 'assets' / asset
+
+    if not asset:
+        return src() / 'services' / service / 'assets'
+
+    return src() / 'services' / service / 'assets' / asset

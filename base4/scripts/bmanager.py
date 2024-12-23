@@ -5,7 +5,7 @@ import shutil
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
-
+import sys
 import click
 import dotenv
 import git
@@ -110,37 +110,36 @@ def new_service(service_name, service_template, verbose, gen_type):
                 f'''
                 mkdir -p {project_root}/src/services/sendmail
                 git clone https://github.com/base4services/base4sendmail.git {v}
-                cd sendmail
+                cd base4sendmail
                 git checkout {branch}
                 cd ..
-                cp -R sendmail/src/services/tenants/* {project_root}/src/services/sendmail/
-                cp -R sendmail/tests/test_sendmail.py {project_root}/tests/test_sendmail.py
-                cp -R sendmail/shared/services/* {project_root}/src/shared/services/
-                pip3 install -r sendmail/requirements.txt -q
-                rm -rf sendmail
+                cp -R base4sendmail/services/template/* {project_root}/src/services/sendmail
+                cp -R base4sendmail/tests/test_sendmail.py {project_root}/tests/test_sendmail.py
+                cp -R base4sendmail/shared/services/* {project_root}/src/shared/services/
+                pip3 install -r base4sendmail/requirements.txt #-q
+                rm -rf base4sendmail
                 '''
             )
+            compile_main_config(service_name, gen_items=gen_type.split(','))
 
         def _base4tenants(service_name):
-            # if service_name != 'tenants':
-            #     sys.exit(f'[*] Tenants service name can not be renamed! \nIf you want to create your version of tenants service, use:\n'
-            #              f'bmanager new-service -s {service_name} -t base4service_template ')
-
             os.system(
                 f'''
-                mkdir -p {project_root}/src/services/tenants
+                mkdir -p {project_root}/src/services/{service_name}
                 git clone https://github.com/base4services/base4tenants.git {v}
                 cd base4tenants
                 git checkout {branch}
                 cd ..
-                cp -R base4tenants/src/services/tenants/* {project_root}/src/services/tenants/
+                cp -R base4tenants/src/services/tenants/* {project_root}/src/services/{service_name}/
                 cp -R base4tenants/tests/test_base_tenants.py {project_root}/tests/
                 cp -R base4tenants/tests/test_tenants.py {project_root}/tests/test_tenants.py
                 cp -R base4tenants/shared/services/* {project_root}/src/shared/services/
-                pip3 install -r base4tenants/requirements.txt -q
+                pip3 install -r base4tenants/requirements.txt #-q
                 rm -rf base4tenants
                 '''
             )
+            compile_main_config(service_name, gen_items=gen_type.split(','))
+
 
         def _base4service_template(service_name):
             print('[*] creating service from default template...')
@@ -168,6 +167,7 @@ def new_service(service_name, service_template, verbose, gen_type):
                 '''
             )
             print(f'[*] service -> {service_name} created!')
+            compile_main_config(service_name, gen_items=gen_type.split(','))
 
 
         if '@' not in service_template:
@@ -180,10 +180,10 @@ def new_service(service_name, service_template, verbose, gen_type):
             for i, j in enumerate(existing_service_templates, start=1):
                 print(f'->: {j}')
             return
-
+        print('service_template', service_template)
         if 'base4tenants' in service_template:
-            _base4tenants(service_name)
-            _base4emails(service_name)
+            _base4tenants('tenants')
+            _base4emails('sendmail')
 
         # elif 'base4emails' in service_template:
         #     _base4emails(service_name)
@@ -196,8 +196,6 @@ def new_service(service_name, service_template, verbose, gen_type):
             for i, j in enumerate(existing_service_templates, start=1):
                 print(f'->: {j}')
             return
-
-        compile_main_config(service_name, gen_items=gen_type.split(','))
 
         _compile_yaml(yaml_file='gen.yaml', service_name=service_name, gen_type=gen_type)
         yaml_to_env('env')
@@ -291,8 +289,14 @@ def base_lib_update():
     Update base4 library
     """
     print('[*] Updating base4 library...')
-    os.system(f'''cd {project_root}/lib/base4 && git pull''')
-
+    try:
+        os.system(f'''cd {project_root}/.venv/lib/{'python' + sys.version[:4]}/site-packages/base4 && git pull''')
+    except:
+        pass
+    try:
+        os.system(f'''cd {project_root}/lib/base4 && git pull''')
+    except:
+        pass
 @do.command('fmt')
 def fmt():
     """
