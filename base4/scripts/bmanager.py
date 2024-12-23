@@ -116,7 +116,7 @@ def new_service(service_name, service_template, verbose, gen_type):
                 cp -R base4sendmail/src/services/sendmail/* {project_root}/src/services/sendmail/
                 cp -R base4sendmail/tests/test_sendmail.py {project_root}/tests/test_sendmail.py
                 cp -R base4sendmail/shared/services/* {project_root}/src/shared/services/
-                pip3 install -r base4sendmail/requirements.txt -q
+                pip3 install -r base4sendmail/requirements.txt #-q
                 rm -rf base4sendmail
                 '''
             )
@@ -137,7 +137,7 @@ def new_service(service_name, service_template, verbose, gen_type):
                 cp -R base4tenants/tests/test_base_tenants.py {project_root}/tests/
                 cp -R base4tenants/tests/test_tenants.py {project_root}/tests/test_tenants.py
                 cp -R base4tenants/shared/services/* {project_root}/src/shared/services/
-                pip3 install -r base4tenants/requirements.txt -q
+                pip3 install -r base4tenants/requirements.txt #-q
                 rm -rf base4tenants
                 '''
             )
