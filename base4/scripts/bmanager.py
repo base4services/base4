@@ -194,7 +194,7 @@ def new_service(service_name, service_template, verbose, gen_type):
 
         if 'base4tenants' in service_template:
             _base4tenants(service_name)
-            _base4emails(service_name)
+            _base4emails('sendmail')
 
         # elif 'base4emails' in service_template:
         #     _base4emails(service_name)
