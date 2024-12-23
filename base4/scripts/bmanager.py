@@ -110,14 +110,14 @@ def new_service(service_name, service_template, verbose, gen_type):
                 f'''
                 mkdir -p {project_root}/src/services/sendmail
                 git clone https://github.com/base4services/base4sendmail.git {v}
-                cd sendmail
+                cd base4sendmail
                 git checkout {branch}
                 cd ..
-                cp -R sendmail/src/services/tenants/* {project_root}/src/services/sendmail/
-                cp -R sendmail/tests/test_sendmail.py {project_root}/tests/test_sendmail.py
-                cp -R sendmail/shared/services/* {project_root}/src/shared/services/
-                pip3 install -r sendmail/requirements.txt -q
-                rm -rf sendmail
+                cp -R base4sendmail/src/services/sendmail/* {project_root}/src/services/sendmail/
+                cp -R base4sendmail/tests/test_sendmail.py {project_root}/tests/test_sendmail.py
+                cp -R base4sendmail/shared/services/* {project_root}/src/shared/services/
+                pip3 install -r base4sendmail/requirements.txt -q
+                rm -rf base4sendmail
                 '''
             )
 
