@@ -306,14 +306,19 @@ def fmt():
     os.system(f'isort {project_root} --profile black --line-length 160')
     return
 
-@do.command('dbinit')
-def dbinit():
+@do.command('init-db')
+def initdb():
     """
         Create database and user from env variables
     """
     db_user = os.getenv('DB_POSTGRES_USER')
     password = os.getenv('DB_POSTGRES_PASSWORD')
     test_db = os.getenv('DB_TEST')
+
+    with open(project_root + '/config/env.yaml', 'r') as f:
+        db = yaml.safe_load(f)
+        print(db)
+
     os.system(f'psql -U postgres -d template1 -c "CREATE ROLE {db_user} WITH CREATEDB LOGIN PASSWORD \'{password}\';"')
     os.system(f'psql -U {db_user} -d template1 -c "create database {test_db};"')
 
