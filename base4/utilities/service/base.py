@@ -338,8 +338,6 @@ async def api_accesslog(request, response, session, start_time, accesslog, exc=N
 			payload['exception'] = exc
 
 
-# rdb.lpush(f'ACCESSLOG-{config.PROJECT_NAME}', json_dumps(payload, usepickle=True))
-
 
 def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
 		headers: Optional[dict] = None,upload_allowed_file_types: Optional[List[str]] = None,
@@ -454,7 +452,6 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
 						
 						api_handler = API_HANDLERS.get(api_module_name)
 						if api_handler is None:
-							# "API handler for method '{func_name}' not found in configuration."
 							raise HTTPException(
 								status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
 								detail={"code": "INTERNAL_SERVER_ERROR"}
@@ -462,7 +459,6 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
 						
 						user_role_config = ROLES.get(self.session.role)
 						if user_role_config is None:
-							# "Permission '{func_name}' denied for role '{current_role}'.")
 							raise HTTPException(
 								status_code=status.HTTP_403_FORBIDDEN,
 								detail={"code": "HTTP_403_FORBIDDEN"}
@@ -516,8 +512,7 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
 								status_code=status.HTTP_429_TOO_MANY_REQUESTS,
 								detail={"code": "HTTP_429_TOO_MANY_REQUESTS"}
 							)
-			
-			
+
 			#####################################
 			# cache mechanism
 			#####################################
@@ -533,7 +528,7 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
 				
 				# todo, uhvati exc ako se desi na api i to da udje u accesslog na exc
 				response = await func(self, **request.path_params)
-				await api_accesslog(request, response, self.session, start_time, accesslog, exc=None)
+				#await api_accesslog(request, response, self.session, start_time, accesslog, exc=None)
 				try:
 					rdb.setex(cache_key, cache, json.dumps(response))
 				except Exception as e:
@@ -545,7 +540,7 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
 			#####################################
 			response = await func(self, **request.path_params)
 			# todo, uhvati exc ako se desi na api i to da udje u accesslog na exc
-			await api_accesslog(request, response, self.session, start_time, accesslog, exc=None)
+			#await api_accesslog(request, response, self.session, start_time, accesslog, exc=None)
 			return response
 		return wrapper
 	return decorator
