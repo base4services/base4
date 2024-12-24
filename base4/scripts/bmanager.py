@@ -187,9 +187,6 @@ def new_service(service_name, service_template, verbose, gen_type):
             _base4tenants('tenants')
             _base4emails('sendmail')
 
-        # elif 'base4emails' in service_template:
-        #     _base4emails(service_name)
-
         elif 'base4service_template' in service_template:
             _base4service_template(service_name)
 
@@ -201,6 +198,7 @@ def new_service(service_name, service_template, verbose, gen_type):
 
         _compile_yaml(yaml_file='gen.yaml', service_name=service_name, gen_type=gen_type)
         yaml_to_env('env')
+        update_config_ac()
 
 
 @do.command('reset-service')

@@ -196,5 +196,5 @@ direnv allow
 echo "================================================================================"
 echo "  ---  Project created successfully!   ---"
 echo "  [*] Git repository initialized in $workdir/$app."
-echo "  [*] 'bmanager' tool is for managing the project. Run 'bmanager -h' for help."
+echo "  [*] Initialize database with 'bmanager init-db' command."
 echo "================================================================================"
