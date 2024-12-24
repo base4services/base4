@@ -13,6 +13,7 @@ import tortoise
 import tortoise.timezone
 import ujson as json
 from fastapi import APIRouter, FastAPI, File, Form, HTTPException, Query, Request, Response, UploadFile, status
+import base4.utilities.db.async_redis as async_redis
 
 from base4.schemas.base import NOT_SET
 from base4.utilities.access_control.helpers import (
@@ -431,7 +432,21 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
 								status_code=status.HTTP_401_UNAUTHORIZED,
 								detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"}
 							)
-						
+
+						async with async_redis.get_redis() as redis_client:
+							redis_session = await redis_client.get_value(f"session:{self.session.session_id}")
+							if not redis_session:
+								raise HTTPException(
+									status_code=status.HTTP_401_UNAUTHORIZED,
+									detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"})
+
+							if getattr(self.session, 'expired', False):
+								raise HTTPException(
+									status_code=status.HTTP_401_UNAUTHORIZED,
+									detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"}
+								)
+
+
 						func_name = func.__name__
 						class_path = _get_api_handler_class_path(self)
 						full_api_handler_class_path = f"{class_path}.{func_name}"
