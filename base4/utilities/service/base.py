@@ -6,7 +6,7 @@ import uuid
 from functools import wraps
 from inspect import signature
 from typing import Any, Callable, Dict, List, Optional, TypeVar
-
+from base4.schemas.universal_table import UniversalTableGetRequest, UniversalTableResponse
 import dotenv
 import pydantic
 import tortoise
@@ -623,3 +623,125 @@ class BaseWebSocketHandler(object):
 	
 	async def ws_emit(self, event, data={}, room=None):
 		await emit(event=event, data=data, room=room, connection=self.sio_connection)
+
+
+
+class CRUDAPIHandler(object):
+	def __init__(self, router):
+		self.service = 'example service module path'
+		self.schema = 'example service schema path'
+		self.model = 'example service model path'
+		super().__init__(router)
+
+	@api(
+		method='GET',
+		path='/id/{_id}',
+		# response_model = Dict[str, str],
+		# cache: int = 0,
+		# is_accesslog: bool = True,
+		# upload_allowed_file_types: Optional[List[str]] = None,
+		# upload_max_file_size: Optional[int] = None,
+		# upload_max_files: Optional[int] = None
+		# is_authorized: bool = False,
+		# is_public=False,
+	)
+	async def get_single(self, request: Request) -> dict:
+		return {"hello": "world"}
+
+	@api(
+		method='GET',
+		path='/id/{_id}/{field}',
+
+	)
+	async def get_single_field(self, request: Request) -> dict:
+		return {"hello": "world"}
+
+	@api(
+		method='POST',
+		path='/',
+
+	)
+	async def create(self, request: Request) -> dict:
+		return {"hello": "world"}
+
+	@api(
+		method='POST',
+		path='/id/{item_id}/validate',
+
+	)
+	async def validate(self, request: Request) -> dict:
+		return {"hello": "world"}
+
+	@api(
+		method='GET',
+		path='/',
+		response_model=List[Dict] | Dict[str, Any] | UniversalTableResponse
+	)
+	async def get(self, request: Request) -> dict:
+		return {"hello": "world"}
+
+	@api(
+		method='PATCH',
+		path='/id/{_id}',
+		response_model=Dict[str, Any]
+	)
+	async def update_by_id(self, request: Request) -> dict:
+		return {"hello": "world"}
+
+	@api(
+		method='DELETE',
+		path='/id/{_id}',
+		response_model=Dict[str, Any]
+	)
+	async def delete_by_id(self, request: Request) -> dict:
+		return {"hello": "world"}
+
+
+class FaceBookAPIHandler(object):
+	# todo
+	def __init__(self, router):
+		super().__init__(router)
+
+	@api(
+		method='GET',
+		path='/id/{_id}',
+	)
+	async def callback(self, request: Request) -> dict:
+		return {"hello": "world"}
+
+class GoogleAPIHandler(object):
+	# todo
+	def __init__(self, router):
+		super().__init__(router)
+
+	@api(
+		method='GET',
+		path='/id/{_id}',
+	)
+	async def callback(self, request: Request) -> dict:
+		return {"hello": "world"}
+
+
+class GithubAPIHandler(object):
+	# todo
+	def __init__(self, router):
+		super().__init__(router)
+
+	@api(
+		method='GET',
+		path='/id/{_id}',
+	)
+	async def callback(self, request: Request) -> dict:
+		return {"hello": "world"}
+
+class GoogleMFAAPIHandler(object):
+	# todo
+	def __init__(self, router):
+		super().__init__(router)
+
+	@api(
+		method='GET',
+		path='/id/{_id}',
+	)
+	async def callback(self, request: Request) -> dict:
+		return {"hello": "world"}
