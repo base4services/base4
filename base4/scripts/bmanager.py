@@ -182,13 +182,11 @@ def new_service(service_name, service_template, verbose, gen_type):
             for i, j in enumerate(existing_service_templates, start=1):
                 print(f'->: {j}')
             return
-        print('service_template', service_template)
+
         if 'base4tenants' in service_template:
             _base4tenants('tenants')
             _base4emails('sendmail')
 
-        # elif 'base4emails' in service_template:
-        #     _base4emails(service_name)
 
         elif 'base4service_template' in service_template:
             _base4service_template(service_name)
