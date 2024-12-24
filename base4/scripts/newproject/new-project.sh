@@ -1,38 +1,68 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-if [ "$#" -lt 1 ]; then
-    echo "Usage: newproject <app> [branch|workdir] [workdir]"
+# Default values
+app=""
+branch="main"
+workdir="."
+
+# Function to display help
+usage() {
+    echo "Usage: newproject --app <app_name> [--branch <branch_name>] [--workdir <workdir>]"
+    echo "       --app       Application name (required)."
+    echo "       --branch    Branch name (default: main)."
+    echo "       --workdir   Working directory (default: .)."
     exit 1
+}
+
+# If no arguments are provided, print usage and exit
+[[ $# -eq 0 ]] && usage
+
+# Argument parsing
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --app)
+            app="$2"
+            shift 2
+            ;;
+        --branch)
+            branch="$2"
+            shift 2
+            ;;
+        --workdir)
+            workdir="$2"
+            shift 2
+            ;;
+        -h|--help)
+            usage
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo
+            usage
+            ;;
+    esac
+done
+
+# Check if --app was provided
+if [[ -z "$app" ]]; then
+    echo "[!] You must specify the application name using --app <name>."
+    echo
+    usage
 fi
 
-app=$1
-branch=${2:-main}
-workdir=${3:-.}
-
+# Check if the project directory already exists
 if [ -d "$app" ]; then
-  echo "[*] '$app' already exists. Please choose a different name."
-  exit 0
-fi
-
-if [ "$#" -eq 2 ]; then
-    second_param=$2
-    if [[ "$second_param" == dev* || "$second_param" == main* ]]; then
-        branch=$second_param
-        workdir="."
-    else
-        branch="main"
-        workdir=$second_param
-    fi
-else
-    branch=${2:-main}
-    workdir=${3:-.}
+    echo "[*] '$app' already exists. Please choose a different name."
+    exit 0
 fi
 
 echo "================================================================================"
 echo "[*] Application name: $app"
 echo "[*] Working directory: $workdir"
-echo "[*] Base4 branch: $branch"
+echo "[*] Branch: $branch"
+echo "[*] Python: $(python3 --version)"
 echo "================================================================================"
+
 
 # Prompt for installation type with a default option
 echo "Choose installation type (default is 'lib'):"
