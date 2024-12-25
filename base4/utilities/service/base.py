@@ -466,26 +466,38 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
 						
 						permissions = user_role_config["permissions"]
 						target_permission_name = f"{api_module_name}.{func_name}"
-						
-						#todo,  ovde treba da se uzme korisnik iz redisa posto je uspesno ulogovan i da se merge njegove permisisje
-						# do sada je bio to iz jwt ali je sklonjeno
+
+						# todo, ovde treba da se uzme korisnik iz redisa posto je uspesno ulogovan i da se merge njegove permisisje
+						#do sada je bio to iz jwt ali je sklonjeno
 						user_permissions = []
 						if user_permissions:
 							_merge_with_user_permissions(static_permissions=permissions, user_permissions=user_permissions)
-						
+
+						_wildcard_permissions = {}
+						direct_permissions = {}
+
 						permission = None
 						for perm in permissions:
-							if perm["name"] == target_permission_name:
-								permission = perm
-								break
-						
+							if perm["name"].endswith(".*"):
+								base_name = perm["name"][:-2]  # Remove `.*`
+								_wildcard_permissions[base_name] = perm
+							else:
+								direct_permissions[perm["name"]] = perm
+
+						if _wildcard_permissions:
+							permission = direct_permissions.get(target_permission_name)
+							if not permission:
+								for base_name, perm in _wildcard_permissions.items():
+									if target_permission_name.startswith(base_name):
+										permission = perm
+										break
+
 						if permission is None:
-							# raise "Permission '{func_name}' denied for role '{current_role}'
 							raise HTTPException(
 								status_code=status.HTTP_403_FORBIDDEN,
 								detail={"code": "HTTP_403_FORBIDDEN"}
 							)
-						
+
 						context = kwargs.get("context", {})
 						
 						# attribue evaluation
@@ -554,8 +566,6 @@ def route(router: APIRouter, prefix: str):
 	return decorator
 
 
-sio_connection = sio_client_manager(write_only=True)
-
 
 class BaseAPIHandler(object):
 	
@@ -564,7 +574,6 @@ class BaseAPIHandler(object):
 		self.services = services
 		self.model = model
 		self.schema = schema
-		self.sio_connection = sio_connection
 		self.register_routes()
 	
 	def register_routes(self):
@@ -629,7 +638,7 @@ class BaseUploadFileHandler(object):
 
 
 class BaseWebSocketHandler(object):
-	sio_connection = sio_connection
+	sio_connection = sio_client_manager(write_only=True)
 	
 	async def ws_emit(self, event, data={}, room=None):
 		await emit(event=event, data=data, room=room, connection=self.sio_connection)
