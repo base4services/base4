@@ -630,7 +630,7 @@ class BaseService[ModelType]:
             wrap = post_commit_update_result_wrapped[1]
             post_commit_update_result = post_commit_update_result_wrapped[0]
         else:
-            post_commit_update_result = wrapped
+            post_commit_update_result = post_commit_update_result_wrapped
             wrap = True
 
         if post_commit_update_result_wrapped is not None:
