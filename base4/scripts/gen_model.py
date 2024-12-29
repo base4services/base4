@@ -82,15 +82,15 @@ def gen_model(tbl, tbl_name, ctable=False, parent_class_name='', parent_types=No
                         if idx.startswith('id_'):
                             idx = 'idx_' + idx[3:]
 
-                        parent_type = 'fields.UUIDField(null=True, index=True)'
+                        parent_type = 'fields.UUIDField(null=True, db_index=True)'
                         if value["origin"] in parent_types:
                             parent_type = parent_types[value["origin"]]
 
-                        have_index = 'index=True' in parent_type
+                        have_index = 'db_index=True' in parent_type
                         if have_index:
                             res += f'''\t{idx} = {parent_type}\n'''
                         else:
-                            parent_type = parent_type.rstrip(')') + ', index=True)'
+                            parent_type = parent_type.rstrip(')') + ', db_index=True)'
                             res += f'''\t{idx} = {parent_type}\n'''
 
             res += f'\t{column_name} = {orm_field}\n'
