@@ -6,6 +6,9 @@ import uuid
 from functools import wraps
 from inspect import signature
 from typing import Any, Callable, Dict, List, Optional, TypeVar
+
+from starlette.middleware.sessions import SessionMiddleware
+
 from base4.schemas.universal_table import UniversalTableGetRequest, UniversalTableResponse
 import dotenv
 import pydantic
@@ -410,8 +413,8 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
 				token = request.headers.get("Authorization")
 				if not is_authorized:
 					self.id_tenant = request.headers.get("X-Tenant-ID")
-					if not self.id_tenant:
-						raise HTTPException(status_code=401, detail=f"Provide valid X-Tenant-ID")
+					# if not self.id_tenant:
+					# 	raise HTTPException(status_code=401, detail=f"Provide valid X-Tenant-ID")
 					
 				elif is_authorized:
 					if token and token.startswith("Bearer "):
@@ -562,6 +565,7 @@ def route(router: APIRouter, prefix: str):
 	def decorator(cls):
 		instance = cls(router)
 		app.include_router(router, prefix=prefix)
+		app.add_middleware(SessionMiddleware, secret_key="d32do34mf234mfl23k4mfl2k34mlf24")
 		return instance
 	return decorator
 

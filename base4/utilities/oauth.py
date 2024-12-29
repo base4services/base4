@@ -1,27 +1,20 @@
-# auth/oauth.py
+import os
 from secrets import token_urlsafe
+import dotenv
+dotenv.load_dotenv()
 
 from authlib.integrations.starlette_client import OAuth
-from starlette.requests import Request
+from fastapi.requests import Request
 
-from auth.config import (
-    GOOGLE_CLIENT_ID,
-    GOOGLE_CLIENT_SECRET,
-    FACEBOOK_CLIENT_ID,
-    FACEBOOK_CLIENT_SECRET,
-    GITHUB_CLIENT_ID,
-    GITHUB_CLIENT_SECRET,
-)
 
-# MS, APPLE, GITHUB , FB
 oauth = OAuth()
 
 # https://developers.google.com/identity/gsi/web/tools/configurator
 # https://console.cloud.google.com/apis/credentials?inv=1&invt=AblEBQ&project=restful-api-162612
 oauth.register(
     name='google',
-    client_id=GOOGLE_CLIENT_ID,
-    client_secret=GOOGLE_CLIENT_SECRET,
+    client_id=os.getenv('OAUTH_GOOGLE_CLIENT_ID'),
+    client_secret=os.getenv('OAUTH_GOOGLE_CLIENT_SECRET'),
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
     authorize_url="https://accounts.google.com/o/oauth2/auth",
     client_kwargs={
@@ -34,8 +27,8 @@ oauth.register(
 # https://developers.facebook.com/apps/1155968609426519/settings/advanced/
 oauth.register(
     name='facebook',
-    client_id=FACEBOOK_CLIENT_ID,
-    client_secret=FACEBOOK_CLIENT_SECRET,
+    client_id=os.getenv('OAUTH_FACEBOOK_CLIENT_ID'),
+    client_secret=os.getenv('OAUTH_FACEBOOK_CLIENT_SECRET'),
     access_token_url='https://graph.facebook.com/oauth/access_token',
     access_token_params=None,
     authorize_url='https://www.facebook.com/dialog/oauth',
@@ -44,11 +37,23 @@ oauth.register(
 
 oauth.register(
     name='github',
-    client_id=GITHUB_CLIENT_ID,
-    client_secret=GITHUB_CLIENT_SECRET,
+    client_id=os.getenv('OAUTH_GITHUB_CLIENT_ID'),
+    client_secret=os.getenv('OAUTH_GITHUB_CLIENT_SECRET'),
     access_token_url='https://github.com/login/oauth/access_token',
     authorize_url='https://github.com/login/oauth/authorize',
     client_kwargs={'scope': 'user:email'},
+)
+
+oauth.register(
+    name='apple',
+    client_id=os.getenv('OAUTH_APPLE_CLIENT_ID'),
+    client_secret=os.getenv('OAUTH_APPLE_CLIENT_SECRET'),
+)
+
+oauth.register(
+    name='microsoft',
+    client_id=os.getenv('OAUTH_MICROSOFT_CLIENT_ID'),
+    client_secret=os.getenv('OAUTH_MICROSOFT_CLIENT_SECRET'),
 )
 
 async def oauth_login(request: Request, provider_name: str):
@@ -56,7 +61,7 @@ async def oauth_login(request: Request, provider_name: str):
     if provider_name not in ['google', 'facebook', 'github']:
         raise ValueError("Nepoznat OAuth provider")
 
-    redirect_uri = request.url_for('auth_callback', provider_name=provider_name)
+    redirect_uri =  f'{request.base_url}api/tenants/oauth/users/{provider_name}/callback'
     if provider_name == 'google':
         nonce_value = token_urlsafe(16)
         request.session["nonce"] = nonce_value
@@ -70,11 +75,9 @@ async def oauth_callback(request: Request, provider_name: str):
     client = oauth.create_client(provider_name)
     token = await client.authorize_access_token(request)
 
-    print(request.session.get('nonce'))
     if provider_name == 'google':
         stored_nonce = request.session.get("nonce")
         user_info = await client.parse_id_token(token, nonce=stored_nonce)
-        ...
     else:
         # ostali provider-i (Facebook, GitHub) imaju drugacije rute za user_info
         if provider_name == 'facebook':

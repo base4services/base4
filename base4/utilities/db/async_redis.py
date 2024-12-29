@@ -263,7 +263,7 @@ class AsyncRedisFake(BaseAsyncRedis):
         pass
 
     async def disconnect(self) -> None:
-        await self.client.close()
+        await self.client.aclose()
 
     async def set_value(
             self,
