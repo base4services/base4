@@ -34,19 +34,18 @@ logger = get_logger()
 sio_connection = sio_client_manager(write_only=True)
 
 
-
 class BaseService[ModelType]:
 
     def __init__(
-        self,
-        schema: Type[SchemaType],
-        model: Type[ModelType],
-        conn_name: str,
-        c11: Type[C11Type] = None,
-        c1n: Type[C1NType] = None,
-        uid_prefix='?',
-        uid_total_length=10,
-        uid_alphabet='WERTYUPASFGHJKLZXCVNM2345679',
+            self,
+            schema: Type[SchemaType],
+            model: Type[ModelType],
+            conn_name: str,
+            c11: Type[C11Type] = None,
+            c1n: Type[C1NType] = None,
+            uid_prefix='?',
+            uid_total_length=10,
+            uid_alphabet='WERTYUPASFGHJKLZXCVNM2345679',
     ):
         self.schema = schema
         self.model = model
@@ -99,7 +98,7 @@ class BaseService[ModelType]:
     ...
 
     async def get_all(
-        self, request: UniversalTableGetRequest, profile_schema: pydantic.BaseModel, _request: Request, post_process_method=None
+            self, request: UniversalTableGetRequest, profile_schema: pydantic.BaseModel, _request: Request, post_process_method=None
     ) -> List | Dict | UniversalTableResponse:
         """
         Get all items from the table
@@ -420,12 +419,12 @@ class BaseService[ModelType]:
         return {'value': getattr(item, field)}
 
     async def update_if_exists_on_create(
-        self,
-        logged_user_id: uuid.UUID,
-        payload: SchemaType,
-        request: Request,
-        update_if_exists_key_fields: List[str] = None,
-        update_if_exists_value_fields: List[Any] = None,
+            self,
+            logged_user_id: uuid.UUID,
+            payload: SchemaType,
+            request: Request,
+            update_if_exists_key_fields: List[str] = None,
+            update_if_exists_value_fields: List[Any] = None,
     ):
         BaseServiceUtils.validate_update_if_exists_params(update_if_exists_key_fields, update_if_exists_value_fields)
 
@@ -450,15 +449,15 @@ class BaseService[ModelType]:
             return await self.update(logged_user_id, item.id, payload, request, return_db_item=True)
 
     async def create(
-        self,
-        logged_user_id: uuid.UUID,
-        payload: SchemaType,
-        request: Request,
-        update_if_exists: bool = False,
-        update_if_exists_key_fields: List[str] = None,
-        update_if_exists_value_fields: List[Any] = None,
-        conn=None,
-        return_db_object=False,
+            self,
+            logged_user_id: uuid.UUID,
+            payload: SchemaType,
+            request: Request,
+            update_if_exists: bool = False,
+            update_if_exists_key_fields: List[str] = None,
+            update_if_exists_value_fields: List[Any] = None,
+            conn=None,
+            return_db_object=False,
     ):
 
         # !Removing transaction (TODO: Fix this bug)
@@ -539,11 +538,11 @@ class BaseService[ModelType]:
         }
 
     async def validate(
-        self,
-        logged_user_id: uuid.UUID,
-        item_id: uuid.UUID,
-        request: Request,
-        quiet: bool = False,
+            self,
+            logged_user_id: uuid.UUID,
+            item_id: uuid.UUID,
+            request: Request,
+            quiet: bool = False,
     ):
 
         item = await self.get_single_model(item_id, request)
@@ -587,15 +586,15 @@ class BaseService[ModelType]:
         await BaseServicePreAndPostUtils.update_pre_save_hook(service_instance=self, payload=payload, request=request, item=model_item)
 
         if (
-            updated := await BaseServiceUtils.update_db_entity_instance(
-                model_loc=model_loc,
-                payload=payload,
-                db_item=model_item,
-                schem_item=schem_item,
-                service_instance=self,
-                request=request,
-                logged_user_id=logged_user_id,
-            )
+                updated := await BaseServiceUtils.update_db_entity_instance(
+                    model_loc=model_loc,
+                    payload=payload,
+                    db_item=model_item,
+                    schem_item=schem_item,
+                    service_instance=self,
+                    request=request,
+                    logged_user_id=logged_user_id,
+                )
         ) != {}:
             await model_item.save()
 
@@ -619,13 +618,13 @@ class BaseService[ModelType]:
         res = {'id': str(item_id), 'updated': updated, 'action': 'updated' if updated else 'no_changes'}
 
         if (
-            post_commit_update_result := await BaseServicePreAndPostUtils.update_post_save_hook(
-                service_instance=self,
-                payload=payload,
-                request=request,
-                item=model_item,
-                updated=updated,
-            )
+                post_commit_update_result := await BaseServicePreAndPostUtils.update_post_save_hook(
+                    service_instance=self,
+                    payload=payload,
+                    request=request,
+                    item=model_item,
+                    updated=updated,
+                )
         ) is not None:
             # TODO ?!? smisli nesto univerzalnije
             res['item'] = post_commit_update_result
@@ -651,7 +650,6 @@ class BaseService[ModelType]:
         from base4.project_specifics import lookups_module
 
         # lookups = lookups_module.Lookups
-
 
         updated = set()
         for c in citem.mk_cache_rules:
@@ -799,18 +797,19 @@ class BaseService[ModelType]:
 
 from shared.services.tenants.schemas.me import Me
 
+
 class BaseServiceV2[ModelType]:
 
     def __init__(
-        self,
-        schema: Type[SchemaType],
-        model: Type[ModelType],
-        conn_name: str,
-        c11: Type[C11Type] = None,
-        c1n: Type[C1NType] = None,
-        uid_prefix='?',
-        uid_total_length=10,
-        uid_alphabet='WERTYUPASFGHJKLZXCVNM2345679',
+            self,
+            schema: Type[SchemaType],
+            model: Type[ModelType],
+            conn_name: str,
+            c11: Type[C11Type] = None,
+            c1n: Type[C1NType] = None,
+            uid_prefix='?',
+            uid_total_length=10,
+            uid_alphabet='WERTYUPASFGHJKLZXCVNM2345679',
     ):
         self.schema = schema
         self.model = model
@@ -863,7 +862,7 @@ class BaseServiceV2[ModelType]:
     ...
 
     async def get_all(
-        self, request: UniversalTableGetRequest, profile_schema: pydantic.BaseModel, _request: Request, post_process_method=None
+            self, request: UniversalTableGetRequest, profile_schema: pydantic.BaseModel, _request: Request, post_process_method=None
     ) -> List | Dict | UniversalTableResponse:
         """
         Get all items from the table
@@ -1183,13 +1182,75 @@ class BaseServiceV2[ModelType]:
         item = await self.get_single_model(item_id, request)
         return {'value': getattr(item, field)}
 
+    async def update_put(self, payload: SchemaType, request: Request):
+        me = await Me.get(request)
+
+        payload.last_updated_by = me.id
+
+        item = await self.model.filter(id=payload.id,
+                                       id_tenant=me.id_tenant,
+                                       is_deleted=False).get_or_none()
+
+        if not item:
+            raise HTTPException(status_code=404, detail={'code': 'NOT_FOUND', 'message': f"{self.base_table_name} with sent id doesn't exist."})
+
+        # TODO what with pre_save, post_save, post_commit
+
+        res = await self.update(item.id, payload, request)
+        return res
+
+    async def update_patch(self, item_id: uuid.UUID, payload: dict, request: Request):
+        me = await Me.get(request)
+
+        payload['last_updated_by'] = me.id
+
+        item = await self.model.filter(id=item_id,
+                                       id_tenant=me.id_tenant,
+                                       is_deleted=False).get_or_none()
+
+        if not item:
+            raise HTTPException(status_code=404, detail={'code': 'NOT_FOUND', 'message': f"{self.base_table_name} with sent id doesn't exist."})
+
+        # TODO what with pre_save, post_save, post_commit
+
+        updated = {}
+        for key in payload:
+            if hasattr(item, key):
+                current = getattr(item, key)
+                if current != payload[key]:
+                    updated[key] = [current, payload[key]]
+                    setattr(item, key, payload[key])
+
+        res = {}
+
+        if updated:
+            await item.save()
+            res['updated'] = updated
+
+            if (
+                    post_commit_update_result := await BaseServicePreAndPostUtils.update_post_save_hook(
+                        service_instance=self,
+                        payload=payload,
+                        request=request,
+                        item=item,
+                        updated=updated,
+                    )
+            ) is not None:
+                # TODO ?!? smisli nesto univerzalnije
+                res['item'] = post_commit_update_result
+
+
+            await self.update_activity_log(item, request, updated)
+
+        return res
+
     async def update_if_exists_on_create(
-        self,
-        # logged_user_id: uuid.UUID,
-        payload: SchemaType,
-        request: Request,
-        update_if_exists_key_fields: List[str] = None,
-        update_if_exists_value_fields: List[Any] = None,
+            self,
+            # logged_user_id: uuid.UUID,
+            payload: SchemaType,
+            request: Request,
+            update_if_exists_key_fields: List[str] = None,
+            update_if_exists_value_fields: List[Any] = None,
     ):
         BaseServiceUtils.validate_update_if_exists_params(update_if_exists_key_fields, update_if_exists_value_fields)
 
@@ -1216,15 +1277,15 @@ class BaseServiceV2[ModelType]:
             return await self.update(me.id, item.id, payload, request, return_db_item=True)
 
     async def create(
-        self,
-        # logged_user_id: uuid.UUID,
-        payload: SchemaType,
-        request: Request,
-        update_if_exists: bool = False,
-        update_if_exists_key_fields: List[str] = None,
-        update_if_exists_value_fields: List[Any] = None,
-        conn=None,
-        return_db_object=False,
+            self,
+            # logged_user_id: uuid.UUID,
+            payload: SchemaType,
+            request: Request,
+            update_if_exists: bool = False,
+            update_if_exists_key_fields: List[str] = None,
+            update_if_exists_value_fields: List[Any] = None,
+            conn=None,
+            return_db_object=False,
     ):
 
         # !Removing transaction (TODO: Fix this bug)
@@ -1274,8 +1335,8 @@ class BaseServiceV2[ModelType]:
 
         post_commit_result = await BaseServicePreAndPostUtils.create_post_save_hook(service_instance=self, payload=payload, request=request, item=item)
 
-        await self.validate(#me.id,
-                            item.id, request, quiet=True)
+        await self.validate(  # me.id,
+            item.id, request, quiet=True)
 
         await self.create_activity_log(item=item, handler=request)
 
@@ -1308,11 +1369,11 @@ class BaseServiceV2[ModelType]:
         }
 
     async def validate(
-        self,
-        # logged_user_id: uuid.UUID,
-        item_id: uuid.UUID,
-        request: Request,
-        quiet: bool = False,
+            self,
+            # logged_user_id: uuid.UUID,
+            item_id: uuid.UUID,
+            request: Request,
+            quiet: bool = False,
     ):
 
         item = await self.get_single_model(item_id, request)
@@ -1325,7 +1386,7 @@ class BaseServiceV2[ModelType]:
 
         return {'valid': True}
 
-    async def create_or_update(self, #logged_user_id: uuid.UUID,
+    async def create_or_update(self,  # logged_user_id: uuid.UUID,
                                key_id: List[Any], payload: SchemaType, request: Request, response: Response) -> Dict[str, Any]:
 
         me = await Me.get(request)
@@ -1346,7 +1407,7 @@ class BaseServiceV2[ModelType]:
         res = await self.update(me.id, existing.id, payload, request)
         return res
 
-    async def update(self, #logged_user_id: uuid.UUID,
+    async def update(self,  # logged_user_id: uuid.UUID,
                      item_id: uuid.UUID, payload: SchemaType, request: Request, return_db_item=False):
 
         me = await Me.get(request)
@@ -1361,20 +1422,20 @@ class BaseServiceV2[ModelType]:
 
         await BaseServicePreAndPostUtils.update_pre_save_hook(service_instance=self, payload=payload, request=request, item=model_item)
 
-        if (
-            updated := await BaseServiceUtils.update_db_entity_instance(
-                model_loc=model_loc,
-                payload=payload,
-                db_item=model_item,
-                schem_item=schem_item,
-                service_instance=self,
-                request=request,
-                logged_user_id=me.id,
-            )
-        ) != {}:
+        updated = await BaseServiceUtils.update_db_entity_instance(
+            model_loc=model_loc,
+            payload=payload,
+            db_item=model_item,
+            schem_item=schem_item,
+            service_instance=self,
+            request=request,
+            logged_user_id=me.id,
+        )
+
+        if updated != {}:
             await model_item.save()
 
-            await self.validate(me.id, item_id, request, quiet=False)
+            await self.validate(item_id, request, quiet=False)
 
             if self.c11:
                 await self.mk_cache(request, 'c11', model_item.cache11, model_item)
@@ -1394,20 +1455,20 @@ class BaseServiceV2[ModelType]:
         res = {'id': str(item_id), 'updated': updated, 'action': 'updated' if updated else 'no_changes'}
 
         if (
-            post_commit_update_result := await BaseServicePreAndPostUtils.update_post_save_hook(
-                service_instance=self,
-                payload=payload,
-                request=request,
-                item=model_item,
-                updated=updated,
-            )
+                post_commit_update_result := await BaseServicePreAndPostUtils.update_post_save_hook(
+                    service_instance=self,
+                    payload=payload,
+                    request=request,
+                    item=model_item,
+                    updated=updated,
+                )
         ) is not None:
             # TODO ?!? smisli nesto univerzalnije
             res['item'] = post_commit_update_result
 
         return res
 
-    async def delete(self, # logged_user_id: uuid.UUID,
+    async def delete(self,  # logged_user_id: uuid.UUID,
                      item_id: uuid.UUID, request: Request):
 
         me = await Me.get(request)
@@ -1429,7 +1490,6 @@ class BaseServiceV2[ModelType]:
         from base4.project_specifics import lookups_module
 
         # lookups = lookups_module.Lookups
-
 
         updated = set()
         for c in citem.mk_cache_rules:

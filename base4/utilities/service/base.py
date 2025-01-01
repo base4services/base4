@@ -529,6 +529,11 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
                                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
                                 detail={"code": "HTTP_429_TOO_MANY_REQUESTS"}
                             )
+                    else:
+                        raise HTTPException(
+                            status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token"}
+                        )
 
             #####################################
             # cache mechanism
@@ -680,10 +685,7 @@ class CRUDAPIHandler[SchemaType](BaseAPIHandler):
         path='',
     )
     async def create(self, data: dict, request: Request) -> dict:
-        try:
-            validated_data = self._schema(**data)
-        except Exception as e:
-            raise
+        validated_data = self._schema(**data)
 
         return await self._service.create(
             payload=validated_data,
@@ -694,7 +696,7 @@ class CRUDAPIHandler[SchemaType](BaseAPIHandler):
         method='GET',
         path='/id/{_id}',
     )
-    async def get_single(self, _id: str, request: Request) -> SchemaType:
+    async def get_single(self, _id: uuid.UUID, request: Request) -> SchemaType:
         return await self._service.get_single(item_id=_id, request=request)
         # return (await self._service.get_single(item_id=_id, request=request)).model_dump(mode='json')
         # try:
@@ -717,6 +719,50 @@ class CRUDAPIHandler[SchemaType](BaseAPIHandler):
         from services.hotels.schemas.generated_hotels_table import HotelsDefault_hotelsSchema
         res = await self._service.get_all(request=data, profile_schema=HotelsDefault_hotelsSchema, _request=request)
         return res.model_dump(mode='json')
+
+    @api(
+        method='PUT',
+        # path='/id/{_id}',
+        path='',
+
+    )
+    async def update_put(self, data: dict, request: Request) -> dict:
+        try:
+            validated_data = self._schema(**data)
+        except Exception as e:
+            raise
+
+        try:
+            res = await self._service.update_put(
+                payload=validated_data,
+                request=request,
+            )
+        except Exception as e:
+            raise
+        return res
+
+    @api(
+        method='DELETE',
+        path='/id/{_id}',
+    )
+    async def delete(self, _id: uuid.UUID, request: Request) -> None:
+        return await self._service.delete(item_id=_id, request=request)
+
+    @api(
+        method='PATCH',
+        path='/id/{_id}',
+    )
+    async def update_patch(self, _id: uuid.UUID, data: dict, request: Request) -> dict:
+
+        try:
+            res = await self._service.update_patch(
+                item_id=_id,
+                payload=data,
+                request=request,
+            )
+        except Exception as e:
+            raise
+        return res
 
 #
 # @api(
@@ -767,3 +813,4 @@ class CRUDAPIHandler[SchemaType](BaseAPIHandler):
 # )
 # async def delete_by_id(self, request: Request) -> dict:
 # 	return {"hello": "world"}
+
