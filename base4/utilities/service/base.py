@@ -680,13 +680,31 @@ class CRUDAPIHandler[SchemaType](BaseAPIHandler):
         path='',
     )
     async def create(self, data: dict, request: Request) -> dict:
-        validated_data = self._schema(**data)
+        try:
+            validated_data = self._schema(**data)
+        except Exception as e:
+            raise
 
         return await self._service.create(
             payload=validated_data,
             request=request,
         )
 
+    @api(
+        method='GET',
+        path='/id/{_id}',
+    )
+    async def get_single(self, _id: str, request: Request) -> SchemaType:
+        return await self._service.get_single(item_id=_id, request=request)
+        # return (await self._service.get_single(item_id=_id, request=request)).model_dump(mode='json')
+        # try:
+        #     res = await self._service.get_single(
+        #         item_id=_id,
+        #         request=request,
+        #     )
+        # except Exception as e:
+        #     raise
+        # return res.model_dump(mode='json')
     @api(
         method='GET',
         path=''
@@ -696,11 +714,8 @@ class CRUDAPIHandler[SchemaType](BaseAPIHandler):
                   request: Request) -> dict:
 
         data = UniversalTableGetRequest()
-
         from services.hotels.schemas.generated_hotels_table import HotelsDefault_hotelsSchema
-
         res = await self._service.get_all(request=data, profile_schema=HotelsDefault_hotelsSchema, _request=request)
-
         return res.model_dump(mode='json')
 
 #
