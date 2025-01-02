@@ -45,6 +45,7 @@ ModelType = TypeVar('ModelType', bound=tortoise.models.Model)
 
 rdb = RedisClientHandler().redis_client
 
+from shared.services.tenants.schemas.me import Me
 
 class BaseServiceUtils:
     @staticmethod
@@ -687,7 +688,7 @@ class CRUDAPIHandler[SchemaType](BaseAPIHandler):
     async def create(self, data: dict, request: Request) -> dict:
         validated_data = self._schema(**data)
 
-        return await self._service.create(
+        return await self._service(await Me.get(request=request)).create(
             payload=validated_data,
             request=request,
         )
@@ -697,7 +698,7 @@ class CRUDAPIHandler[SchemaType](BaseAPIHandler):
         path='/id/{_id}',
     )
     async def get_single(self, _id: uuid.UUID, request: Request) -> SchemaType:
-        return await self._service.get_single(item_id=_id, request=request)
+        return await self._service(await Me.get(request=request)).get_single(item_id=_id, request=request)
         # return (await self._service.get_single(item_id=_id, request=request)).model_dump(mode='json')
         # try:
         #     res = await self._service.get_single(
@@ -717,7 +718,7 @@ class CRUDAPIHandler[SchemaType](BaseAPIHandler):
 
         data = UniversalTableGetRequest()
         from services.hotels.schemas.generated_hotels_table import HotelsDefault_hotelsSchema
-        res = await self._service.get_all(request=data, profile_schema=HotelsDefault_hotelsSchema, _request=request)
+        res = await self._service(await Me.get(request=request)).get_all(request=data, profile_schema=HotelsDefault_hotelsSchema, _request=request)
         return res.model_dump(mode='json')
 
     @api(
@@ -733,7 +734,7 @@ class CRUDAPIHandler[SchemaType](BaseAPIHandler):
             raise
 
         try:
-            res = await self._service.update_put(
+            res = await self._service(await Me.get(request=request)).update_put(
                 payload=validated_data,
                 request=request,
             )
@@ -746,7 +747,7 @@ class CRUDAPIHandler[SchemaType](BaseAPIHandler):
         path='/id/{_id}',
     )
     async def delete(self, _id: uuid.UUID, request: Request) -> None:
-        return await self._service.delete(item_id=_id, request=request)
+        return await self._service(await Me.get(request=request)).delete(item_id=_id, request=request)
 
     @api(
         method='PATCH',
@@ -755,7 +756,7 @@ class CRUDAPIHandler[SchemaType](BaseAPIHandler):
     async def update_patch(self, _id: uuid.UUID, data: dict, request: Request) -> dict:
 
         try:
-            res = await self._service.update_patch(
+            res = await self._service(await Me.get(request=request)).update_patch(
                 item_id=_id,
                 payload=data,
                 request=request,
