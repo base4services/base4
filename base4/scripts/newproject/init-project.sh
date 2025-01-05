@@ -10,7 +10,7 @@ rm -rf lib .venv
 usage() {
     echo "Usage: newproject --app <app_name> [--branch <branch_name>] [--workdir <workdir>]"
     echo "       --branch    Branch name (default: main)."
-    echo "       --workdir   Working directory (default: .)."
+    echo "       --workdir   Working directo:qry (default: .)."
     exit 1
 }
 
