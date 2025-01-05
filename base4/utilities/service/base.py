@@ -574,18 +574,18 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
 def route(router: APIRouter, prefix: str):
     def decorator(cls):
         instance = cls(router)
+        router.prefix = prefix
         app.include_router(router, prefix=prefix)
         app.add_middleware(SessionMiddleware, secret_key="d32do34mf234mfl23k4mfl2k34mlf24")
         return instance
-
     return decorator
 
 
 class BaseAPIHandler(object):
 
-    def __init__(self, router: APIRouter, services=None, model=None, schema=None):
+    def __init__(self, router: APIRouter, service=None, model=None, schema=None):
         self.router = router
-        self.services = services
+        self.service = service
         self.model = model
         self.schema = schema
         self.register_routes()
@@ -657,38 +657,23 @@ class BaseWebSocketHandler(object):
     async def ws_emit(self, event, data={}, room=None):
         await emit(event=event, data=data, room=room, connection=self.sio_connection)
 
-from typing import Type
 
-# SchemaType = TypeVar('SchemaType')
-# ModelType = TypeVar('ModelType', bound=tortoise.models.Model)
-# C11Type = Type['C11Type']
-# C1NType = Type['C1NType']
-
-from services.hotels.schemas.generated_hotels_schema import HotelSchema
-
-from typing import TypeVar, Type
-from pydantic import BaseModel
-
-# SchemaType = TypeVar('SchemaType', bound=BaseModel)
-
-
-class CRUDAPIHandler[SchemaType](BaseAPIHandler):
-    _service = None
-    _schema = None
-
-    def __init__(self, router, service, schema: Type[SchemaType]):
-        self._service = service
-        self._schema = schema
-        super().__init__(router)
+class CRUDAPIHandler(BaseAPIHandler):
+    def __init__(self, router, service, schema, model):
+        self.router = router
+        self.service = service
+        self.schema = schema
+        self.model = model
+        super().__init__(router=router, service=service, model=model, schema=schema)
 
     @api(
         method='POST',
         path='',
     )
     async def create(self, data: dict, request: Request) -> dict:
-        validated_data = self._schema(**data)
+        validated_data = self.schema(**data)
 
-        return await self._service(await Me.get(request=request)).create(
+        return await self.service(await Me.get(request=request)).create(
             payload=validated_data,
             request=request,
         )
@@ -698,7 +683,7 @@ class CRUDAPIHandler[SchemaType](BaseAPIHandler):
         path='/id/{_id}',
     )
     async def get_single(self, _id: uuid.UUID, request: Request) -> SchemaType:
-        return await self._service(await Me.get(request=request)).get_single(item_id=_id, request=request)
+        return await self.service(await Me.get(request=request)).get_single(item_id=_id, request=request)
         # return (await self._service.get_single(item_id=_id, request=request)).model_dump(mode='json')
         # try:
         #     res = await self._service.get_single(
@@ -712,29 +697,26 @@ class CRUDAPIHandler[SchemaType](BaseAPIHandler):
         method='GET',
         path=''
     )
-    #UniversalTableGetRequest
-    async def get(self, # data: UniversalTableGetRequest,
-                  request: Request) -> dict:
+    async def get(self, request: Request) -> dict:
 
         data = UniversalTableGetRequest()
         from services.hotels.schemas.generated_hotels_table import HotelsDefault_hotelsSchema
-        res = await self._service(await Me.get(request=request)).get_all(request=data, profile_schema=HotelsDefault_hotelsSchema, _request=request)
+        res = await self.service(await Me.get(request=request)).get_all(request=data, profile_schema=HotelsDefault_hotelsSchema, _request=request)
         return res.model_dump(mode='json')
 
     @api(
         method='PUT',
-        # path='/id/{_id}',
         path='',
 
     )
     async def update_put(self, data: dict, request: Request) -> dict:
         try:
-            validated_data = self._schema(**data)
+            validated_data = self.schema(**data)
         except Exception as e:
             raise
 
         try:
-            res = await self._service(await Me.get(request=request)).update_put(
+            res = await self.service(await Me.get(request=request)).update_put(
                 payload=validated_data,
                 request=request,
             )
@@ -747,16 +729,15 @@ class CRUDAPIHandler[SchemaType](BaseAPIHandler):
         path='/id/{_id}',
     )
     async def delete(self, _id: uuid.UUID, request: Request) -> None:
-        return await self._service(await Me.get(request=request)).delete(item_id=_id, request=request)
+        return await self.service(await Me.get(request=request)).delete(item_id=_id, request=request)
 
     @api(
         method='PATCH',
         path='/id/{_id}',
     )
     async def update_patch(self, _id: uuid.UUID, data: dict, request: Request) -> dict:
-
         try:
-            res = await self._service(await Me.get(request=request)).update_patch(
+            res = await self.service(await Me.get(request=request)).update_patch(
                 item_id=_id,
                 payload=data,
                 request=request,

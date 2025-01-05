@@ -23,7 +23,6 @@ from base4.utilities.service.base_pre_and_post import BaseServicePreAndPostUtils
 from base4.utilities.ws import emit, sio_client_manager
 
 
-from base4.service.base_service_v2 import BaseServiceV2
 
 SchemaType = TypeVar('SchemaType')
 ModelType = TypeVar('ModelType', bound=tortoise.models.Model)
