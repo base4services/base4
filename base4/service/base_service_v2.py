@@ -2,6 +2,9 @@ import datetime
 import importlib
 import uuid
 from typing import Any, Dict, Generic, List, Type, TypeVar, get_args, get_origin
+
+from pypika import Schema
+
 from shared.services.tenants.schemas.me import Me
 
 
@@ -436,10 +439,11 @@ class BaseServiceV2[ModelType]:
         res = await self.update(item.id, payload, request)
         return res
 
-    async def update_patch(self, item_id: uuid.UUID, payload: dict, request: Request):
+    async def update_patch(self, item_id: uuid.UUID, payload: SchemaType, request: Request):
         me = await Me.get(request)
 
-        payload['last_updated_by'] = me.id
+        payload.last_updated_by = me.id
+        # payload['last_updated_by'] = me.id
 
         item = await self.model.filter(id=item_id,
                                        id_tenant=me.id_tenant,
@@ -450,13 +454,21 @@ class BaseServiceV2[ModelType]:
 
         # TODO what with pre_save, post_save, post_commit
 
+        await BaseServicePreAndPostUtils.update_pre_save_hook(service_instance=self, payload=payload, request=request, item=item)
+
         updated = {}
-        for key in payload:
+        for key in payload.model_dump():
+            if key in ('created_by',):
+                continue
+            payload_item_value = getattr(payload, key)
+            if payload_item_value == NOT_SET:
+                continue
+
             if hasattr(item, key):
                 current = getattr(item, key)
-                if current != payload[key]:
-                    updated[key] = [current, payload[key]]
-                    setattr(item, key, payload[key])
+                if current != payload_item_value:
+                    updated[key] = [current, payload_item_value]
+                    setattr(item, key, payload_item_value)
 
         res = {}
 

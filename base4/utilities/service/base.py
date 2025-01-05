@@ -736,6 +736,7 @@ class CRUDAPIHandler(BaseAPIHandler):
         path='/id/{_id}',
     )
     async def update_patch(self, _id: uuid.UUID, data: dict, request: Request) -> dict:
+        data = self.schema(**data)
         try:
             res = await self.service(await Me.get(request=request)).update_patch(
                 item_id=_id,
