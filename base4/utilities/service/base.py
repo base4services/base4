@@ -346,6 +346,7 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
         headers: Optional[dict] = None, upload_allowed_file_types: Optional[List[str]] = None,
         upload_max_file_size: Optional[int] = None, upload_max_files: Optional[int] = None,
         is_public: bool = True, **route_kwargs):
+
     if 'path' in route_kwargs:
         if route_kwargs['path']:
             route_kwargs['path'] = route_kwargs['path'].rstrip('/')
@@ -437,8 +438,8 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
                                 detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"}
                             )
 
-                        redis_session = await self.rdb.get(f"session:{self.session.session_id}")
-                        if not redis_session:
+                        rdb_session = await self.rdb.get(f"session:{self.session.session_id}")
+                        if not rdb_session:
                             raise HTTPException(
                                 status_code=status.HTTP_401_UNAUTHORIZED,
                                 detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"})
@@ -470,12 +471,9 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
 
                         permissions = user_role_config["permissions"]
                         target_permission_name = f"{api_module_name}.{func_name}"
-
-                        # todo, ovde treba da se uzme korisnik iz redisa posto je uspesno ulogovan i da se merge njegove permisisje
-                        # do sada je bio to iz jwt ali je sklonjeno
-                        user_permissions = []
-                        if user_permissions:
-                            _merge_with_user_permissions(static_permissions=permissions, user_permissions=user_permissions)
+                    
+                        if rdb_session['permissions']:
+                            _merge_with_user_permissions(static_permissions=permissions, user_permissions=rdb_session['permissions'])
 
                         _wildcard_permissions = {}
                         direct_permissions = {}
