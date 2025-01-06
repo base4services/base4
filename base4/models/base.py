@@ -11,7 +11,7 @@ class BaseCache11:
 
 
 class BaseCache1n(BaseCache11):
-    language = fields.CharField(2, null=False, index=True)
+    language = fields.CharField(2, null=False, db_index=True)
 
 
 class Nothing:
@@ -83,4 +83,4 @@ class BaseNoTenant:
 
 
 class Base(BaseNoTenant):
-    id_tenant = fields.UUIDField(null=True, index=True)
+    id_tenant = fields.UUIDField(null=True, db_index=True)
