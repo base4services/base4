@@ -43,7 +43,6 @@ upload_dir = os.getenv('UPLOAD_DIR', '/tmp')
 SchemaType = TypeVar('SchemaType', bound=pydantic.BaseModel)
 ModelType = TypeVar('ModelType', bound=tortoise.models.Model)
 
-rdb = RedisClientHandler().redis_client
 
 from shared.services.tenants.schemas.me import Me
 
@@ -438,18 +437,17 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
                                 detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"}
                             )
 
-                        async with async_redis.get_redis() as redis_client:
-                            redis_session = await redis_client.get_value(f"session:{self.session.session_id}")
-                            if not redis_session:
-                                raise HTTPException(
-                                    status_code=status.HTTP_401_UNAUTHORIZED,
-                                    detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"})
+                        redis_session = await self.rdb.get(f"session:{self.session.session_id}")
+                        if not redis_session:
+                            raise HTTPException(
+                                status_code=status.HTTP_401_UNAUTHORIZED,
+                                detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"})
 
-                            if getattr(self.session, 'expired', False):
-                                raise HTTPException(
-                                    status_code=status.HTTP_401_UNAUTHORIZED,
-                                    detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"}
-                                )
+                        if getattr(self.session, 'expired', False):
+                            raise HTTPException(
+                                status_code=status.HTTP_401_UNAUTHORIZED,
+                                detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"}
+                            )
 
                         func_name = func.__name__
                         class_path = _get_api_handler_class_path(self)
@@ -543,7 +541,7 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
                 cache_key = f"cache:{request.method}{self.session.user_id if self.session else ''}{request.url.path}?{request.url.query}"
 
                 try:
-                    cached_response = rdb.get(cache_key)
+                    cached_response = await self.rdb.get(cache_key)
                     if cached_response:
                         return json.loads(cached_response)
                 except Exception as e:
@@ -553,7 +551,7 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
                 response = await func(self, **request.path_params)
                 # await api_accesslog(request, response, self.session, start_time, accesslog, exc=None)
                 try:
-                    rdb.setex(cache_key, cache, json.dumps(response))
+                    await self.rdb.setex(cache_key, cache, json.dumps(response))
                 except Exception as e:
                     print(f"Redis set error: {e}")
                 return response
@@ -588,6 +586,7 @@ class BaseAPIHandler(object):
         self.service = service
         self.model = model
         self.schema = schema
+        self.rdb = async_redis.get_redis()
         self.register_routes()
 
     def register_routes(self):
@@ -746,54 +745,3 @@ class CRUDAPIHandler(BaseAPIHandler):
         except Exception as e:
             raise
         return res
-
-#
-# @api(
-# 	method='GET',
-# 	path='/id/{_id}',
-# )
-# async def get_single(self, request: Request) -> dict:
-# 	return {"hello": "world"}
-#
-# @api(
-# 	method='GET',
-# 	path='/id/{_id}/{field}',
-#
-# )
-# async def get_single_field(self, request: Request) -> dict:
-# 	return {"hello": "world"}
-#
-#
-#
-# @api(
-# 	method='POST',
-# 	path='/id/{item_id}/validate',
-#
-# )
-# async def validate(self, request: Request) -> dict:
-# 	return {"hello": "world"}
-#
-# @api(
-# 	method='GET',
-# 	path='/',
-# 	response_model=List[Dict] | Dict[str, Any] | UniversalTableResponse
-# )
-# async def get(self, request: Request) -> dict:
-# 	return {"hello": "world"}
-#
-# @api(
-# 	method='PATCH',
-# 	path='/id/{_id}',
-# 	response_model=Dict[str, Any]
-# )
-# async def update_by_id(self, request: Request) -> dict:
-# 	return {"hello": "world"}
-#
-# @api(
-# 	method='DELETE',
-# 	path='/id/{_id}',
-# 	response_model=Dict[str, Any]
-# )
-# async def delete_by_id(self, request: Request) -> dict:
-# 	return {"hello": "world"}
-
