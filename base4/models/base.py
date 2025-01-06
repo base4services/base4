@@ -7,7 +7,7 @@ from tortoise import fields
 
 
 class BaseCache11:
-    id = fields.UUIDField(pk=True)
+    id = fields.UUIDField(primary_key=True)
 
 
 class BaseCache1n(BaseCache11):
@@ -22,7 +22,7 @@ class BaseNoTenant:
     A base model class that includes common fields for all models.
     """
 
-    id = fields.UUIDField(pk=True)
+    id = fields.UUIDField(primary_key=True)
     created = fields.DatetimeField(auto_now_add=True)
     created_by = fields.UUIDField(null=True)
     last_updated = fields.DatetimeField(
