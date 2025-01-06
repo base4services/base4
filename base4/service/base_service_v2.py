@@ -423,12 +423,12 @@ class BaseServiceV2[ModelType]:
         return {'value': getattr(item, field)}
 
     async def update_put(self, payload: SchemaType, request: Request):
-        me = await Me.get(request)
+        
 
-        payload.last_updated_by = me.id
+        payload.last_updated_by = self.me.id
 
         item = await self.model.filter(id=payload.id,
-                                       id_tenant=me.id_tenant,
+                                       id_tenant=self.me.id_tenant,
                                        is_deleted=False).get_or_none()
 
         if not item:
@@ -440,13 +440,13 @@ class BaseServiceV2[ModelType]:
         return res
 
     async def update_patch(self, item_id: uuid.UUID, payload: SchemaType, request: Request):
-        me = await Me.get(request)
+        
 
-        payload.last_updated_by = me.id
-        # payload['last_updated_by'] = me.id
+        payload.last_updated_by = self.me.id
+        # payload['last_updated_by'] = self.me.id
 
         item = await self.model.filter(id=item_id,
-                                       id_tenant=me.id_tenant,
+                                       id_tenant=self.me.id_tenant,
                                        is_deleted=False).get_or_none()
 
         if not item:
@@ -503,9 +503,9 @@ class BaseServiceV2[ModelType]:
     ):
         BaseServiceUtils.validate_update_if_exists_params(update_if_exists_key_fields, update_if_exists_value_fields)
 
-        me = await Me.get(request)
+        
 
-        payload.last_updated_by = me.id
+        payload.last_updated_by = self.me.id
 
         # TODO: add id_tenant in this query
         # also is_deleted should figure here, and ? if is_deleted should we undelete or create new?
@@ -523,7 +523,7 @@ class BaseServiceV2[ModelType]:
             # Vidi, mozda da se ni ne radi update samo get, jer se ovde uglavnom nista ne updateuje - ovo je slicno kao get_or_create.. pa
             # primeni tu logiku
 
-            return await self.update(me.id, item.id, payload, request, return_db_item=True)
+            return await self.update(self.me.id, item.id, payload, request, return_db_item=True)
 
     async def create(
             self,
@@ -539,8 +539,6 @@ class BaseServiceV2[ModelType]:
 
         # !Removing transaction (TODO: Fix this bug)
         conn = None
-
-        me = await Me.get(request)
 
         if update_if_exists:
             res = await self.update_if_exists_on_create(
@@ -558,13 +556,13 @@ class BaseServiceV2[ModelType]:
                     except:
                         return res
 
-        BaseServiceUtils.update_payload_with_user_data(payload, me.id)
+        BaseServiceUtils.update_payload_with_user_data(payload, self.me.id)
 
         _id = await BaseServiceUtils.update_payload_with_ids(base_service_instance=self, payload=payload)
 
         body = {
             'id': _id,
-            'id_tenant': me.id_tenant,
+            'id_tenant': self.me.id_tenant,
             'created_by': payload.created_by,
             'last_updated_by': payload.last_updated_by,
         }
@@ -577,14 +575,14 @@ class BaseServiceV2[ModelType]:
 
         try:
             item = await BaseServiceDbUtils.db_operations(
-                base_service_instance=self, request=request, body=body, payload=payload, logged_user_id=me.id, m2m_relations=m2m_relations, _conn=conn
+                base_service_instance=self, request=request, body=body, payload=payload, logged_user_id=self.me.id, m2m_relations=m2m_relations, _conn=conn
             )
         except Exception as e:
             raise
 
         post_commit_result = await BaseServicePreAndPostUtils.create_post_save_hook(service_instance=self, payload=payload, request=request, item=item)
 
-        await self.validate(  # me.id,
+        await self.validate(  # self.me.id,
             item.id, request, quiet=True)
 
         await self.create_activity_log(item=item, handler=request)
@@ -639,7 +637,7 @@ class BaseServiceV2[ModelType]:
     async def create_or_update(self,  # logged_user_id: uuid.UUID,
                                key_id: List[Any], payload: SchemaType, request: Request, response: Response) -> Dict[str, Any]:
 
-        me = await Me.get(request)
+        
 
         key_id_dict = {}
         for key in key_id:
@@ -650,17 +648,17 @@ class BaseServiceV2[ModelType]:
 
         existing = await self.model.filter(**key_id_dict).get_or_none()
         if not existing:
-            res = await self.create(me.id, payload, request, return_db_object=True)
+            res = await self.create(self.me.id, payload, request, return_db_object=True)
             response.status_code = 201
             return {'action': 'created', 'id': res.id}
 
-        res = await self.update(me.id, existing.id, payload, request)
+        res = await self.update(self.me.id, existing.id, payload, request)
         return res
 
     async def update(self,  # logged_user_id: uuid.UUID,
                      item_id: uuid.UUID, payload: SchemaType, request: Request, return_db_item=False):
 
-        me = await Me.get(request)
+        
 
         model_item = await self.get_single_model(item_id, request)
 
@@ -668,7 +666,7 @@ class BaseServiceV2[ModelType]:
 
         model_loc = self.schema.model_loc()
 
-        payload.last_updated_by = me.id
+        payload.last_updated_by = self.me.id
 
         await BaseServicePreAndPostUtils.update_pre_save_hook(service_instance=self, payload=payload, request=request, item=model_item)
 
@@ -679,7 +677,7 @@ class BaseServiceV2[ModelType]:
             schem_item=schem_item,
             service_instance=self,
             request=request,
-            logged_user_id=me.id,
+            logged_user_id=self.me.id,
         )
 
         if updated != {}:
@@ -694,7 +692,7 @@ class BaseServiceV2[ModelType]:
                 # TODO: Update cache for c1n
 
             await BaseServiceUtils.update_updated_fields(
-                request=request, model_item=model_item, updated=updated, schem_item=schem_item, service_instance=self, logged_user_id=me.id
+                request=request, model_item=model_item, updated=updated, schem_item=schem_item, service_instance=self, logged_user_id=self.me.id
             )
 
             await self.update_activity_log(model_item, request, updated)
@@ -721,12 +719,11 @@ class BaseServiceV2[ModelType]:
     async def delete(self,  # logged_user_id: uuid.UUID,
                      item_id: uuid.UUID, request: Request):
 
-        me = await Me.get(request)
 
         model_item = await self.get_single_model(item_id, request)
 
         model_item.is_deleted = True
-        model_item.deleted_by = me.id
+        model_item.deleted_by = self.me.id
         model_item.deleted = datetime.datetime.now()
 
         await model_item.save()
