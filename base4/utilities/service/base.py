@@ -444,7 +444,7 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
                                 status_code=status.HTTP_401_UNAUTHORIZED,
                                 detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"})
 
-                        self.me = Me(id=rdb_session['id_user'], role=rdb_session['role'], id_tenant=rdb_session['id_tenant'], id_session=rdb_session['session'])
+                        request.me = Me(id=rdb_session['id_user'], role=rdb_session['role'], id_tenant=rdb_session['id_tenant'], id_session=rdb_session['session'])
 
                         if getattr(self.session, 'expired', False):
                             raise HTTPException(
@@ -672,7 +672,7 @@ class CRUDAPIHandler(BaseAPIHandler):
     async def create(self, data: dict, request: Request) -> dict:
         validated_data = self.schema(**data)
 
-        return await self.service(await Me.get(request=request)).create(
+        return await self.service(request).create(
             payload=validated_data,
             request=request,
         )
@@ -682,7 +682,7 @@ class CRUDAPIHandler(BaseAPIHandler):
         path='/id/{_id}',
     )
     async def get_single(self, _id: uuid.UUID, request: Request) -> SchemaType:
-        return await self.service(await Me.get(request=request)).get_single(item_id=_id, request=request)
+        return await self.service(request).get_single(item_id=_id, request=request)
         # return (await self._service.get_single(item_id=_id, request=request)).model_dump(mode='json')
         # try:
         #     res = await self._service.get_single(
@@ -700,7 +700,7 @@ class CRUDAPIHandler(BaseAPIHandler):
 
         data = UniversalTableGetRequest()
         from services.hotels.schemas.generated_hotels_table import HotelsDefault_hotelsSchema
-        res = await self.service(await Me.get(request=request)).get_all(request=data, profile_schema=HotelsDefault_hotelsSchema, _request=request)
+        res = await self.service(request).get_all(request=data, profile_schema=HotelsDefault_hotelsSchema, _request=request)
         return res.model_dump(mode='json')
 
     @api(
@@ -715,7 +715,7 @@ class CRUDAPIHandler(BaseAPIHandler):
             raise
 
         try:
-            res = await self.service(await Me.get(request=request)).update_put(
+            res = await self.service(request).update_put(
                 payload=validated_data,
                 request=request,
             )
@@ -728,7 +728,7 @@ class CRUDAPIHandler(BaseAPIHandler):
         path='/id/{_id}',
     )
     async def delete(self, _id: uuid.UUID, request: Request) -> None:
-        return await self.service(await Me.get(request=request)).delete(item_id=_id, request=request)
+        return await self.service(request).delete(item_id=_id, request=request)
 
     @api(
         method='PATCH',
@@ -737,7 +737,7 @@ class CRUDAPIHandler(BaseAPIHandler):
     async def update_patch(self, _id: uuid.UUID, data: dict, request: Request) -> dict:
         data = self.schema(**data)
         try:
-            res = await self.service(await Me.get(request=request)).update_patch(
+            res = await self.service(request).update_patch(
                 item_id=_id,
                 payload=data,
                 request=request,
