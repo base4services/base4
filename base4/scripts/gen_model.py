@@ -101,8 +101,11 @@ def gen_model(tbl, tbl_name, ctable=False, parent_class_name='', parent_types=No
             mk_cache_order = tbl['__mk_cache_order']
             reordered = []
             for f in mk_cache_order:
-                if f in mk_cache_rules:
-                    reordered.append(m)
+                for cr in mk_cache_rules:
+                    if f == cr['column']:
+                # if f in mk_cache_rules:
+                        reordered.append(cr)
+
             if reordered:
                 mk_cache_rules = reordered
 
@@ -178,4 +181,10 @@ def save(input_yaml, gen_fname):
 if __name__ == '__main__':
     current_file_path = os.path.abspath(os.path.dirname(__file__))
 
-    save(current_file_path + '/../services/tickets/yaml_sources/ticket_model.yaml', '/tmp/generated_tickets_model.py')
+    from base4.utilities.files import get_project_root
+    root = str(get_project_root())
+
+    fname = root + '/src/services/hotels/yaml_sources/hotels_model.yaml'
+    print(fname)
+
+    save(fname, '/tmp/generated_hotels_model.py')

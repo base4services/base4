@@ -15,6 +15,7 @@ import base4.scripts.gen_model as gen_model
 import base4.scripts.gen_schemas as gen_schemas
 import base4.scripts.gen_tables as gen_tables
 from base4 import configuration
+from base4.scripts.gen_tables import gen_profile
 from base4.scripts.pip.down import do as p_down
 from base4.scripts.pip.up import do as p_up
 from base4.scripts.yaml_compiler import compile_main_config, update_config_ac
@@ -42,6 +43,14 @@ def gen4svc(svc_name, location, gen=None):
             project_root + f'/{location}/yaml_sources/{svc_name}_schema.yaml',
             project_root + f'/{location}/schemas/generated_{svc_name}_schema.py',
         )
+    if 'tables' in gen:
+        gen_tables.save(
+            svc_name,
+            project_root + f'/{location}/yaml_sources/{svc_name}_table.yaml',
+            project_root + f'/{location}/yaml_sources/{svc_name}_model.yaml',
+            project_root + f'/{location}/schemas/generated_{svc_name}_table.py',
+        )
+
 
     # todo, sredi ovo
     # if 'tables' in gen:
@@ -373,3 +382,8 @@ def compile_yaml(yaml_file: str, service_name: str, gen_type: str):
     Compile config/gen.yaml
     """
     _compile_yaml(yaml_file, service_name, gen_type)
+
+
+if __name__ == '__main__':
+    _compile_yaml('gen.yaml','hotels','schemas')
+...

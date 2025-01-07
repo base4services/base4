@@ -24,7 +24,7 @@ class BaseAsyncRedis(ABC):
         pass
 
     @abstractmethod
-    async def set_value(
+    async def set(
             self,
             key: str,
             value: Any,
@@ -39,7 +39,11 @@ class BaseAsyncRedis(ABC):
         pass
 
     @abstractmethod
-    async def get_value(self, key: str, default: Any = None) -> Any:
+    async def get(self, key: str, default: Any = None) -> Any:
+        pass
+
+    @abstractmethod
+    async def setex(self, name: str, time: int, value: any) -> bool:
         pass
 
     @abstractmethod
@@ -142,7 +146,7 @@ class AsyncRedis(BaseAsyncRedis):
             logger.error(f"Error during Redis disconnection: {str(e)}")
             raise
 
-    async def set_value(
+    async def set(
             self,
             key: str,
             value: Any,
@@ -166,7 +170,7 @@ class AsyncRedis(BaseAsyncRedis):
             logger.error(f"Error setting value: {str(e)}")
             raise
 
-    async def get_value(self, key: str, default: Any = None) -> Any:
+    async def get(self, key: str, default: Any = None) -> Any:
         try:
             value = await self.client.get(key)
             if value is None:
@@ -180,6 +184,9 @@ class AsyncRedis(BaseAsyncRedis):
         except Exception as e:
             logger.error(f"Error getting value: {str(e)}")
             raise
+
+    async def setex(self, name: str, time: int, value: any) -> bool:
+        return await self.client.setex(name, time, value)
 
     async def delete_key(self, key: str) -> bool:
         try:
@@ -265,7 +272,7 @@ class AsyncRedisFake(BaseAsyncRedis):
     async def disconnect(self) -> None:
         await self.client.aclose()
 
-    async def set_value(
+    async def set(
             self,
             key: str,
             value: Any,
@@ -285,7 +292,7 @@ class AsyncRedisFake(BaseAsyncRedis):
         )
         return bool(result)
 
-    async def get_value(self, key: str, default: Any = None) -> Any:
+    async def get(self, key: str, default: Any = None) -> Any:
         value = await self.client.get(key)
         if value is None:
             return default
@@ -294,6 +301,9 @@ class AsyncRedisFake(BaseAsyncRedis):
             return json.loads(value)
         except (TypeError, json.JSONDecodeError):
             return value
+
+    async def setex(self, name: str, time: int, value: Any) -> bool:
+        return await self.client.setex(name, time, value)
 
     async def delete_key(self, key: str) -> bool:
         result = await self.client.delete(key)

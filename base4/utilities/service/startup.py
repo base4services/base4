@@ -22,14 +22,34 @@ _test: Optional[AnyStr] = os.getenv('TEST_MODE', None)
 _database_to_use: Optional[AnyStr] = os.getenv('TEST_DATABASE', None)
 _conn = None
 
+def print_routes(routes):
+    rorder = []
+    rmethods = {}
+    for route in routes:
+        if route.path not in rorder:
+            rorder.append(route.path)
+        if route.path not in rmethods:
+            rmethods[route.path] = []
+
+        for method in route.methods:
+            rmethods[route.path].append(method)
+
+    maxl = 0
+    for r in rorder:
+        methods = ','.join(rmethods[r])
+        if len(methods) > maxl:
+            maxl = len(methods)
+
+    for r in rorder:
+        methods = ','.join(rmethods[r])
+        print(f'{methods:<{maxl}} {r}')
+
 
 @asynccontextmanager
 async def lifespan(service: FastAPI) -> None:
 
     print("APPSTART")
-    for route in service.routes:
-        print(route.path)
-
+    print_routes(service.routes)
     await startup_event()
     yield
     await shutdown_event()
