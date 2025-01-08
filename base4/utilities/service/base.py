@@ -429,7 +429,7 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
                         except Exception:
                             raise HTTPException(
                                 status_code=status.HTTP_401_UNAUTHORIZED,
-                                detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token"}
+                                detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token 1"}
                             )
 
                         if getattr(self.session, 'expired', False):
@@ -531,7 +531,7 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
                     else:
                         raise HTTPException(
                             status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token"}
+                            detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token 2"}
                         )
 
             #####################################

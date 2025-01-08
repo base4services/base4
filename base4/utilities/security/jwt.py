@@ -33,15 +33,16 @@ class DecodedToken(pydantic.BaseModel):
 
 
 class CreateTokenRequest(pydantic.BaseModel):
-    id_session: Optional[uuid.UUID|None] = None
+    session_id: Optional[uuid.UUID|None] = None
     id_user: uuid.UUID
     id_tenant: uuid.UUID
+    role: str
 
     ttl: int = 24 * 60 * 60
     exp: Optional[int | None] = None
 
-    def __init__(self, id_user: uuid.UUID, id_tenant: uuid.UUID, ttl: int = 24 * 68 * 60):
-        super().__init__(id_user=id_user, id_tenant=id_tenant, ttl=ttl)
+    def __init__(self, id_user: uuid.UUID, id_tenant: uuid.UUID, ttl: int = 24 * 68 * 60, session_id: Optional[uuid.UUID|None] = None, role: str='user'):
+        super().__init__(id_user=id_user, id_tenant=id_tenant, ttl=ttl, session_id=session_id, role=role)
 
         self.exp = int(time.time()) + ttl
 
@@ -66,7 +67,7 @@ def decode_token(token: str) -> DecodedToken:
         exp = int(time.time()) + 24 * 60 * 60  # forever
 
     return DecodedToken(
-        session_id=decoded_payload['session'],  # ?! id_session
+        session_id=decoded_payload.get('session_id') or decoded_payload.get('session'),  # ?! id_session
         user_id=decoded_payload['id_user'],
         tenant_id=decoded_payload['id_tenant'],
         role=decoded_payload['role'],
@@ -86,7 +87,7 @@ def verify_token(token: str = Depends(oauth2_scheme)) -> DecodedToken:
         ...
 
     except Exception as e:
-        raise HTTPException(status_code=401, detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token"})
+        raise HTTPException(status_code=401, detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token 3"})
 
     if decoded.expired:
         raise HTTPException(status_code=401, detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has been expired"})
@@ -100,6 +101,7 @@ def open_api_call() -> DecodedToken:  # token: Optional[str] = Depends(oauth2_sc
         role='user',
         expire_at=datetime.fromtimestamp(0, tz=timezone.utc),
         expired=False,
+        session_id=uuid.uuid4(),
     )
 
 
