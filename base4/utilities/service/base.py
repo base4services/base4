@@ -528,11 +528,11 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
                                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
                                 detail={"code": "HTTP_429_TOO_MANY_REQUESTS"}
                             )
-                    else:
-                        raise HTTPException(
-                            status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token 2"}
-                        )
+                    # else:
+                    #     raise HTTPException(
+                    #         status_code=status.HTTP_401_UNAUTHORIZED,
+                    #         detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token 2"}
+                    #     )
 
             #####################################
             # cache mechanism
