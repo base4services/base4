@@ -658,7 +658,7 @@ class BaseWebSocketHandler(object):
 
 
 class CRUDAPIHandler(BaseAPIHandler):
-    def __init__(self, router, service, schema, model):
+    def __init__(self, router, service, schema=None, model=None):
         self.router = router
         self.service = service
         self.schema = schema
