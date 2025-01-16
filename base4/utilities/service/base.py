@@ -418,8 +418,8 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
                 token = request.headers.get("Authorization")
                 if not is_authorized:
                     self.id_tenant = request.headers.get("X-Tenant-ID")
-                # if not self.id_tenant:
-                # 	raise HTTPException(status_code=401, detail=f"Provide valid X-Tenant-ID")
+                if not self.id_tenant:
+                    raise HTTPException(status_code=401, detail=f"Provide valid X-Tenant-ID")
 
                 elif is_authorized:
                     if token and token.startswith("Bearer "):
@@ -529,11 +529,11 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
                                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
                                 detail={"code": "HTTP_429_TOO_MANY_REQUESTS"}
                             )
-                    # else:
-                    #     raise HTTPException(
-                    #         status_code=status.HTTP_401_UNAUTHORIZED,
-                    #         detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token 2"}
-                    #     )
+                    else:
+                        raise HTTPException(
+                            status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token 2"}
+                        )
 
             #####################################
             # cache mechanism
@@ -575,7 +575,7 @@ def route(router: APIRouter, prefix: str):
         instance = cls(router)
         router.prefix = prefix
         app.include_router(router, prefix=prefix)
-        app.add_middleware(SessionMiddleware, secret_key="d32do34mf234mfl23k4mfl2k34mlf24")
+        app.add_middleware(SessionMiddleware, secret_key="d32do34mf234mfl23k4mfl2k34mlf24") # todo, set this from env
         return instance
     return decorator
 
@@ -686,25 +686,15 @@ class CRUDAPIHandler(BaseAPIHandler):
     )
     async def get_single(self, _id: uuid.UUID, request: Request) -> SchemaType:
         return await self.service(request).get_single(item_id=_id, request=request)
-        # return (await self._service.get_single(item_id=_id, request=request)).model_dump(mode='json')
-        # try:
-        #     res = await self._service.get_single(
-        #         item_id=_id,
-        #         request=request,
-        #     )
-        # except Exception as e:
-        #     raise
-        # return res.model_dump(mode='json')
+
     @api(
         method='GET',
         path=''
     )
     async def get(self, request: Request, data: UniversalTableGetRequest=Depends()) -> dict:
 
-        # from services.hotels.schemas.generated_hotels_table import HotelsDefault_hotelsSchema
         try:
-            x = self.service(request)
-            res = await x.get_all(request=data, profile_schema=self.table_schema, _request=request)
+            res = await self.service(request).get_all(request=data, profile_schema=self.table_schema, _request=request)
         except Exception as e:
             raise
 
