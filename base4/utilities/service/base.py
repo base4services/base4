@@ -582,11 +582,12 @@ def route(router: APIRouter, prefix: str):
 
 class BaseAPIHandler(object):
 
-    def __init__(self, router: APIRouter, service=None, model=None, schema=None):
+    def __init__(self, router: APIRouter, service=None, model=None, schema=None, table_schema=None):
         self.router = router
         self.service = service
         self.model = model
         self.schema = schema
+        self.table_schema = table_schema
         self.rdb = async_redis.get_redis()
         self.register_routes()
 
@@ -659,12 +660,13 @@ class BaseWebSocketHandler(object):
 
 
 class CRUDAPIHandler(BaseAPIHandler):
-    def __init__(self, router, service, schema=None, model=None):
+    def __init__(self, router, service, schema=None, model=None, table_schema=None):
         self.router = router
         self.service = service
         self.schema = schema
         self.model = model
-        super().__init__(router=router, service=service, model=model, schema=schema)
+        self.table_schema = table_schema
+        super().__init__(router=router, service=service, model=model, schema=schema, table_schema=table_schema)
 
     @api(
         method='POST',
@@ -699,10 +701,10 @@ class CRUDAPIHandler(BaseAPIHandler):
     )
     async def get(self, request: Request, data: UniversalTableGetRequest=Depends()) -> dict:
 
-        from services.hotels.schemas.generated_hotels_table import HotelsDefault_hotelsSchema
+        # from services.hotels.schemas.generated_hotels_table import HotelsDefault_hotelsSchema
         try:
             x = self.service(request)
-            res = await x.get_all(request=data, profile_schema=HotelsDefault_hotelsSchema, _request=request)
+            res = await x.get_all(request=data, profile_schema=self.table_schema, _request=request)
         except Exception as e:
             raise
 
