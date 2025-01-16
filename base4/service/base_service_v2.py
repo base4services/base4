@@ -3,10 +3,6 @@ import importlib
 import uuid
 from typing import Any, Dict, Generic, List, Type, TypeVar, get_args, get_origin
 
-from pypika import Schema
-
-from shared.services.tenants.schemas.me import Me
-
 
 import pydantic
 import tortoise.fields
@@ -26,6 +22,7 @@ from base4.utilities.parsers.str2q import transform_filter_param_to_Q
 from base4.utilities.service.base import BaseServiceUtils
 from base4.utilities.service.base_pre_and_post import BaseServicePreAndPostUtils
 from base4.utilities.ws import emit, sio_client_manager
+import base4.utilities.db.async_redis as async_redis
 
 SchemaType = TypeVar('SchemaType')
 ModelType = TypeVar('ModelType', bound=tortoise.models.Model)
@@ -60,6 +57,7 @@ class BaseServiceV2[ModelType]:
         self.uid_alphabet = uid_alphabet
         self.conn_name = conn_name
         self.sio_connection = sio_connection
+        self.rdb = async_redis.get_redis()
 
         # type(field), type(field) == field_type),
         def find_field_types(_model, field_type, related_name):

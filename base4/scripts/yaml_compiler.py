@@ -120,25 +120,27 @@ def update_config_ac():
     for service in os.listdir(f"{project_root}/src/services"):
         if os.path.isdir(f"{project_root}/src/services/{service}"):
             if '__' not in service:
-                for api_handler_file in os.listdir(f"{project_root}/src/services/{service}/api"):
-                    if '__' not in api_handler_file:
-                        module = importlib.import_module(f'services.{service}.api.{api_handler_file[:-3]}')
-                        for api_handler in inspect.getmembers(module):
-                            if hasattr(api_handler[1], 'router'):
-                                obj = api_handler[1]
-                                methods = {
-                                    method_name: f"{obj.__module__}.{obj.__class__.__name__}.{method_name}"
-                                    for method_name, method_obj in inspect.getmembers(obj, predicate=inspect.ismethod)
-                                    if method_name not in ('__init__','__call__','add_api_route','add_api_websocket_route','add_event_handler','add_exception_handler',
-                                                           'add_middleware','add_route','add_websocket_route','api_route','build_middleware_stack','delete','exception_handler',
-                                                           'get','head','host','include_router','middleware','mount','on_event','openapi','options','patch','post','put','route',
-                                                           'setup','trace','url_path_for','websocket','websocket_route', 'register_routes')
-                                }
-                                
-                                if service not in new_api_handlers:
-                                    new_api_handlers[service] = {}
-                                new_api_handlers[service].update(methods)
+                try:
+                    for api_handler_file in os.listdir(f"{project_root}/src/services/{service}/api"):
+                        if '__' not in api_handler_file:
+                            module = importlib.import_module(f'services.{service}.api.{api_handler_file[:-3]}')
+                            for api_handler in inspect.getmembers(module):
+                                if hasattr(api_handler[1], 'router'):
+                                    obj = api_handler[1]
+                                    methods = {
+                                        method_name: f"{obj.__module__}.{obj.__class__.__name__}.{method_name}"
+                                        for method_name, method_obj in inspect.getmembers(obj, predicate=inspect.ismethod)
+                                        if method_name not in ('__init__','__call__','add_api_route','add_api_websocket_route','add_event_handler','add_exception_handler',
+                                                               'add_middleware','add_route','add_websocket_route','api_route','build_middleware_stack','delete','exception_handler',
+                                                               'get','head','host','include_router','middleware','mount','on_event','openapi','options','patch','post','put','route',
+                                                               'setup','trace','url_path_for','websocket','websocket_route', 'register_routes')
+                                    }
 
+                                    if service not in new_api_handlers:
+                                        new_api_handlers[service] = {}
+                                    new_api_handlers[service].update(methods)
+                except:
+                    pass
     existing_data["api_handlers"] = new_api_handlers
     
     with open(project_root / 'config/ac.yaml', "w") as yaml_file:
