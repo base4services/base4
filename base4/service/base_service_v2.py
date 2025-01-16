@@ -115,7 +115,10 @@ class BaseServiceV2[ModelType]:
 
         # TODO: Vrati table kad budes sredio metu
 
-        request.response_format = 'objects'
+        # 15 Jan 2025 - Nemam pojma zasto sam ovde ovo overridivao, ako neki testovi padaju treba srediti !?!
+        # request.response_format = 'objects'
+
+
 
         if request.per_page < 1:
             raise HTTPException(status_code=400, detail={"code": "INVALID_PARAMETER", "parameter": "per_page", "message": "per_page must be greater than 0"})

@@ -16,6 +16,8 @@ class UniversalTableGetRequest(pydantic.BaseModel):
     # dict_filters: Optional[Dict[str, str]] = None
     filters: Optional[None | str] = None
 
+    #TODO: ukinuti
+
     v3_filters: Optional[None | Any] = None
 
     search: Optional[None | str] = None

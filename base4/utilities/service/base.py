@@ -7,6 +7,7 @@ from functools import wraps
 from inspect import signature
 from typing import Any, Callable, Dict, List, Optional, TypeVar
 
+from fastapi.params import Depends
 from starlette.middleware.sessions import SessionMiddleware
 from urllib3 import request
 
@@ -696,11 +697,15 @@ class CRUDAPIHandler(BaseAPIHandler):
         method='GET',
         path=''
     )
-    async def get(self, request: Request) -> dict:
+    async def get(self, request: Request, data: UniversalTableGetRequest=Depends()) -> dict:
 
-        data = UniversalTableGetRequest()
         from services.hotels.schemas.generated_hotels_table import HotelsDefault_hotelsSchema
-        res = await self.service(request).get_all(request=data, profile_schema=HotelsDefault_hotelsSchema, _request=request)
+        try:
+            x = self.service(request)
+            res = await x.get_all(request=data, profile_schema=HotelsDefault_hotelsSchema, _request=request)
+        except Exception as e:
+            raise
+
         return res.model_dump(mode='json')
 
     @api(
