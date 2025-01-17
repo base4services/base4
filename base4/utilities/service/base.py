@@ -34,7 +34,7 @@ from base4.utilities.access_control.helpers import (
 )
 from base4.utilities.db.redis import RedisClientHandler
 from base4.utilities.files import get_project_root
-from base4.utilities.security.jwt import decode_token
+from base4.utilities.security.jwt import decode_token, decode_token_v3
 from base4.utilities.service.startup import service as app, service
 from base4.utilities.ws import emit, sio_client_manager
 
@@ -401,10 +401,19 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
                     if token and token.startswith("Bearer "):
                         token = token.replace("Bearer ", "")
 
-                        try:
-                            self.session = decode_token(token)
-                        except Exception:
-                            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token 1"})
+                        base_v3 =  request.headers.get("x-base-v3")
+                        if base_v3:
+                            try:
+                                self.session = decode_token_v3(token)
+                            except Exception:
+                                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                                                    detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token 1"})
+                        else:
+                            try:
+                                self.session = decode_token(token)
+                            except Exception:
+                                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                                                    detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token 1"})
 
                         if getattr(self.session, 'expired', False):
                             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"})

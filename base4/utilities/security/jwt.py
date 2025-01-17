@@ -55,6 +55,14 @@ def create_token(request: CreateTokenRequest) -> str:
     return jwt.encode(payload, private_key, algorithm='RS256')
 
 
+def decode_token_v3(token: str) -> DecodedToken:
+    global public_key
+    try:
+        decoded_payload = jwt.decode(token, public_key, algorithms=['RS256'])
+    except Exception as e:
+        raise
+    pass
+
 def decode_token(token: str) -> DecodedToken:
     global public_key
     try:
