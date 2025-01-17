@@ -418,8 +418,8 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
                 token = request.headers.get("Authorization")
                 if not is_authorized:
                     self.id_tenant = request.headers.get("X-Tenant-ID")
-                if not self.id_tenant:
-                    raise HTTPException(status_code=401, detail=f"Provide valid X-Tenant-ID")
+                # if not self.id_tenant:
+                #     raise HTTPException(status_code=401, detail=f"Provide valid X-Tenant-ID")
 
                 elif is_authorized:
                     if token and token.startswith("Bearer "):
