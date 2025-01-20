@@ -1,7 +1,7 @@
 import importlib
 import inspect
 import os
-
+from functools import lru_cache
 import yaml
 
 from base4.utilities.files import get_project_root
@@ -111,6 +111,10 @@ def update_config_env(service_name: str):
     with open(project_root / 'config/env.yaml', 'w') as f:
         f.write(content)
 
+@lru_cache(maxsize=None)
+def generate_class_aliases(class_name):
+    alias = ''.join([c for c in class_name if c.isupper()])
+    return alias.lower()
 
 def update_config_ac():
     with open(project_root / 'config/ac.yaml', 'r') as f:
@@ -127,12 +131,16 @@ def update_config_ac():
                             for api_handler in inspect.getmembers(module):
                                 if hasattr(api_handler[1], 'router'):
                                     obj = api_handler[1]
+                                    method_pfx = generate_class_aliases(obj.__class__.__name__)
+                                    if method_pfx == '':
+                                        raise Exception(f"Class name '{obj.__class__.__name__}' is not valid. It must contain at least one uppercase letter.")
+
                                     methods = {
-                                        method_name: f"{obj.__module__}.{obj.__class__.__name__}.{method_name}"
+                                        f"{method_pfx}_{method_name}": f"{obj.__module__}.{obj.__class__.__name__}.{method_name}"
                                         for method_name, method_obj in inspect.getmembers(obj, predicate=inspect.ismethod)
                                         if method_name not in ('__init__','__call__','add_api_route','add_api_websocket_route','add_event_handler','add_exception_handler',
                                                                'add_middleware','add_route','add_websocket_route','api_route','build_middleware_stack','delete','exception_handler',
-                                                               'get','head','host','include_router','middleware','mount','on_event','openapi','options','patch','post','put','route',
+                                                               'head','host','include_router','middleware','mount','on_event','openapi','options','patch','post','put','route',
                                                                'setup','trace','url_path_for','websocket','websocket_route', 'register_routes')
                                     }
 
@@ -152,3 +160,6 @@ def compile_main_config(service_name: str, gen_items: list):
     update_config_services(service_name)
     update_config_db(service_name)
     update_config_env(service_name)
+
+if __name__ == '__main__':
+    update_config_ac()

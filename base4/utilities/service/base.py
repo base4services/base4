@@ -21,6 +21,7 @@ from fastapi import APIRouter, FastAPI, File, Form, HTTPException, Query, Reques
 import base4.utilities.db.async_redis as async_redis
 
 from base4.schemas.base import NOT_SET
+from base4.scripts.yaml_compiler import generate_class_aliases
 from base4.utilities.access_control.helpers import (
     AC_CONFIG,
     API_HANDLERS,
@@ -426,9 +427,11 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
 
                         if getattr(self.session, 'expired', False):
                             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"})
-
-                        func_name = func.__name__
+                        ...
                         class_path = _get_api_handler_class_path(self)
+                        ...
+                        func_name = f'{generate_class_aliases(type(self).__name__)}_{func.__name__}'
+
                         full_api_handler_class_path = f"{class_path}.{func_name}"
                         api_module_name = full_api_handler_class_path.split(".", 2)[1]
 
