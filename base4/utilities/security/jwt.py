@@ -61,7 +61,18 @@ def decode_token_v3(token: str) -> DecodedToken:
         decoded_payload = jwt.decode(token, public_key, algorithms=['RS256'])
     except Exception as e:
         raise
-    pass
+    if 'exp' in decoded_payload:
+        exp = decoded_payload['exp']
+    else:
+        exp = int(time.time()) + 24 * 60 * 60
+    return DecodedToken(
+        session_id=decoded_payload.get('id_session'),  # ?! id_session
+        user_id=decoded_payload['id_user'],
+        tenant_id=decoded_payload['id_tenant'],
+        role='user',
+        expire_at=datetime.fromtimestamp(exp, tz=timezone.utc),
+        expired=False,
+    )
 
 def decode_token(token: str) -> DecodedToken:
     global public_key

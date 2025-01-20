@@ -419,11 +419,17 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
                         if getattr(self.session, 'expired', False):
                             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"})
 
-                        rdb_session = await self.rdb.get(f"session:{self.session.session_id}")
-                        if not rdb_session:
-                            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"})
+                        if base_v3:
+                            # rdb_session = await self.rdb.get(f"session:{self.session.session_id}")
+                            request.me = Me(id=self.session.user_id, role=self.session.role,
+                                            id_tenant=self.session.tenant_id, id_session=self.session.session_id)
 
-                        request.me = Me(id=rdb_session['id_user'], role=rdb_session['role'], id_tenant=rdb_session['id_tenant'], id_session=rdb_session['session'])
+                        else:
+                            rdb_session = await self.rdb.get(f"session:{self.session.session_id}")
+                            if not rdb_session:
+                                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"})
+
+                            request.me = Me(id=rdb_session['id_user'], role=rdb_session['role'], id_tenant=rdb_session['id_tenant'], id_session=rdb_session['session'])
 
                         if getattr(self.session, 'expired', False):
                             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"})
@@ -446,8 +452,8 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
                         permissions = user_role_config["permissions"]
                         target_permission_name = f"{api_module_name}.{func_name}"
 
-                        if rdb_session['permissions']:
-                            _merge_with_user_permissions(static_permissions=permissions, user_permissions=rdb_session['permissions'])
+                        # if rdb_session['permissions']:
+                        #     _merge_with_user_permissions(static_permissions=permissions, user_permissions=rdb_session['permissions'])
 
                         _wildcard_permissions = {}
                         direct_permissions = {}
