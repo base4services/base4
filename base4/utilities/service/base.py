@@ -443,7 +443,7 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
 
                         api_handler = API_HANDLERS.get(api_module_name)
                         if api_handler is None:
-                            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail={"code": "INTERNAL_SERVER_ERROR"})
+                            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail={"code": "INTERNAL_SERVER_ERROR", "detail": "missing api_handler"})
 
                         user_role_config = ROLES.get(self.session.role)
                         if user_role_config is None:
@@ -560,6 +560,26 @@ class BaseAPIHandler(object):
     )
     async def healthy(self, request: Request):
         return {'status': 'ok'}
+
+
+class OptionAPIHandler(object):
+
+    def __init__(self, router: APIRouter, service=None, model=None, schema=None, table_schema=None):
+        self.router = router
+        self.service = service
+        self.model = model
+        self.schema = schema
+        self.table_schema = table_schema
+
+
+    @api(
+        method='GET',
+        path='/options/by-key/{key}',
+        response_model=Dict[str, str]
+    )
+    async def get_option(self, request: Request, key: str) -> dict:
+        return await self.service(request).get_option_by_key(key=key)
+
 
 
 class BaseUploadFileHandler(object):
