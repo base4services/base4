@@ -9,9 +9,6 @@ class LoginRequest(pydantic.BaseModel):
     password: str
 
 
-class LoginResponse(pydantic.BaseModel):
-    token: str
-
 
 class MeResponse(pydantic.BaseModel):
     id: uuid.UUID
@@ -25,3 +22,7 @@ class MeResponse(pydantic.BaseModel):
 
     token_expiration_timestamp: datetime.datetime
     ttl: int
+
+
+class LoginResponse(pydantic.BaseModel):
+    token: str

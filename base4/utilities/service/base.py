@@ -642,7 +642,11 @@ class CRUDAPIHandler(BaseAPIHandler):
         path='',
     )
     async def create(self, data: dict, request: Request) -> dict:
-        validated_data = self.schema(**data)
+        try:
+            validated_data = self.schema(**data)
+        except pydantic.ValidationError as e:
+            print(e)
+            raise HTTPException(status_code=400, detail="Invalid data")
 
         return await self.service(request).create(
             payload=validated_data,
@@ -658,16 +662,19 @@ class CRUDAPIHandler(BaseAPIHandler):
 
     @api(
         method='GET',
-        path=''
+        path='',
+        response_model=List[Dict] | Dict[str, Any] | UniversalTableResponse
     )
-    async def get(self, request: Request, data: UniversalTableGetRequest=Depends()) -> dict:
+    async def get(self, request: Request, data: UniversalTableGetRequest=Depends()): #-> dict:
 
         try:
             res = await self.service(request).get_all(request=data, profile_schema=self.table_schema, _request=request)
         except Exception as e:
             raise
 
-        return res.model_dump(mode='json')
+        #return res.model_dump(mode='json')
+        ...
+        return res
 
     @api(
         method='PUT',

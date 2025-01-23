@@ -47,6 +47,7 @@ class BaseServiceV2[ModelType]:
             uid_prefix='?',
             uid_total_length=10,
             uid_alphabet='WERTYUPASFGHJKLZXCVNM2345679',
+            request: Request = None,
     ):
         self.schema = schema
         self.model = model
@@ -58,6 +59,7 @@ class BaseServiceV2[ModelType]:
         self.conn_name = conn_name
         self.sio_connection = sio_connection
         self.rdb = async_redis.get_redis()
+        self.request = request
 
         # type(field), type(field) == field_type),
         def find_field_types(_model, field_type, related_name):
