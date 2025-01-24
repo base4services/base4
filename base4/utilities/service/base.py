@@ -672,7 +672,7 @@ class CRUDAPIHandler(BaseAPIHandler):
         except Exception as e:
             raise
 
-        #return res.model_dump(mode='json')
+        # return res.model_dump(mode='json')
         ...
         return res
 

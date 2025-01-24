@@ -742,140 +742,146 @@ class BaseServiceV2[ModelType]:
         # lookups = lookups_module.Lookups
 
         updated = set()
-        for c in citem.mk_cache_rules:
-            if 'column' not in c:
-                continue
-            if 'method' not in c:
-                continue
-
-            current = getattr(citem, c['column'])
-
-            if c['method'] == 'copy_from_base_table':
-                if 'source_column' not in c:
+        try:
+            c_iter = 0
+            for c in citem.mk_cache_rules:
+                c_iter += 1
+                if 'column' not in c:
+                    continue
+                if 'method' not in c:
                     continue
 
-                new_value = getattr(item, c['source_column'])
+                current = getattr(citem, c['column'])
 
-                if current != new_value:
-                    setattr(citem, c['column'], new_value)
-                    updated.add(c['column'])
-
-            elif c['method'] == 'copy_from_service_table':
-                if 'service_module' not in c:
-                    raise NameError("service_module must be used")
-
-                if 'service_class' not in c:
-                    raise NameError("service_class must be used")
-
-                if 'service_class_method' not in c:
-                    raise NameError("service_class_method source must be used")
-
-                if 'args' not in c:
-                    raise NameError("args must be used")
-
-                try:
-                    service_module = importlib.import_module(c['service_module'])
-                    service_class = getattr(service_module, c['service_class'])
-                    service_class_method = getattr(service_class, c['service_class_method'])
-
-                    args = [eval(x) for x in c['args']]
-                    new_value = await service_class_method(*args)
-
-                    if current != new_value:
-                        setattr(citem, c['column'], new_value)
-                        updated.add(c['column'])
-
-                except Exception as e:
-
-                    raise
-
-            elif c['method'] == 'async_method':
-                if 'function' not in c:
-                    raise NameError("Function must be used")
-
-                try:
-                    new_value = await eval(c['function'])
-                except Exception as e:
-                    raise
-
-                if current != new_value:
-                    if current != new_value:
-                        setattr(citem, c['column'], new_value)
-                        updated.add(c['column'])
-
-            elif c['method'] == 'lookup':
-                if 'target' not in c:
-                    raise NameError("Target must be used")
-                if 'source' not in c:
-                    raise NameError("Source must be used")
-
-                rlookup = lookups_module.LookupsReversed.get_instance()
-
-                if getattr(citem, c['source']):
-                    try:
-                        lkp = rlookup[str(getattr(citem, c['source']))]
-                    except Exception as e:
-                        raise
-
-                    if c['target'] not in ('code',):
-                        raise NameError(f"Invalid target {c['target']}")
-
-                    new_value = lkp[c['target']]
-                else:
-                    new_value = None
-
-                if current != new_value:
-                    setattr(citem, c['column'], new_value)
-                    updated.add(c['column'])
-
-            elif c['method'] == 'ipc':
-                if 'ipc' not in c:
-                    raise NameError("IPC must be used")
-
-                if 'condition' in c:
-                    if not eval(c['condition']):
+                if c['method'] == 'copy_from_base_table':
+                    if 'source_column' not in c:
                         continue
 
-                try:
-                    #                    breakpoint()
-                    new_value = await eval(c['ipc'])
-                    ...
-                except Exception as e:
-                    new_value = None
-                    raise
+                    new_value = getattr(item, c['source_column'])
 
-                if 'extract_key' in c and isinstance(new_value, dict):
+                    if current != new_value:
+                        setattr(citem, c['column'], new_value)
+                        updated.add(c['column'])
+
+                elif c['method'] == 'copy_from_service_table':
+                    if 'service_module' not in c:
+                        raise NameError("service_module must be used")
+
+                    if 'service_class' not in c:
+                        raise NameError("service_class must be used")
+
+                    if 'service_class_method' not in c:
+                        raise NameError("service_class_method source must be used")
+
+                    if 'args' not in c:
+                        raise NameError("args must be used")
+
                     try:
-                        new_value = new_value[c['extract_key']] if c['extract_key'] in new_value else None
+                        service_module = importlib.import_module(c['service_module'])
+                        service_class = getattr(service_module, c['service_class'])
+                        service_class_method = getattr(service_class, c['service_class_method'])
+
+                        args = [eval(x) for x in c['args']]
+                        new_value = await service_class_method(*args)
+
+                        if current != new_value:
+                            setattr(citem, c['column'], new_value)
+                            updated.add(c['column'])
+
+                    except Exception as e:
+
+                        raise
+
+                elif c['method'] == 'async_method':
+                    if 'function' not in c:
+                        raise NameError("Function must be used")
+
+                    try:
+                        new_value = await eval(c['function'])
                     except Exception as e:
                         raise
 
-                if current != new_value:
-                    setattr(citem, c['column'], new_value)
-                    updated.add(c['column'])
+                    if current != new_value:
+                        if current != new_value:
+                            setattr(citem, c['column'], new_value)
+                            updated.add(c['column'])
 
-            # TODO: REMOVE THIS AND REPLACE WITH IPC
-            elif c['method'] == 'svc_get':
-                if 'service' not in c:
-                    raise NameError("Service must be used")
-                if 'uri' not in c and 'ipc' not in c:
-                    raise NameError("Either uri or ipc must be used")
-                if 'uri' in c and 'ipc' in c:
-                    raise NameError("Only one of uri or ipc can be used")
-                if 'source' not in c:
-                    raise NameError("Source must be used")
+                elif c['method'] == 'lookup':
+                    if 'target' not in c:
+                        raise NameError("Target must be used")
+                    if 'source' not in c:
+                        raise NameError("Source must be used")
 
-                if not eval(c['source']):
-                    new_value = None
-                elif 'ipc' in c:
+                    rlookup = lookups_module.LookupsReversed.get_instance()
+
+                    if getattr(citem, c['source']):
+                        try:
+                            lkp = rlookup[str(getattr(citem, c['source']))]
+                        except Exception as e:
+                            raise
+
+                        if c['target'] not in ('code',):
+                            raise NameError(f"Invalid target {c['target']}")
+
+                        new_value = lkp[c['target']]
+                    else:
+                        new_value = None
+
+                    if current != new_value:
+                        setattr(citem, c['column'], new_value)
+                        updated.add(c['column'])
+
+                elif c['method'] == 'ipc':
+                    if 'ipc' not in c:
+                        raise NameError("IPC must be used")
+
+                    if 'condition' in c:
+                        if not eval(c['condition']):
+                            continue
+
                     try:
+                        #                    breakpoint()
                         new_value = await eval(c['ipc'])
+                        ...
                     except Exception as e:
+                        new_value = None
                         raise
 
-                if current != new_value:
-                    setattr(citem, c['column'], new_value)
-                    updated.add(c['column'])
+                    if 'extract_key' in c and isinstance(new_value, dict):
+                        try:
+                            new_value = new_value[c['extract_key']] if c['extract_key'] in new_value else None
+                        except Exception as e:
+                            raise
+
+                    if current != new_value:
+                        setattr(citem, c['column'], new_value)
+                        updated.add(c['column'])
+
+                # TODO: REMOVE THIS AND REPLACE WITH IPC
+                elif c['method'] == 'svc_get':
+                    if 'service' not in c:
+                        raise NameError("Service must be used")
+                    if 'uri' not in c and 'ipc' not in c:
+                        raise NameError("Either uri or ipc must be used")
+                    if 'uri' in c and 'ipc' in c:
+                        raise NameError("Only one of uri or ipc can be used")
+                    if 'source' not in c:
+                        raise NameError("Source must be used")
+
+                    if not eval(c['source']):
+                        new_value = None
+                    elif 'ipc' in c:
+                        try:
+                            new_value = await eval(c['ipc'])
+                        except Exception as e:
+                            raise
+
+                    if current != new_value:
+                        setattr(citem, c['column'], new_value)
+                        updated.add(c['column'])
+
+        except Exception as ee:
+            raise ee
 
         if updated:
             await citem.save(using_db=conn)
