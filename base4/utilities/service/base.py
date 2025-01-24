@@ -662,6 +662,14 @@ class CRUDAPIHandler(BaseAPIHandler):
 
     @api(
         method='GET',
+        path='/id/{_id}/{field}',
+    )
+    async def get_single_field(self, _id: uuid.UUID, field: str,  request: Request) -> Dict:
+        return await self.service(request).get_single_field(item_id=_id, field=field, request=request)
+
+
+    @api(
+        method='GET',
         path='',
         response_model=List[Dict] | Dict[str, Any] | UniversalTableResponse
     )

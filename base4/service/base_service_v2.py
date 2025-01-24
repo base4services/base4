@@ -544,12 +544,16 @@ class BaseServiceV2[ModelType]:
         conn = None
 
         if update_if_exists:
-            res = await self.update_if_exists_on_create(
-                update_if_exists_key_fields=update_if_exists_key_fields,
-                update_if_exists_value_fields=update_if_exists_value_fields,
-                payload=payload,
-                request=request,
-            )
+            try:
+                res = await self.update_if_exists_on_create(
+                    update_if_exists_key_fields=update_if_exists_key_fields,
+                    update_if_exists_value_fields=update_if_exists_value_fields,
+                    payload=payload,
+                    request=request,
+                )
+            except Exception as e:
+                raise
+
             if res:
                 if return_db_object:
                     return res
