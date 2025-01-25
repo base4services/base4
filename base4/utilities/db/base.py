@@ -86,7 +86,10 @@ class BaseServiceDbUtils:
             if isinstance(list_item, dict):
                 raise NameError("Use Schem Type instead dict in List")
 
-            res = await BaseServiceDbUtils._create_or_update_related_item(base_service_instance, key, list_item, service_loc, logged_user_id, request, _conn)
+            try:
+                res = await BaseServiceDbUtils._create_or_update_related_item(base_service_instance, key, list_item, service_loc, logged_user_id, request, _conn)
+            except Exception as e:
+                raise
 
             if key not in m2m_relations:
                 m2m_relations[key] = []
@@ -101,7 +104,7 @@ class BaseServiceDbUtils:
             update_if_exists_key_fields = base_service_instance.schema.check_existence_rules()[key]
             existence_rule = base_service_instance.schema.check_existence_rules()[key]
             update_if_exists_value_fields = [getattr(list_item, fld) for fld in existence_rule]
-            return await service_loc[key]().create(
+            return await service_loc[key](request).create(
                 logged_user_id,
                 list_item,
                 request,
@@ -112,7 +115,7 @@ class BaseServiceDbUtils:
                 return_db_object=True,
             )
         else:
-            return await service_loc[key]().create(logged_user_id, list_item, request, **list_item.unq(), return_db_object=True)
+            return await service_loc[key](request).create(logged_user_id, list_item, request, **list_item.unq(), return_db_object=True)
 
     @staticmethod
     async def _create_and_save_item(base_service_instance, body: dict, logged_user_id: uuid.UUID, _conn):
