@@ -115,7 +115,12 @@ class BaseServiceDbUtils:
                 return_db_object=True,
             )
         else:
-            return await service_loc[key](request).create(logged_user_id, list_item, request, **list_item.unq(), return_db_object=True)
+            try:
+                return await service_loc[key](request).create(# logged_user_id,
+                                                              list_item, request, **list_item.unq(), return_db_object=True)
+            except Exception as e:
+                raise
+            ...
 
     @staticmethod
     async def _create_and_save_item(base_service_instance, body: dict, logged_user_id: uuid.UUID, _conn):

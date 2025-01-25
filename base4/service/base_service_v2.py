@@ -515,9 +515,12 @@ class BaseServiceV2[ModelType]:
         # ?
         #
 
-        item = await self.model.filter(
-            **{update_if_exists_key_fields[i]: update_if_exists_value_fields[i] for i in range(len(update_if_exists_key_fields))}
-        ).get_or_none()
+        try:
+            item = await self.model.filter(
+                **{update_if_exists_key_fields[i]: update_if_exists_value_fields[i] for i in range(len(update_if_exists_key_fields))}
+            ).get_or_none()
+        except Exception as e:
+            raise
 
         if item:
             # TODO what with pre_save, post_save, post_commit
@@ -526,7 +529,14 @@ class BaseServiceV2[ModelType]:
             # Vidi, mozda da se ni ne radi update samo get, jer se ovde uglavnom nista ne updateuje - ovo je slicno kao get_or_create.. pa
             # primeni tu logiku
 
-            return await self.update(self.me.id, item.id, payload, request, return_db_item=True)
+            try:
+                return await self.update(
+                    # self.me.id,
+
+                    item.id, payload, request, return_db_item=True)
+            except Exception as e:
+                raise
+
 
     async def create(
             self,
