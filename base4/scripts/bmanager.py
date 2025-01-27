@@ -384,6 +384,6 @@ def compile_yaml(yaml_file: str, service_name: str, gen_type: str):
     _compile_yaml(yaml_file, service_name, gen_type)
 
 
-if __name__ == '__main__':
-    _compile_yaml('gen.yaml','hotels','schemas')
-...
+# if __name__ == '__main__':
+#     _compile_yaml('gen.yaml','hotels','schemas')
+# ...
