@@ -404,13 +404,16 @@ class BaseService[ModelType]:
 
         return await self.mk_single_model(item)
 
-    async def get_single_and_extract_field(self, item_id: uuid.UUID, field: str):
+    async def get_single_and_extract_field(self, item_id: uuid.UUID, field: str, request: Request):
         """
         Get single item from the table and extract field
 
         """
 
-        item = await self.get_single_model(item_id, self.request)
+        try:
+            item = await self.get_single_model(item_id, request)
+        except Exception as e:
+            raise
         return getattr(item, field)
 
     async def get_single_field(self, item_id: uuid.UUID, field: str, request: Request) -> Any:
