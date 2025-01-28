@@ -572,7 +572,7 @@ class BaseServiceV2[ModelType]:
                         return (await self.mk_single_model(res)).model_dump()
                     except:
                         return res
-
+        ...
         BaseServiceUtils.update_payload_with_user_data(payload, self.me.id)
 
         _id = await BaseServiceUtils.update_payload_with_ids(base_service_instance=self, payload=payload)
