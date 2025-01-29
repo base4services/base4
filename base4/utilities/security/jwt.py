@@ -21,7 +21,7 @@ from base4.utilities.files import read_file
 
 private_key = read_file('security/private_key.pem')
 public_key = read_file('security/public_key.pem')
-
+...
 
 class DecodedToken(pydantic.BaseModel):
     session_id: uuid.UUID
@@ -102,11 +102,13 @@ def verify_token(token: str = Depends(oauth2_scheme)) -> DecodedToken:
 
     try:
         decoded = decode_token(token)
-
-        ...
-
     except Exception as e:
-        raise HTTPException(status_code=401, detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token 3"})
+        # try to decode v3
+
+        try:
+            decoded = decode_token_v3(token)
+        except Exception as e:
+            raise HTTPException(status_code=401, detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token 3"})
 
     if decoded.expired:
         raise HTTPException(status_code=401, detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has been expired"})
