@@ -106,6 +106,7 @@ def verify_token(token: str = Depends(oauth2_scheme)) -> DecodedToken:
         ...
 
     except Exception as e:
+        ...
         raise HTTPException(status_code=401, detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token 3"})
 
     if decoded.expired:

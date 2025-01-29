@@ -580,6 +580,22 @@ class OptionAPIHandler(object):
         return await self.service(request).get_option_by_key(key=key)
 
 
+    @api(
+        method='POST',
+        path='/options',
+    )
+    async def set_options(self, data: dict, request: Request) -> dict:
+        try:
+            validated_data = self.schema(**data)
+        except pydantic.ValidationError as e:
+            print(e)
+            raise HTTPException(status_code=400, detail="Invalid data")
+
+        return await self.service(request).create(
+            payload=validated_data,
+            request=request,
+        )
+
 
 class BaseUploadFileHandler(object):
 

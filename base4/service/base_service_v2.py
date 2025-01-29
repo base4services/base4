@@ -900,14 +900,6 @@ class BaseServiceV2[ModelType]:
         if updated:
             await citem.save(using_db=conn)
 
-    async def get_option_by_key(self, request: Request, key: str) -> Dict[str, str]:
-        res = await self.model.Option.filter(key=key).get_or_none()
-
-        if not res:
-            raise HTTPException(status_code=404, detail={"code": "NOT_FOUND", "parameter": "option", "message": f"option for key {key} not found"})
-
-        return {'id': str(res.id), 'value': res.value}
-
     async def get_option_by_key(self, key: str) -> Dict[str, str]:
         res = await self.model.filter(key=key).get_or_none()
 
