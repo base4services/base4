@@ -901,6 +901,7 @@ class BaseServiceV2[ModelType]:
             await citem.save(using_db=conn)
 
     async def get_option_by_key(self, key: str) -> Dict[str, str]:
+        ...
         res = await self.model.filter(key=key).get_or_none()
 
         if not res:
