@@ -656,12 +656,21 @@ class CRUDAPIHandler(BaseAPIHandler):
         method='POST',
         path='',
     )
-    async def create(self, data: dict, request: Request) -> dict:
+    async def create(self, data: dict, request: Request, key_id: str = Query(None),) -> dict:
         try:
             validated_data = self.schema(**data)
         except pydantic.ValidationError as e:
             print(e)
             raise HTTPException(status_code=400, detail="Invalid data")
+
+        from fastapi import Response
+        response = Response()
+
+        if key_id:
+            key_id = key_id.split(',')
+            return await self.service(request).create_or_update(key_id, validated_data, request, response)
+
+        #TODO: trebalo bi obraditi taj response
 
         return await self.service(request).create(
             payload=validated_data,
