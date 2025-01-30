@@ -104,8 +104,8 @@ class BaseServiceDbUtils:
             update_if_exists_key_fields = base_service_instance.schema.check_existence_rules()[key]
             existence_rule = base_service_instance.schema.check_existence_rules()[key]
             update_if_exists_value_fields = [getattr(list_item, fld) for fld in existence_rule]
-            return await service_loc[key](request).create(
-                logged_user_id,
+            s = await service_loc[key](request).create(
+              #  logged_user_id,
                 list_item,
                 request,
                 update_if_exists=True,
@@ -114,10 +114,10 @@ class BaseServiceDbUtils:
                 conn=_conn,
                 return_db_object=True,
             )
+            return s
         else:
             try:
-                return await service_loc[key](request).create(# logged_user_id,
-                                                              list_item, request, **list_item.unq(), return_db_object=True)
+                return await service_loc[key](request).create(list_item, request, **list_item.unq(), return_db_object=True)
             except Exception as e:
                 raise
             ...
