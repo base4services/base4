@@ -66,7 +66,7 @@ def get_service_names():
     service_names = []
     service_config = configuration("services")
     for service in service_config["services"]:
-        service_names.append(list(service.keys())[0])
+        service_names.append(service if isinstance(service, str) else list(service.keys())[0])
     return service_names
 
 
@@ -384,6 +384,6 @@ def compile_yaml(yaml_file: str, service_name: str, gen_type: str):
     _compile_yaml(yaml_file, service_name, gen_type)
 
 
-if __name__ == '__main__':
-    _compile_yaml('gen.yaml','hotels','schemas')
-...
+# if __name__ == '__main__':
+#     _compile_yaml('gen.yaml','hotels','schemas')
+# ...

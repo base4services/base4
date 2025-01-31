@@ -147,8 +147,8 @@ def update_config_ac():
                                     if service not in new_api_handlers:
                                         new_api_handlers[service] = {}
                                     new_api_handlers[service].update(methods)
-                except:
-                    pass
+                except Exception as e:
+                    print(f"Error while processing service '{service}': {e}")
     existing_data["api_handlers"] = new_api_handlers
     
     with open(project_root / 'config/ac.yaml', "w") as yaml_file:

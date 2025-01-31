@@ -86,7 +86,10 @@ class BaseServiceDbUtils:
             if isinstance(list_item, dict):
                 raise NameError("Use Schem Type instead dict in List")
 
-            res = await BaseServiceDbUtils._create_or_update_related_item(base_service_instance, key, list_item, service_loc, logged_user_id, request, _conn)
+            try:
+                res = await BaseServiceDbUtils._create_or_update_related_item(base_service_instance, key, list_item, service_loc, logged_user_id, request, _conn)
+            except Exception as e:
+                raise
 
             if key not in m2m_relations:
                 m2m_relations[key] = []
@@ -97,6 +100,7 @@ class BaseServiceDbUtils:
         base_service_instance, key: str, list_item: Any, service_loc: Dict, logged_user_id: uuid.UUID, request: Request, _conn
     ):
         """Create or update a related item based on existence rules."""
+
         if key in base_service_instance.schema.check_existence_rules():
             update_if_exists_key_fields = base_service_instance.schema.check_existence_rules()[key]
             existence_rule = base_service_instance.schema.check_existence_rules()[key]

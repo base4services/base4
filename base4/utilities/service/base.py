@@ -433,7 +433,9 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
 
                         if getattr(self.session, 'expired', False):
                             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"})
+                        ...
                         class_path = _get_api_handler_class_path(self)
+                        ...
                         func_name = f'{generate_class_aliases(type(self).__name__)}_{func.__name__}'
 
                         full_api_handler_class_path = f"{class_path}.{func_name}"
@@ -441,7 +443,7 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
 
                         api_handler = API_HANDLERS.get(api_module_name)
                         if api_handler is None:
-                            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail={"code": "INTERNAL_SERVER_ERROR"})
+                            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail={"code": "INTERNAL_SERVER_ERROR", "detail": "missing api_handler"})
 
                         user_role_config = ROLES.get(self.session.role)
                         if user_role_config is None:
@@ -486,11 +488,11 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
                         if permission.get("rate_limit") and is_rate_limited(api_handler, self.session, permission["rate_limit"]):
                             raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail={"code": "HTTP_429_TOO_MANY_REQUESTS"})
 
-                    else:
-                        raise HTTPException(
-                            status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token 2"}
-                        )
+                    # else:
+                    #     raise HTTPException(
+                    #         status_code=status.HTTP_401_UNAUTHORIZED,
+                    #         detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token 2"}
+                    #     )
 
             # Cache mechanism
             if 'GET' in route_kwargs.get('methods', ['GET']) and cache:
@@ -560,6 +562,26 @@ class BaseAPIHandler(object):
         return {'status': 'ok'}
 
 
+class OptionAPIHandler(object):
+
+    def __init__(self, router: APIRouter, service=None, model=None, schema=None, table_schema=None):
+        self.router = router
+        self.service = service
+        self.model = model
+        self.schema = schema
+        self.table_schema = table_schema
+
+
+    @api(
+        method='GET',
+        path='/options/by-key/{key}',
+        response_model=Dict[str, str]
+    )
+    async def get_option(self, request: Request, key: str) -> dict:
+        return await self.service(request).get_option_by_key(key=key)
+
+
+
 class BaseUploadFileHandler(object):
 
     @api(
@@ -620,7 +642,11 @@ class CRUDAPIHandler(BaseAPIHandler):
         path='',
     )
     async def create(self, data: dict, request: Request) -> dict:
-        validated_data = self.schema(**data)
+        try:
+            validated_data = self.schema(**data)
+        except pydantic.ValidationError as e:
+            print(e)
+            raise HTTPException(status_code=400, detail="Invalid data")
 
         return await self.service(request).create(
             payload=validated_data,
@@ -636,16 +662,27 @@ class CRUDAPIHandler(BaseAPIHandler):
 
     @api(
         method='GET',
-        path=''
+        path='/id/{_id}/{field}',
     )
-    async def get(self, request: Request, data: UniversalTableGetRequest=Depends()) -> dict:
+    async def get_single_field(self, _id: uuid.UUID, field: str,  request: Request) -> Dict:
+        return await self.service(request).get_single_field(item_id=_id, field=field, request=request)
+
+
+    @api(
+        method='GET',
+        path='',
+        response_model=List[Dict] | Dict[str, Any] | UniversalTableResponse
+    )
+    async def get(self, request: Request, data: UniversalTableGetRequest=Depends()): #-> dict:
 
         try:
             res = await self.service(request).get_all(request=data, profile_schema=self.table_schema, _request=request)
         except Exception as e:
             raise
 
-        return res.model_dump(mode='json')
+        # return res.model_dump(mode='json')
+        ...
+        return res
 
     @api(
         method='PUT',
