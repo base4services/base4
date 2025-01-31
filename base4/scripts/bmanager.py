@@ -327,7 +327,7 @@ def initdb():
 
     with open(project_root + '/config/env.yaml', 'r') as f:
         db = yaml.safe_load(f)
-        os.system(f'psql -U `whoami` -d template1 -c "CREATE ROLE {db_user} WITH CREATEDB LOGIN PASSWORD \'{password}\';"')
+        os.system(f'psql -U {db_user}` -d template1 -c "CREATE ROLE {db_user} WITH CREATEDB LOGIN PASSWORD \'{password}\';"')
         os.system(f'psql -U {db_user} -d template1 -c "create database {test_db};"')
         for d in db['db']['postgres']['databases']:
             print(f'[*] Creating database {d}')

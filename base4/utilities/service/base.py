@@ -275,7 +275,7 @@ class BaseServiceUtils:
 
                             service_loc = service_instance.model.schema_service_loc()
                             new_db_item = await service_loc[key]().create(
-                                logged_user_id, list_item, request, **list_item.unq(), return_db_object=True
+                                list_item, request, **list_item.unq(), return_db_object=True
                             )
                             await getattr(db_item, key).add(new_db_item)
                             new_values.append(str(list_item))
@@ -488,11 +488,11 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
                         if permission.get("rate_limit") and is_rate_limited(api_handler, self.session, permission["rate_limit"]):
                             raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail={"code": "HTTP_429_TOO_MANY_REQUESTS"})
 
-                    # else:
-                    #     raise HTTPException(
-                    #         status_code=status.HTTP_401_UNAUTHORIZED,
-                    #         detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token 2"}
-                    #     )
+                    else:
+                        raise HTTPException(
+                            status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token 2"}
+                        )
 
             # Cache mechanism
             if 'GET' in route_kwargs.get('methods', ['GET']) and cache:
@@ -577,9 +577,41 @@ class OptionAPIHandler(object):
         path='/options/by-key/{key}',
         response_model=Dict[str, str]
     )
-    async def get_option(self, request: Request, key: str) -> dict:
+    async def option_get(self, request: Request, key: str) -> dict:
         return await self.service(request).get_option_by_key(key=key)
 
+
+    @api(
+        method='POST',
+        path='/options',
+    )
+    async def option_post(self, data: dict, request: Request) -> dict:
+        try:
+            validated_data = self.schema(**data)
+        except pydantic.ValidationError as e:
+            print(e)
+            raise HTTPException(status_code=400, detail="Invalid data")
+
+        return await self.service(request).create(
+            payload=validated_data,
+            request=request,
+        )
+
+    @api(
+        method='PATCH',
+        path='/options/id/{_id}',
+    )
+    async def option_patch(self, _id: uuid.UUID, data: dict, request: Request) -> dict:
+        data = self.schema(**data)
+        try:
+            res = await self.service(request).update_patch(
+                item_id=_id,
+                payload=data,
+                request=request,
+            )
+        except Exception as e:
+            raise
+        return res
 
 
 class BaseUploadFileHandler(object):
@@ -641,17 +673,34 @@ class CRUDAPIHandler(BaseAPIHandler):
         method='POST',
         path='',
     )
-    async def create(self, data: dict, request: Request) -> dict:
+    async def create(self, data: dict, request: Request, key_id: str = Query(None),) -> dict:
         try:
             validated_data = self.schema(**data)
         except pydantic.ValidationError as e:
             print(e)
             raise HTTPException(status_code=400, detail="Invalid data")
 
-        return await self.service(request).create(
-            payload=validated_data,
-            request=request,
-        )
+        from fastapi import Response
+        response = Response()
+
+        if key_id:
+            key_id = key_id.split(',')
+            return await self.service(request).create_or_update(key_id, validated_data, request, response)
+
+        try:
+            res = await self.service(request).create(
+                payload=validated_data,
+                request=request,
+            )
+        except tortoise.exceptions.IntegrityError as e:
+            raise HTTPException(status_code=406, detail={"code": "NOT_ACCEPTABLE", "parameter": None, "message": f"Integrity error"})
+        except Exception as e:
+            raise
+
+        if isinstance(res, tortoise.models.Model):
+            return {'id': res.id, 'action': 'created'}
+
+        return res
 
     @api(
         method='GET',

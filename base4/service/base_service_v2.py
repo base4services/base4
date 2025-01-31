@@ -665,11 +665,11 @@ class BaseServiceV2[ModelType]:
 
         existing = await self.model.filter(**key_id_dict).get_or_none()
         if not existing:
-            res = await self.create(self.me.id, payload, request, return_db_object=True)
+            res = await self.create(payload, request, return_db_object=True)
             response.status_code = 201
             return {'action': 'created', 'id': res.id}
 
-        res = await self.update(self.me.id, existing.id, payload, request)
+        res = await self.update(existing.id, payload, request)
         return res
 
     async def update(self,  # logged_user_id: uuid.UUID,
