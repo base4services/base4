@@ -163,8 +163,8 @@ cd .. || exit
 
 echo "[*] Generating environment files..."
 bmanager compile-env > /dev/null 2>&1;
-bmanager compile-ac > /dev/null 2>&1;
 bmanager compile-yaml > /dev/null 2>&1;
+bmanager compile-ac > /dev/null 2>&1;
 
 echo "[*] Allow direnv..."
 direnv allow
