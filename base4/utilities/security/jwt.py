@@ -27,6 +27,7 @@ class DecodedToken(pydantic.BaseModel):
     session_id: uuid.UUID
     user_id: uuid.UUID
     tenant_id: uuid.UUID
+    parent_tenant_id: Optional[uuid.UUID|None]=None
     expire_at: datetime
     role: str
     expired: bool
@@ -36,6 +37,7 @@ class CreateTokenRequest(pydantic.BaseModel):
     session_id: Optional[uuid.UUID|None] = None
     id_user: uuid.UUID
     id_tenant: uuid.UUID
+    id_parent_tenant: Optional[uuid.UUID|None] = None
     role: str
 
     ttl: int = 24 * 60 * 60
@@ -89,6 +91,7 @@ def decode_token(token: str) -> DecodedToken:
         session_id=decoded_payload.get('session_id') or decoded_payload.get('session'),  # ?! id_session
         user_id=decoded_payload['id_user'],
         tenant_id=decoded_payload['id_tenant'],
+        parent_tenat_id=decoded_payload.get('id_parent_tenant'),
         role=decoded_payload['role'],
         expire_at=datetime.fromtimestamp(exp, tz=timezone.utc),
         expired=int(time.time()) > exp,
