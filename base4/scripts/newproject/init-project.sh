@@ -133,7 +133,7 @@ echo "$current_folder/src" >> "$site_packages/pythonpaths.pth"
 echo "[*] Upgrading pip..."
 pip3 install --upgrade pip -q
 echo "[*] Installing project requirements.txt..."
-pip3 install -r requirements.txt
+pip3 install -r requirements.txt -q
 
 
 if [ "$install_type" == "lib" ]; then
