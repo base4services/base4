@@ -33,7 +33,7 @@ from base4.utilities.access_control.helpers import (
     _get_api_handler_class_path,
     is_rate_limited, _merge_with_user_permissions,
 )
-from base4.utilities.db.redis import RedisClientHandler
+
 from base4.utilities.files import get_project_root
 from base4.utilities.security.jwt import decode_token, decode_token_v3
 from base4.utilities.service.startup import service as app, service

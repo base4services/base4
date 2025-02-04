@@ -5,10 +5,11 @@ import socketio
 import ujson
 from fastapi import FastAPI
 
+from base4.utilities.db.async_redis import get_redis
+
 dotenv.load_dotenv()
 import inspect
 
-from base4.utilities.db.redis import RedisClientHandler
 from base4.utilities.logging.setup import get_logger
 from base4.utilities.ws import extract_domain, sio_client_manager
 
@@ -35,7 +36,7 @@ class BaseSocketServer(object):
         )
         self.app = FastAPI()
         self.sio_app = socketio.ASGIApp(self.sio, other_asgi_app=self.app)
-        self.rdb = RedisClientHandler(port=SIO_REDIS_PORT)
+        self.rdb = get_redis()
         self.setup_admin()
         self.register_events()
 
