@@ -429,7 +429,11 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
                             if not rdb_session:
                                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"})
 
-                            request.me = Me(id=rdb_session['id_user'], role=rdb_session['role'], id_tenant=rdb_session['id_tenant'], id_session=rdb_session['session'])
+                            request.me = Me(id=rdb_session['id_user'],
+                                            role=rdb_session['role'],
+                                            id_tenant=rdb_session['id_tenant'],
+                                            id_parent_tenant=rdb_session['id_parent_tenant'],
+                                            id_session=rdb_session['session'])
 
                         if getattr(self.session, 'expired', False):
                             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"})
