@@ -186,4 +186,4 @@ def get_redis():
         get_redis.fake_redis = AsyncRedisFake()
         return get_redis.fake_redis
 
-    return StrictRedis(decode_responses=False)
+    return StrictRedis(decode_responses=False, host=os.getenv('DB_REDIS_HOST', 'localhost'), port=os.getenv('DB_REDIS_PORT', 6379))

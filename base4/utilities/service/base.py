@@ -428,6 +428,8 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
                             rdb_session = await self.rdb.get(f"session:{self.session.session_id}")
                             if not rdb_session:
                                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"})
+                            rdb_session = json.loads(rdb_session)
+
 
                             request.me = Me(id=rdb_session['id_user'],
                                             role=rdb_session['role'],
