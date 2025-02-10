@@ -86,7 +86,13 @@ def logs():
     return '/var/log/sophie-docs'
 
 def env():
-    return root() / '.env'
+
+    from base4.utilities.app_run_modes import app_run_modes
+
+    if os.getenv('APPLICATION_RUN_MODE', None) not in app_run_modes:
+        sys.exit('APPLICATION_RUN_MODE environment variable not set: expecting one of: '+','.join(app_run_modes))
+
+    return root() / f'.env.{os.getenv("APPLICATION_RUN_MODE")}'
 
 def tmp(filename=None):
     if not filename:

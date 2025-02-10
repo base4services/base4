@@ -2,10 +2,11 @@ import os
 import sys
 from typing import AnyStr, Dict, List, Optional
 
-import dotenv
 from pydantic import BaseModel
 
-dotenv.load_dotenv()
+from base4.utilities import base_dotenv
+base_dotenv.load_dotenv()
+
 
 
 class DatabaseConfig(BaseModel):

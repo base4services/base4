@@ -1,9 +1,10 @@
 import os
 
-import dotenv
 import socketio
 
-dotenv.load_dotenv()
+from base4.utilities import base_dotenv
+base_dotenv.load_dotenv()
+
 
 SIO_REDIS_HOST = os.getenv('SOCKETIO_REDIS_HOST')
 SIO_REDIS_PORT = os.getenv('SOCKETIO_REDIS_PORT')

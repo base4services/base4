@@ -1,8 +1,7 @@
-import dotenv
-
 from base4.utilities.files import get_project_root
 
-dotenv.load_dotenv(get_project_root() / '.env')
+from base4.utilities import base_dotenv
+base_dotenv.load_dotenv()
 
 import inspect
 import os

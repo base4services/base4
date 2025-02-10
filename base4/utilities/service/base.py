@@ -12,7 +12,6 @@ from starlette.middleware.sessions import SessionMiddleware
 from urllib3 import request
 
 from base4.schemas.universal_table import UniversalTableGetRequest, UniversalTableResponse
-import dotenv
 import pydantic
 import tortoise
 import tortoise.timezone
@@ -39,7 +38,9 @@ from base4.utilities.security.jwt import decode_token, decode_token_v3
 from base4.utilities.service.startup import service as app, service
 from base4.utilities.ws import emit, sio_client_manager
 
-dotenv.load_dotenv()
+from base4.utilities import base_dotenv
+base_dotenv.load_dotenv()
+
 upload_dir = os.getenv('UPLOAD_DIR', '/tmp')
 
 SchemaType = TypeVar('SchemaType', bound=pydantic.BaseModel)
@@ -428,7 +429,9 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
                             rdb_session = await self.rdb.get(f"session:{self.session.session_id}")
                             if not rdb_session:
                                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"})
-                            rdb_session = json.loads(rdb_session)
+
+                            if not isinstance(rdb_session, dict):
+                                rdb_session = json.loads(rdb_session)
 
 
                             request.me = Me(id=rdb_session['id_user'],
@@ -717,7 +720,7 @@ class CRUDAPIHandler(BaseAPIHandler):
 
     @api(
         method='GET',
-        path='/id/{_id}/{field}',
+        path='/id/{_id}/fields/{field}',
     )
     async def get_single_field(self, _id: uuid.UUID, field: str,  request: Request) -> Dict:
         return await self.service(request).get_single_field(item_id=_id, field=field, request=request)

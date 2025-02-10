@@ -1,13 +1,14 @@
 import os
 
-import dotenv
 import socketio
 import ujson
 from fastapi import FastAPI
 
 from base4.utilities.db.async_redis import get_redis
 
-dotenv.load_dotenv()
+from base4.utilities import base_dotenv
+base_dotenv.load_dotenv()
+
 import inspect
 
 from base4.utilities.logging.setup import get_logger
