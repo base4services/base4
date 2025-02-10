@@ -317,6 +317,16 @@ class BaseServiceUtils:
                 return False
         return True
 
+def is_local_request(request: Request) -> bool:
+    client_ip = request.headers.get("x-forwarded-for", request.client.host).split(",")[0].strip()
+
+    # Lista poznatih lokalnih i privatnih opsega IP adresa
+    local_ips = {"127.0.0.1", "::1"}
+    private_prefixes = ("192.168.", "10.", "172.16.", "172.17.", "172.18.", "172.19.", "172.20.", "172.21.", "172.22.", "172.23.", "172.24.", "172.25.", "172.26.", "172.27.", "172.28.", "172.29.", "172.30.", "172.31.")
+
+    return client_ip in local_ips or client_ip.startswith(private_prefixes)
+
+
 
 async def api_accesslog(request, response, session, start_time, accesslog, exc=None):
     # ako se posalje fleg da se ne loguje nemoj da logujes
@@ -386,10 +396,11 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
                     raise HTTPException(status_code=400, detail=f"Too many files uploaded. Maximum allowed is {upload_max_files}.")
 
             # Permission check
-            if not is_public:
-                client_ip = request.headers.get("x-forwarded-for", request.client.host).split(",")[0].strip()
-                if client_ip not in ["127.0.0.1", "::1"] and not client_ip.startswith("192.168.") and not client_ip.startswith("172.22."):
-                    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail={"code": "HTTP_403_FORBIDDEN", "ip": client_ip})
+            if not is_public and not is_local_request(request):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail={"code": "HTTP_403_FORBIDDEN", "ip": request.client.host}
+                )
 
 
             elif is_public:
