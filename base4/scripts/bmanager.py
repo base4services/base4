@@ -6,8 +6,9 @@ import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 import sys
+from random import choice
+
 import click
-import dotenv
 import git
 import yaml
 
@@ -22,12 +23,16 @@ from base4.scripts.yaml_compiler import compile_main_config, update_config_ac
 from base4.utilities.config import yaml_to_env
 from base4.utilities.files import get_project_root
 
-dotenv.load_dotenv()
+from base4.utilities import base_dotenv
+from base4.utilities.app_run_modes import app_run_modes
+
+base_dotenv.load_dotenv()
 
 project_root = str(get_project_root())
 
-#TODO: ovo pokupiti listanjem git repo-a
+# TODO: ovo pokupiti listanjem git repo-a
 existing_service_templates = ['base4tenants', 'base4ws', 'base4sendmail', 'base4service_template']
+
 
 def gen4svc(svc_name, location, gen=None):
     if not gen:
@@ -50,7 +55,6 @@ def gen4svc(svc_name, location, gen=None):
             project_root + f'/{location}/yaml_sources/{svc_name}_model.yaml',
             project_root + f'/{location}/schemas/generated_{svc_name}_table.py',
         )
-
 
     # todo, sredi ovo
     # if 'tables' in gen:
@@ -87,6 +91,7 @@ def is_git_dirty(repo_path='.'):
 @click.group(context_settings=dict(help_option_names=['-h', '--help'], max_content_width=150))
 def do():
     pass
+
 
 @do.command('new-service')
 @click.option('--service-name', '-s', help='Service name to generate or reset')
@@ -151,7 +156,6 @@ def new_service(service_name, service_template, verbose, gen_type):
             )
             compile_main_config(service_name, gen_items=gen_type.split(','))
 
-
         def _base4service_template(service_name):
             print('[*] creating service from default template...')
             os.system(
@@ -180,12 +184,11 @@ def new_service(service_name, service_template, verbose, gen_type):
             print(f'[*] service -> {service_name} created!')
             compile_main_config(service_name, gen_items=gen_type.split(','))
 
-
         if '@' not in service_template:
             branch = 'main'
         else:
             service_template, branch = service_template.split('@')
-            
+
         if service_template not in existing_service_templates:
             print(f'[*] please choose template')
             for i, j in enumerate(existing_service_templates, start=1):
@@ -224,7 +227,8 @@ def reset_service(service_name):
         sys.exit(f'[*] service -> {service_name} files are reset.')
     except Exception as e:
         pass
-    
+
+
 @do.command('compile-ac')
 def compile_ac():
     """
@@ -232,14 +236,28 @@ def compile_ac():
     """
     update_config_ac()
     print(f'[*] ac.yaml configuration updated!')
-    
+
+
+
+
 @do.command('compile-env')
-def compile_env():
+@click.option('--app_run_mode', '-a',
+              type=click.Choice(app_run_modes + ['all', 'default']),
+              default='all',
+              help=f'env file to generate ({", ".join(app_run_modes)}, default, all) - default uses env APPLICATION_RUN_MODE')
+def compile_env(app_run_mode: str):
     """
     Compile .env from config/env.yaml
     """
-    yaml_to_env('env')
-    print(f'[*] {project_root}/.env configuration generated!')
+    if app_run_mode == 'all':
+        for i in app_run_modes:
+            env_path = yaml_to_env('env', i)
+            print(f'[*] {env_path} configuration generated!')
+        return
+
+    env_path = yaml_to_env('env', app_run_mode)
+    print(f'[*] {env_path} configuration generated!')
+
 
 @do.command('list-templates')
 def list_templates():
@@ -248,6 +266,7 @@ def list_templates():
     """
     for i, j in enumerate(existing_service_templates, start=1):
         print(f'->: {j}')
+
 
 @do.command('aerich')
 @click.option('--aerich', '-a', help='aerich command to execute')
@@ -263,7 +282,8 @@ def perform_aerich(aerich, service_name):
     for service in ['aerich'] + get_service_names():
         if service_name and service != service_name:
             continue
-        print('aerich --app '+service+' '+aerich)
+        print('aerich --app ' + service + ' ' + aerich)
+
 
 @do.command('test')
 def do_test():
@@ -271,12 +291,13 @@ def do_test():
     Run all tests
     """
     os.system(
-                f'''
+        f'''
             cd {project_root}
             TEST_DATABASE=sqlite pytest -n 8 --disable-warnings tests --no-cov
             cd -
             '''
-            )
+    )
+
 
 @do.command('pip-up')
 def pip_up():
@@ -284,6 +305,7 @@ def pip_up():
     Upgrade all PIP packages
     """
     return p_up()
+
 
 @do.command('pip-down')
 def pip_down():
@@ -307,6 +329,8 @@ def base_lib_update():
         os.system(f'''cd {project_root}/lib/base4 && git pull''')
     except:
         pass
+
+
 @do.command('fmt')
 def fmt():
     """
@@ -315,6 +339,7 @@ def fmt():
     os.system(f'black --target-version py312 --line-length 160 --skip-string-normalization {project_root}')
     os.system(f'isort {project_root} --profile black --line-length 160')
     return
+
 
 @do.command('init-db')
 def initdb():
@@ -346,7 +371,6 @@ def services():
 
 
 def _compile_yaml(yaml_file: str, service_name: str, gen_type: str):
-
     try:
         _yaml_file = (project_root + '/config/' + yaml_file) if '/' not in yaml_file else yaml_file
         with open(_yaml_file) as f:
@@ -384,6 +408,7 @@ def compile_yaml(yaml_file: str, service_name: str, gen_type: str):
     _compile_yaml(yaml_file, service_name, gen_type)
 
 
-# if __name__ == '__main__':
-#     _compile_yaml('gen.yaml','hotels','schemas')
-# ...
+if __name__ == '__main__':
+    # _compile_yaml('gen.yaml','hotels','schemas')
+    compile_env()
+...

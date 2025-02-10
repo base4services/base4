@@ -265,32 +265,36 @@ def load_services(single_service=None):
         if not services['services']:
             return
         for service in services['services']:
+
+            if single_service and service != single_service:
+                continue
+
             if isinstance(service, str):
                 svc_name = service
             else:
                 svc_name = list(service.keys())[0]
             
-            if not single_service:
+            # if not single_service:
+            try:
+                importlib.import_module(f"services.{svc_name}.api.handlers")
+            except Exception as e:
                 try:
-                    importlib.import_module(f"services.{svc_name}.api.handlers")
+                    importlib.import_module(f"services.{svc_name}.api")
                 except Exception as e:
-                    try:
-                        importlib.import_module(f"services.{svc_name}.api")
-                    except Exception as e:
-                        raise
+                    raise
                         
-            else:
-                # todo, postoji sada problem kada pokrenem jedan servis
-
-                # if service != single_service:
-                #     continue
-                try:
-                    importlib.import_module(f"services.{svc_name}.api.handlers")
-                except Exception as e:
-                    try:
-                        importlib.import_module(f"services.{svc_name}.api")
-                    except Exception as e:
-                        raise
+            # else:
+            #     # todo, postoji sada problem kada pokrenem jedan servis
+            #
+            #     # if service != single_service:
+            #     #     continue
+            #     try:
+            #         importlib.import_module(f"services.{svc_name}.api.handlers")
+            #     except Exception as e:
+            #         try:
+            #             importlib.import_module(f"services.{svc_name}.api")
+            #         except Exception as e:
+            #             raise
 
 
 def run_server(config, single_service=None):

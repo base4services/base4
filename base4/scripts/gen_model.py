@@ -69,6 +69,9 @@ def gen_model(tbl, tbl_name, ctable=False, parent_class_name='', parent_types=No
                 if 'fields.ForeignKeyField' in orm_field:
                     cname = column_name + '_id'
 
+                if 'fields.OneToOneField' in orm_field:
+                    cname = column_name + '_id'
+
                 if schema_loc:
                     schema_loc_dict[cname] = schema_loc
                 else:

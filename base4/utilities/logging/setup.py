@@ -11,6 +11,18 @@ from fastapi import HTTPException, status
 
 from base4 import configuration
 
+import contextlib
+
+@contextlib.contextmanager
+def temporary_console_logging(service):
+    logger = logging.getLogger(service)
+
+    handler = logging.StreamHandler()
+    logger.addHandler(handler)
+    try:
+        yield
+    finally:
+        logger.removeHandler(handler)
 
 def setup_logging() -> None:
     """
@@ -124,7 +136,7 @@ def get_logger():
     if len(sys.argv) > 1 and sys.argv[1]:
         logger = sys.argv[1]
     else:
-        logger = "base4project" # "impresaone2"
+        logger = "base4project"
     return logging.getLogger(logger)
 
 

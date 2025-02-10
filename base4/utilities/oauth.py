@@ -1,7 +1,8 @@
 import os
 from secrets import token_urlsafe
-import dotenv
-dotenv.load_dotenv()
+
+from base4.utilities import base_dotenv
+base_dotenv.load_dotenv()
 
 from authlib.integrations.starlette_client import OAuth
 from fastapi.requests import Request
