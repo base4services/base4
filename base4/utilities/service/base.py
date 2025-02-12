@@ -509,10 +509,7 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
                             raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail={"code": "HTTP_429_TOO_MANY_REQUESTS"})
 
                     else:
-                        raise HTTPException(
-                            status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token 2"}
-                        )
+                        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token"})
 
             # Cache mechanism
             if 'GET' in route_kwargs.get('methods', ['GET']) and cache:
