@@ -1,7 +1,7 @@
 import os
 
 import socketio
-import ujson
+import ujson as json
 from fastapi import FastAPI
 
 from base4.utilities.db.async_redis import get_redis
@@ -14,9 +14,9 @@ import inspect
 from base4.utilities.logging.setup import get_logger
 from base4.utilities.ws import extract_domain, sio_client_manager
 
-SIO_ALLOWED_ORIGINS = os.getenv('SIO_ALLOWED_ORIGINS').split(',')
-SIO_ADMIN_PORT = os.getenv('SIO_ADMIN_PORT')
-SIO_REDIS_PORT = int(os.getenv('SIO_REDIS_PORT', '6379'))
+SIO_ALLOWED_ORIGINS = os.getenv('SOCKETIO_ALLOWED_ORIGINS').split(',')
+SIO_ADMIN_PORT = os.getenv('SOCKETIO_ADMIN_PORT')
+SIO_REDIS_PORT = int(os.getenv('SOCKETIO_REDIS_PORT', '6379'))
 
 logger = get_logger()
 
@@ -24,7 +24,7 @@ logger = get_logger()
 class BaseSocketServer(object):
     def __init__(self):
         self.sio = socketio.AsyncServer(
-            json=ujson,
+            json=json,
             async_handlers=True,
             cors_allowed_origins=['https://admin.socket.io', 'http://127.0.0.1:8000', 'admin.socket.io', 'https://admin.socket.io', ''],
             async_mode='asgi',
@@ -55,13 +55,19 @@ class BaseSocketServer(object):
     async def do_auth(self, sid, token):
         """Performs authentication with the token."""
         if token:
+            rdb_session = await self.rdb.get(f"session:{token}")
+            if not rdb_session:
+                return ConnectionRefusedError('AUTHENTICATION_FAILED')
+
+            if not isinstance(rdb_session, dict):
+                rdb_session = json.loads(rdb_session)
+
             try:
-                token = token.decode('utf-8')
-            except AttributeError:
-                pass
-            # Additional auth logic here
-            return True
-        return False
+                await self.sio.save_session(sid, rdb_session)
+            except:
+                return ConnectionRefusedError('AUTHENTICATION_FAILED')
+
+        return True
 
     def get_namespace(self, sid):
         """Gets the namespace based on client environment."""
