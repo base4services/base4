@@ -573,7 +573,10 @@ class BaseServiceV2[ModelType]:
                     except:
                         return res
         ...
-        BaseServiceUtils.update_payload_with_user_data(payload, self.me.id)
+        try:
+            BaseServiceUtils.update_payload_with_user_data(payload, self.me.id)
+        except Exception as e:
+            raise
 
         _id = await BaseServiceUtils.update_payload_with_ids(base_service_instance=self, payload=payload)
 
