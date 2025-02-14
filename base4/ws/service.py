@@ -26,7 +26,7 @@ print(SIO_ALLOWED_ORIGINS)
 
 logger = get_logger()
 
-MAIN_CHANNELS = []
+MAIN_CHANNELS = ['hotels']
 
 
 class BaseSocketServer(object):
