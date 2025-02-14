@@ -678,7 +678,6 @@ class BaseWebSocketHandler(object):
     async def ws_emit(self, event, data={}, room=None):
         await emit(event=event, data=data, room=room, connection=self.sio_connection)
 
-
 class CRUDAPIHandler(BaseAPIHandler):
     def __init__(self, router, service, schema=None, model=None, table_schema=None):
         self.router = router
