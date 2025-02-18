@@ -48,7 +48,7 @@ class BaseAsyncRedis(ABC):
         pass
 
     @abstractmethod
-    async def delete_key(self, key: str) -> bool:
+    async def delete(self, key: str) -> bool:
         pass
 
     @abstractmethod
@@ -129,7 +129,7 @@ class AsyncRedisFake(BaseAsyncRedis):
     async def setex(self, name: str, time: int, value: Any) -> bool:
         return await self.client.setex(name, time, value)
 
-    async def delete_key(self, key: str) -> bool:
+    async def delete(self, key: str) -> bool:
         result = await self.client.delete(key)
         return bool(result)
 

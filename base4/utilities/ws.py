@@ -25,6 +25,15 @@ def extract_domain(host):
 
 sio_connection = sio_client_manager(write_only=False)
 async def emit(event, data=None, room=None, connection=None):
+    if os.getenv('TEST_MODE'):
+        return
+
+    # TODO: Napraviti TEST WS, ako ne nadjemo neki bolji nacin da testiram WS, moze ovaj emit da upisuje u neki redis queue i da ga iz testa samo tamo citamo
+
+    print("\n"*2)
+    print("PUBL TO WS ", event, data, room)
+    print("\n"*2)
+
     if connection:
         return await connection.emit(event=event, data=data, room=room if room else None)
     return await sio_connection.emit(event=event, data=data, room=room if room else None)
