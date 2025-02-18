@@ -241,7 +241,8 @@ class RedisLoggingHandler(logging.Handler):
                 'instance': spl[2] if spl[2] not in (None,'None') else None,
                 'id_instance': spl[3] if spl[3] not in (None,'None') else None,
                 'message': spl[4] if spl[4] not in (None,'None') else None,
-                'data': json.loads(spl[5]) if spl[5] not in (None,'None') else None
+                'data': json.loads(spl[5]) if spl[5] not in (None,'None') else None,
+                'isolated': spl[6]=='1' if spl[6] not in (None,'None') else False
             }
         else:
             message = record.message
