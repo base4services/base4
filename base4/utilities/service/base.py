@@ -327,9 +327,13 @@ def is_local_request(request: Request) -> bool:
     client_ip = client_ip.split(",")[0].strip()
     local_ips = {"127.0.0.1", "::1"}
     private_prefixes = ("192.168.", "10.") + tuple(f"172.{i}." for i in range(16, 32))
-    return client_ip in local_ips or client_ip.startswith(private_prefixes)
 
+    res = client_ip in local_ips or client_ip.startswith(private_prefixes)
 
+    if not res:
+        print(f":: API @ is_public client_ip={client_ip}")
+
+    return res
 
 async def api_accesslog(request, response, session, start_time, accesslog, exc=None):
     # ako se posalje fleg da se ne loguje nemoj da logujes

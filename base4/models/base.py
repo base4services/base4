@@ -84,3 +84,4 @@ class BaseNoTenant:
 
 class Base(BaseNoTenant):
     id_tenant = fields.UUIDField(null=True, db_index=True)
+

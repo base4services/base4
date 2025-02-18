@@ -3,7 +3,6 @@ import importlib
 import uuid
 from typing import Any, Dict, Generic, List, Type, TypeVar, get_args, get_origin
 
-
 import pydantic
 import tortoise.fields
 import tortoise.timezone
@@ -34,6 +33,7 @@ from base4.schemas.universal_table import UniversalTableGetRequest, UniversalTab
 logger = get_logger()
 
 sio_connection = sio_client_manager(write_only=True)
+
 
 class BaseServiceV2[ModelType]:
 
@@ -101,6 +101,10 @@ class BaseServiceV2[ModelType]:
 
     ...
 
+
+    # TOOD: Vidi da promenimo ovo request u payload jer reqquest koristimo _request.. nema mnogo smisla
+    # da ne bude unikatno
+
     async def get_all(
             self, request: UniversalTableGetRequest, profile_schema: pydantic.BaseModel, _request: Request, post_process_method=None
     ) -> List | Dict | UniversalTableResponse:
@@ -117,8 +121,6 @@ class BaseServiceV2[ModelType]:
 
         # 15 Jan 2025 - Nemam pojma zasto sam ovde ovo overridivao, ako neki testovi padaju treba srediti !?!
         # request.response_format = 'objects'
-
-
 
         if request.per_page < 1:
             raise HTTPException(status_code=400, detail={"code": "INVALID_PARAMETER", "parameter": "per_page", "message": "per_page must be greater than 0"})
@@ -163,16 +165,48 @@ class BaseServiceV2[ModelType]:
                     status_code=400, detail={"code": "INVALID_PARAMETER", "parameter": "filters", "message": f"Invalid filter parameters {request.filters}"}
                 )
 
-        # if deleted not presented in filters, add it as deleted=False
+        # # if deleted not presented in filters, add it as deleted=False
+        #
+        # if not filters:
+        #     filters = Q()
+        #
+        #     # TODO: Tenant
+        #     if 'id_tenant' in self.model.schema_loc_dict:
+        #         filters &= Q(id_tenant=self.me.id_tenant)
+        #
+        #     if 'is_deleted' in self.model.schema_loc_dict:
+        #         filters &= Q(is_deleted=False)
+        # else:
+        #     filters = eval(filters)
+        #     if 'is_deleted' in self.model.schema_loc_dict:
+        #         d = find_field_in_q(filters, 'is_deleted')
+        #         if not d:
+        #             filters &= Q(is_deleted=False)
+
+        _filters = Q()
+        if filters:
+            _filters = eval(filters)
+
+        d = find_field_in_q(filter, 'id_tenant')
+        if not d and 'id_tenant' in self.model.schema_loc_dict:
+            _filters &= Q(id_tenant=self.me.id_tenant)
+
+        d = find_field_in_q(filters, 'is_deleted')
+        if not d and 'is_deleted' in self.model.schema_loc_dict:
+            _filters &= Q(is_deleted=False)
+
+        d = find_field_in_q(filters, 'is_valid')
+        if not d and 'is_valid' in self.model.schema_loc_dict:
+            _filters &= Q(is_valid=True)
+
+        #TODO: Ovde sam promeni ostvari, mozda popadaju neki testovi
+        # svakako treba testirati / napraviti testove ako ne postoje
+        # varijantu gde bas trazimo da je is_valid=True
 
         if not filters:
-            # TODO: Tenant
-            filters = Q(is_deleted=False)
+            filters = _filters
         else:
-            filters = eval(filters)
-            d = find_field_in_q(filters, 'is_deleted')
-            if not d:
-                filters &= Q(is_deleted=False)
+            filters = Q(_filters, eval(filters))
 
         if hasattr(self, 'specific_table_filtering'):
             try:
@@ -184,7 +218,7 @@ class BaseServiceV2[ModelType]:
 
         #
 
-        filters &= Q(is_valid=True)
+        # filters &= Q(is_valid=True)
 
         #
 
@@ -252,7 +286,7 @@ class BaseServiceV2[ModelType]:
                 await post_process_method(item)
             res = profile_schema.build(item, self.schema, request)
 
-            if profile_schema.meta():
+            if request.meta and profile_schema.meta():
                 meta = {}
                 for key in profile_schema.meta()['__meta']:
                     meta[key] = eval(profile_schema.meta()['__meta'][key])
@@ -426,7 +460,6 @@ class BaseServiceV2[ModelType]:
         return {'value': getattr(item, field)}
 
     async def update_put(self, payload: SchemaType, request: Request):
-        
 
         payload.last_updated_by = self.me.id
 
@@ -443,7 +476,6 @@ class BaseServiceV2[ModelType]:
         return res
 
     async def update_patch(self, item_id: uuid.UUID, payload: SchemaType, request: Request):
-        
 
         payload.last_updated_by = self.me.id
         # payload['last_updated_by'] = self.me.id
@@ -491,7 +523,6 @@ class BaseServiceV2[ModelType]:
                 # TODO ?!? smisli nesto univerzalnije
                 res['item'] = post_commit_update_result
 
-
             await self.update_activity_log(item, request, updated)
 
         return res
@@ -505,8 +536,6 @@ class BaseServiceV2[ModelType]:
             update_if_exists_value_fields: List[Any] = None,
     ):
         BaseServiceUtils.validate_update_if_exists_params(update_if_exists_key_fields, update_if_exists_value_fields)
-
-        
 
         payload.last_updated_by = self.me.id
 
@@ -536,7 +565,6 @@ class BaseServiceV2[ModelType]:
                     item.id, payload, request, return_db_item=True)
             except Exception as e:
                 raise
-
 
     async def create(
             self,
@@ -657,8 +685,6 @@ class BaseServiceV2[ModelType]:
     async def create_or_update(self,  # logged_user_id: uuid.UUID,
                                key_id: List[Any], payload: SchemaType, request: Request, response: Response) -> Dict[str, Any]:
 
-        
-
         key_id_dict = {}
         for key in key_id:
             if not hasattr(payload, key) or not getattr(payload, key):
@@ -677,8 +703,6 @@ class BaseServiceV2[ModelType]:
 
     async def update(self,  # logged_user_id: uuid.UUID,
                      item_id: uuid.UUID, payload: SchemaType, request: Request, return_db_item=False):
-
-        
 
         model_item = await self.get_single_model(item_id, request)
 
@@ -738,7 +762,6 @@ class BaseServiceV2[ModelType]:
 
     async def delete(self,  # logged_user_id: uuid.UUID,
                      item_id: uuid.UUID, request: Request):
-
 
         model_item = await self.get_single_model(item_id, request)
 
