@@ -6,8 +6,9 @@ from redis.exceptions import RedisError
 import fakeredis.aioredis
 import json
 import logging
-from datetime import timedelta
+from datetime import timedelta, datetime
 from abc import ABC, abstractmethod
+import redis
 
 logger = logging.getLogger(__name__)
 
@@ -175,8 +176,9 @@ class AsyncRedisFake(BaseAsyncRedis):
         """Additional method to clear all data - useful for testing"""
         await self.client.flushall()
 
-def get_redis():
 
+
+def get_redis():
 
     if os.getenv('TEST_MODE', 'False').lower() == 'true':
 
@@ -187,3 +189,86 @@ def get_redis():
         return get_redis.fake_redis
 
     return StrictRedis(decode_responses=False, host=os.getenv('DB_REDIS_HOST', 'localhost'), port=os.getenv('DB_REDIS_PORT', 6379))
+
+
+def get_sync_redis():
+
+    if hasattr(get_sync_redis, 'redis'):
+        return get_sync_redis.redis
+
+    if os.getenv('TEST_MODE', 'False').lower() == 'true':
+        get_sync_redis.redis = fakeredis.FakeRedis()
+        return get_sync_redis.redis
+
+    get_sync_redis.redis = redis.Redis(host=os.getenv('DB_REDIS_HOST', 'localhost'), port=os.getenv('DB_REDIS_PORT', 6379))
+    return get_sync_redis.redis
+
+
+class RedisLoggingHandler(logging.Handler):
+    def __init__(self, **kwargs):
+        super().__init__()
+        self.queue_name = kwargs.get('queue_name')
+        # self.redis: Optional[redis.Redis] = None
+        #
+        # self.redis_class = redis.Redis
+        #
+        # if os.getenv('TEST_MODE', 'False').lower() == 'true':
+        #     if hasattr(get_redis, 'fake_redis'):
+        #         self.redis_class =  fakeredis.FakeRedis
+
+        self.redis = get_sync_redis()
+
+        self._connect()
+
+    def _connect(self):
+        try:
+            # self.redis = self.redis_class(host=os.getenv('DB_REDIS_HOST', 'localhost'), port=os.getenv('DB_REDIS_PORT', 6379))
+            self.redis.ping()  # Test connection
+        except redis.ConnectionError as e:
+            print(f"Failed to connect to Redis: {e}")
+            self.redis = None
+
+    def emit(self, record):
+        if not self.redis:
+            return
+
+        message = None
+        if record.name == 'flows':
+            spl = record.message.split('|')
+            message = {
+                'id_tenant': spl[0] if spl[0] not in (None,'None') else None,
+                'id_user': spl[1] if spl[1] not in (None,'None') else None,
+                'instance': spl[2] if spl[2] not in (None,'None') else None,
+                'id_instance': spl[3] if spl[3] not in (None,'None') else None,
+                'message': spl[4] if spl[4] not in (None,'None') else None,
+                'data': json.loads(spl[5]) if spl[5] not in (None,'None') else None
+            }
+        else:
+            message = record.message
+
+
+        try:
+            log_entry = {
+                'timestamp': datetime.now().isoformat(),
+                'level': record.levelname,
+                'message': message,
+                'logger': record.name,
+                'module': record.module,
+                'function': record.funcName,
+                'line': record.lineno
+            }
+
+            # Use Redis pipeline for atomic operations
+            with self.redis.pipeline() as pipe:
+                # Push the new log entry to the right of the list
+                pipe.rpush(self.queue_name, json.dumps(log_entry))
+
+                # # Trim the list if it exceeds max_length
+                # if self.max_length:
+                #     pipe.ltrim(self.queue_name, -self.max_length, -1)
+
+                pipe.execute()
+
+        except Exception as e:
+            self.handleError(record)
+

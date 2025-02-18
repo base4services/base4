@@ -5,12 +5,13 @@ import time
 import uuid
 from functools import wraps
 from inspect import signature
-from typing import Any, Callable, Dict, List, Optional, TypeVar
+from typing import Any, Callable, Dict, List, Optional, TypeVar, Union
 
 from fastapi.params import Depends
 from starlette.middleware.sessions import SessionMiddleware
 from urllib3 import request
-
+from functools import cache
+import logging as log
 from base4.schemas.universal_table import UniversalTableGetRequest, UniversalTableResponse
 import pydantic
 import tortoise
@@ -317,16 +318,22 @@ class BaseServiceUtils:
                 return False
         return True
 
+
 def is_local_request(request: Request) -> bool:
-    client_ip = request.headers.get("x-forwarded-for", request.client.host).split(",")[0].strip()
+    client_ip: Union[str, None] = request.headers.get("x-forwarded-for", request.client.host)
+    if not client_ip:
+        return False
 
-    # Lista poznatih lokalnih i privatnih opsega IP adresa
+    client_ip = client_ip.split(",")[0].strip()
     local_ips = {"127.0.0.1", "::1"}
-    private_prefixes = ("192.168.", "10.", "172.16.", "172.17.", "172.18.", "172.19.", "172.20.", "172.21.", "172.22.", "172.23.", "172.24.", "172.25.", "172.26.", "172.27.", "172.28.", "172.29.", "172.30.", "172.31.")
+    private_prefixes = ("192.168.", "10.") + tuple(f"172.{i}." for i in range(16, 32))
 
-    return client_ip in local_ips or client_ip.startswith(private_prefixes)
+    res = client_ip in local_ips or client_ip.startswith(private_prefixes)
 
+    if not res:
+        print(f":: API @ is_public client_ip={client_ip}")
 
+    return res
 
 async def api_accesslog(request, response, session, start_time, accesslog, exc=None):
     # ako se posalje fleg da se ne loguje nemoj da logujes
@@ -395,11 +402,10 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
                 if upload_max_files and len(files) > upload_max_files:
                     raise HTTPException(status_code=400, detail=f"Too many files uploaded. Maximum allowed is {upload_max_files}.")
 
-            # Permission check
             if not is_public and not is_local_request(request):
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
-                    detail={"code": "HTTP_403_FORBIDDEN", "ip": request.client.host}
+                    detail={"code": "HTTP_403_FORBIDDEN"}
                 )
 
 
@@ -509,10 +515,7 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
                             raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail={"code": "HTTP_429_TOO_MANY_REQUESTS"})
 
                     else:
-                        raise HTTPException(
-                            status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token 2"}
-                        )
+                        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token"})
 
             # Cache mechanism
             if 'GET' in route_kwargs.get('methods', ['GET']) and cache:
@@ -678,7 +681,6 @@ class BaseWebSocketHandler(object):
 
     async def ws_emit(self, event, data={}, room=None):
         await emit(event=event, data=data, room=room, connection=self.sio_connection)
-
 
 class CRUDAPIHandler(BaseAPIHandler):
     def __init__(self, router, service, schema=None, model=None, table_schema=None):

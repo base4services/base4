@@ -12,7 +12,15 @@ def gen_model(tbl, tbl_name, ctable=False, parent_class_name='', parent_types=No
     if ctable and ('__inherits' not in tbl or not tbl['__inherits']):
         tbl['__inherits'] = 'BaseCache11' if cls_name.endswith('11') else 'BaseCache1n'
 
-    res = "class {}({}, Model):\n".format(cls_name, tbl['__inherits'] if '__inherits' in tbl else 'Base')
+    if '__inherits' in tbl and tbl['__inherits'] not in ("null","None","False","NONE","none") or '__inherits' not in tbl:
+        res = "class {}({}, Model):\n".format(cls_name, tbl['__inherits'] if '__inherits' in tbl else 'Base')
+    else:
+        """
+        if in some reason we don't want to inherit from Base, we can use this (for example flows have this common attributes built in because
+        of a bit different rules - see in flows model)
+        """
+        res = "class {}(Model):\n".format(cls_name)
+
 
     app_name = ''
 
