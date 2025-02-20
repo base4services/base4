@@ -101,7 +101,7 @@ class BaseSocketServer(object):
 
     async def on_join(self, sid, data):
         """Allows a user to join a specified room."""
-        room = data.get('room')
+        room = data
         if not room:
             return
 
@@ -111,7 +111,7 @@ class BaseSocketServer(object):
 
     async def on_leave(self, sid, data):
         """Allows a user to leave a specified room."""
-        room = data.get('room')
+        room = data
         if not room:
             return
 
