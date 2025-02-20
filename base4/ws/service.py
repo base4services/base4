@@ -1,11 +1,9 @@
 import os
-
 import socketio
 import ujson as json
 from fastapi import FastAPI
 
 from base4.utilities.db.async_redis import get_redis
-
 from base4.utilities import base_dotenv
 from base4.utilities.security.jwt import decode_token
 
@@ -101,12 +99,26 @@ class BaseSocketServer(object):
 
         await self.sio.emit('message', {'data': f'successfully connected to the server'}, to=sid)
 
-    async def on_disconnect(self, sid):
-        print('on_disconnect', sid)
-        for room in self.sio.rooms(sid):
-            logger.info('%s%s', sid, room)
-            await self.sio.leave_room(sid=sid, room=room)
+    async def on_join(self, sid, data):
+        """Allows a user to join a specified room."""
+        room = data.get('room')
+        if not room:
+            return
 
-    async def on_connect_error(self, data):
-        print("on_connect_error", data)
-        logger.info('%s%s', data)
+        await self.sio.enter_room(sid, room)
+        await self.sio.emit('message', {'data': f'Joined room: {room}'}, room=sid)
+        logger.info(f"User {sid} joined room {room}")
+
+    async def on_leave(self, sid, data):
+        """Allows a user to leave a specified room."""
+        room = data.get('room')
+        if not room:
+            return
+
+        await self.sio.leave_room(sid, room)
+        await self.sio.emit('message', {'data': f'Left room: {room}'}, room=sid)
+        logger.info(f"User {sid} left room {room}")
+
+    async def on_connect_error(self, sid, data):
+        logger.info('%s%s', sid, data)
+
