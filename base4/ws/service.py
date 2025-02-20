@@ -20,9 +20,6 @@ SIO_ALLOWED_ORIGINS = os.getenv('SOCKETIO_ALLOWED_ORIGINS').split(',')
 SIO_ADMIN_PORT = os.getenv('SOCKETIO_ADMIN_PORT')
 SIO_REDIS_PORT = int(os.getenv('SOCKETIO_REDIS_PORT', '6379'))
 print(SIO_ALLOWED_ORIGINS)
-# SIO_ALLOWED_ORIGINS = os.getenv('SOCKETIO_ALLOWED_ORIGINS').split(',')
-# SIO_ADMIN_PORT = '8002'
-# SIO_REDIS_PORT = 6379
 
 logger = get_logger()
 
@@ -34,7 +31,7 @@ class BaseSocketServer(object):
         self.sio = socketio.AsyncServer(
             json=json,
             async_handlers=True,
-            cors_allowed_origins=['https://admin.socket.io', 'http://127.0.0.1:8001', 'admin.socket.io', 'https://admin.socket.io'],
+            cors_allowed_origins=SIO_ALLOWED_ORIGINS,
             async_mode='asgi',
             logger=True,
             always_connect=False,
