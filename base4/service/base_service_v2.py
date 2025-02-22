@@ -143,9 +143,9 @@ class BaseServiceV2[ModelType]:
         # setup prefetch_related if needed
 
         prefetch_related = []
-        if self.c11:
+        if hasattr(self, 'c11') and self.c11:
             prefetch_related.append('cache11')
-        if self.c1n:
+        if hasattr(self, 'c1n') and  self.c1n:
             prefetch_related.append('cache1n')
 
         # calculate offset based on page and per_page

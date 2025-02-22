@@ -35,7 +35,7 @@ def setup_logging() -> None:
     if not isinstance(numeric_level, int):
         raise ValueError(f'Invalid log level: {logging_level}')
 
-    services = [list(svc.keys())[0] for svc in configuration("services")["services"]]
+    services = [svc for svc in configuration("services")["services"]]
     print('servicesservices', services)
     # services.append("impresaone2")    # REMOVED
 
