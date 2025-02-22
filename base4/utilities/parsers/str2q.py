@@ -91,3 +91,6 @@ def transform_filter_param_to_Q(s):
 
     res = r.children[0]
     return res
+
+if __name__=='__main__':
+    print(transform_filter_param_to_Q('or(and(a=1,b=2),c=3)'))
