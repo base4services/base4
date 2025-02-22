@@ -81,5 +81,6 @@ packages = [
     'base4.utilities.parsers',
     'base4.utilities.security',
     'base4.utilities.service',
+	'base4.utilities.observer',
     'base4.ws',
 ]
