@@ -183,7 +183,11 @@ from base4.schemas.universal_table import UniversalTableResponseBaseSchema
         for profile_name in list(conf['profiles']):
             profile = conf['profiles'][profile_name]
             model_name = profile['model']
-            mod_def = model_definition[model_name]
+            try:
+                mod_def = model_definition[model_name]
+            except Exception as e:
+                print("USE ONE OF ",model_definition.keys())
+                raise
             try:
                 res += gen_profile(svc_name, profile_name, profile, mod_def)
             except Exception as e:

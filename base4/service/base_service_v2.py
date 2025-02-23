@@ -106,7 +106,11 @@ class BaseServiceV2[ModelType]:
     # da ne bude unikatno
 
     async def get_all(
-            self, request: UniversalTableGetRequest, profile_schema: pydantic.BaseModel, _request: Request, post_process_method=None
+            self,
+            request: UniversalTableGetRequest,
+            profile_schema: pydantic.BaseModel,
+            _request: Request,
+            post_process_method=None
     ) -> List | Dict | UniversalTableResponse:
         """
         Get all items from the table
@@ -164,6 +168,7 @@ class BaseServiceV2[ModelType]:
                 raise HTTPException(
                     status_code=400, detail={"code": "INVALID_PARAMETER", "parameter": "filters", "message": f"Invalid filter parameters {request.filters}"}
                 )
+            ...
 
         # # if deleted not presented in filters, add it as deleted=False
         #
