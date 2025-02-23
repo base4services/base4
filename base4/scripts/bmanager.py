@@ -49,12 +49,15 @@ def gen4svc(svc_name, location, gen=None):
             project_root + f'/{location}/schemas/generated_{svc_name}_schema.py',
         )
     if 'tables' in gen:
-        gen_tables.save(
-            svc_name,
-            project_root + f'/{location}/yaml_sources/{svc_name}_table.yaml',
-            project_root + f'/{location}/yaml_sources/{svc_name}_model.yaml',
-            project_root + f'/{location}/schemas/generated_{svc_name}_table.py',
-        )
+
+        for file in Path( f'{project_root}/{location}/yaml_sources').glob('*_table.yaml'):
+            obj = file.name.split('/')[-1].split('_table.yaml')[0]
+            gen_tables.save(
+                obj,
+                project_root + f'/{location}/yaml_sources/{svc_name}_table.yaml',
+                project_root + f'/{location}/yaml_sources/{svc_name}_model.yaml',
+                project_root + f'/{location}/schemas/generated_{obj}_table.py',
+            )
 
     # todo, sredi ovo
     # if 'tables' in gen:
