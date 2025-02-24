@@ -47,6 +47,7 @@ class Column(pydantic.BaseModel):
     type: Optional[str] = 'string'
     display_name: Optional[str] = None
     align_text: Optional[Literal['start', 'end', 'center']] = 'start'
+    color: Optional[str] = None
 
 
 class Summary(pydantic.BaseModel):
