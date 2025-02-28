@@ -236,13 +236,14 @@ class RedisLoggingHandler(logging.Handler):
         if record.name == 'flows':
             spl = record.message.split('|')
             message = {
-                'id_tenant': spl[0] if spl[0] not in (None,'None') else None,
-                'id_user': spl[1] if spl[1] not in (None,'None') else None,
-                'instance': spl[2] if spl[2] not in (None,'None') else None,
-                'id_instance': spl[3] if spl[3] not in (None,'None') else None,
-                'message': spl[4] if spl[4] not in (None,'None') else None,
-                'data': json.loads(spl[5]) if spl[5] not in (None,'None') else None,
-                'isolated': spl[6]=='1' if spl[6] not in (None,'None') else False
+                'level': spl[0] if spl[0] not in (None,'None') else None,
+                'id_tenant': spl[1] if spl[1] not in (None,'None') else None,
+                'id_user': spl[2] if spl[2] not in (None,'None') else None,
+                'instance': spl[3] if spl[3] not in (None,'None') else None,
+                'id_instance': spl[4] if spl[4] not in (None,'None') else None,
+                'message': spl[5] if spl[5] not in (None,'None') else None,
+                'data': json.loads(spl[6]) if spl[6] not in (None,'None') else None,
+                'isolated': spl[7]=='1' if spl[7] not in (None,'None') else False
             }
         else:
             message = record.message

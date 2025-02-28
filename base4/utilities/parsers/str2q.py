@@ -11,10 +11,12 @@ start: expr
      | or_expr
      | not_expr
      | assign_expr
+     | bracket_expr
 
 and_expr: "and" "(" args ")"
 or_expr: "or" "(" args ")"
 not_expr: "not" "(" expr ")"
+bracket_expr: "(" expr ")"
 assign_expr: NAME "=" ( list_value | value)
 
 args: (expr ("," expr)*)?
@@ -40,6 +42,10 @@ class QTransformer(Transformer):
     def and_expr(self, items):
         args = items[0]
         return f"Q({args},join_type='AND')"
+
+    def bracket_expr(self, items):
+        args = items[0]
+        return f"Q({args})"
 
     def or_expr(self, items):
         args = items[0]
@@ -94,3 +100,4 @@ def transform_filter_param_to_Q(s):
 
 if __name__=='__main__':
     print(transform_filter_param_to_Q('or(and(a=1,b=2),c=3)'))
+    print(transform_filter_param_to_Q('(a=1)'))
