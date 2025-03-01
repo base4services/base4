@@ -1,5 +1,6 @@
 import datetime
 import importlib
+import json
 import uuid
 from typing import Any, Dict, Generic, List, Type, TypeVar, get_args, get_origin
 
@@ -226,6 +227,25 @@ class BaseServiceV2[ModelType]:
         # filters &= Q(is_valid=True)
 
         #
+
+        # json filters
+
+        if request.json_filters:
+            from base4.utilities.parsers.str2q import iso_to_datetime
+            request.json_filters = json.loads(request.json_filters)
+            _jfq_list=[]
+            for key in request.json_filters:
+                _value = request.json_filters[key]
+                try:
+                    _value = iso_to_datetime(_value)
+                except Exception as e:
+                    ...
+
+                _jfq_list.append(Q(**{key: _value}))
+
+            filters &= Q(*_jfq_list, join_type='AND')
+            # filters = Q(filters, Q(*_jfq_list), join_type='AND')
+
 
         if request.search:
 
