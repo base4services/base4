@@ -263,6 +263,8 @@ class BaseServiceV2[ModelType]:
 
             if 'display_name' in self.model._meta.fields_map.keys():
                 filters &= Q(display_name__icontains=request.search)
+            elif 'name' in self.model._meta.fields_map.keys():
+                filters &= Q(name__icontains=request.search)
 
         try:
             # build query
