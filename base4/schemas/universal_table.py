@@ -83,8 +83,8 @@ class UniversalTableResponseBaseSchema(pydantic.BaseModel):
             _value = eval(f'model_item.{model_loc[field]}')
             is_datetime = isinstance(_value, datetime.datetime)
             if is_datetime:
-                if tortoise.timezone.is_naive(_value):
-                    _value = tortoise.timezone.make_aware(_value)
+                if tortoise.timezone.is_aware(_value):
+                    _value = tortoise.timezone.make_naive(_value, timezone='Europe/Belgrade')
                 _value = str(_value)
 
             return _value
