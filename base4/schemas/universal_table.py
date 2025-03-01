@@ -1,6 +1,8 @@
 from typing import Any, Dict, List, Literal, Optional
+import datetime
 
 import pydantic
+import tortoise.timezone
 
 
 class UniversalTableGetRequest(pydantic.BaseModel):
@@ -15,6 +17,7 @@ class UniversalTableGetRequest(pydantic.BaseModel):
     fields: Optional[List[str] | str] = None  # None is all Ω
     # dict_filters: Optional[Dict[str, str]] = None
     filters: Optional[None | str] = None
+    json_filters: Optional[None | str] = None
 
     #TODO: ukinuti
 
@@ -75,22 +78,33 @@ class UniversalTableResponseBaseSchema(pydantic.BaseModel):
     def build(cls, model_item, item_schema, request: UniversalTableGetRequest) -> Dict[str, Any] | List[Any]:
         model_loc = item_schema.model_loc()
 
+        def _process_if_time(field: str):
+            nonlocal model_item
+            _value = eval(f'model_item.{model_loc[field]}')
+            is_datetime = isinstance(_value, datetime.datetime)
+            if is_datetime:
+                if tortoise.timezone.is_naive(_value):
+                    _value = tortoise.timezone.make_aware(_value)
+                _value = str(_value)
+
+            return _value
+
         if request.response_format == 'objects':
             res = {}
             for field in cls.order():
                 try:
-                    res[field] = eval(f'model_item.{model_loc[field]}')
+                    res[field] = _process_if_time(field)
                 except Exception as e:
                     raise
         elif request.response_format == 'key-value':
             res = {}
             for field in cls.order():
-                res[field] = eval(f'model_item.{model_loc[field]}')
+                res[field] = _process_if_time(field)
 
         elif request.response_format == 'table':
             res = []
             for field in cls.order():
-                res.append(eval(f'model_item.{model_loc[field]}'))
+                res.append(_process_if_time(field))
         else:
             raise NameError(f"Unknown response_format: {request.response_format}")
 
