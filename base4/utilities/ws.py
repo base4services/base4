@@ -30,7 +30,7 @@ async def emit(event, data=None, room=None, connection=None):
         return
 
     if data:
-        data = json.loads(json.dumps(ensure_ascii=False, default=str))
+        data = json.loads(json.dumps(data,ensure_ascii=False, default=str))
 
     # TODO: Napraviti TEST WS, ako ne nadjemo neki bolji nacin da testiram WS, moze ovaj emit da upisuje u neki redis queue i da ga iz testa samo tamo citamo
 
