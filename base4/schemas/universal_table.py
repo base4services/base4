@@ -62,6 +62,7 @@ class Summary(pydantic.BaseModel):
 
 
 class Header(pydantic.BaseModel):
+    additional: Optional[Dict[str, Any]] = None
     columns: List[Column]
     summary: Summary
     response_format: Literal['table', 'objects', 'key-value'] = 'objects'
