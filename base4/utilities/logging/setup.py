@@ -13,6 +13,9 @@ from base4 import configuration
 
 import contextlib
 from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
+import yaml
+import base4.utilities.files as paths
+import logging.config
 
 @contextlib.contextmanager
 def temporary_console_logging(service):
@@ -25,52 +28,61 @@ def temporary_console_logging(service):
     finally:
         logger.removeHandler(handler)
 
-def setup_logging() -> None:
-    """
-    Set up logging for each d_service defined in the configuration.
-    It reads the logging level from the environment variable LOGGING_LEVEL
-    and sets up rotating file and stream handlers for each d_service's logger.
-    """
-    logging_level = os.environ.get('LOGGING_LEVEL', 'INFO').upper()
-    numeric_level = getattr(logging, logging_level, None)
-    if not isinstance(numeric_level, int):
-        raise ValueError(f'Invalid log level: {logging_level}')
+def setup_logging():
+    config_path: str = paths.config() / 'logging.yaml'
 
-    services = [svc for svc in configuration("services")["services"]]
-    print('servicesservices', services)
-    # services.append("impresaone2")    # REMOVED
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f)
 
-    for service in services:
-        logger = logging.getLogger(service)
-        logger.setLevel(numeric_level)
+    # Initialize logging config
+    logging.config.dictConfig(config['logging'])
 
-        # Set up RotatingFileHandler
-        # TODO: USE THIS FROM ENV_CONFIG
-        log_file_path = f"/tmp/base4project/{service}.log"
-
-        # First ensure the directory exists
-        os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
-
-        # Then check if file exists, if not create it
-        if not os.path.exists(log_file_path):
-            # Create empty file
-            open(log_file_path, 'w').close()
-
-        rotating_file_handler = RotatingFileHandler(log_file_path, maxBytes=10 * 1024 * 1024, backupCount=1)  # 10 MB
-        formatter = logging.Formatter("%(asctime)s - %(filename)s:%(lineno)d - %(levelname)s - %(message)s", "%Y-%m-%d %H:%M:%S")
-        rotating_file_handler.setFormatter(formatter)
-
-        # Set up StreamHandler
-        stream_handler = logging.StreamHandler()
-        stream_handler.setFormatter(formatter)
-
-        # Clear existing handlers and add new ones
-        logger.handlers.clear()
-        logger.addHandler(rotating_file_handler)
-        logger.addHandler(stream_handler)
-
-        # Prevent propagation to root logger
-        logger.propagate = False
+# def setup_logging() -> None:
+#     """
+#     Set up logging for each d_service defined in the configuration.
+#     It reads the logging level from the environment variable LOGGING_LEVEL
+#     and sets up rotating file and stream handlers for each d_service's logger.
+#     """
+#     logging_level = os.environ.get('LOGGING_LEVEL', 'INFO').upper()
+#     numeric_level = getattr(logging, logging_level, None)
+#     if not isinstance(numeric_level, int):
+#         raise ValueError(f'Invalid log level: {logging_level}')
+#
+#     services = [svc for svc in configuration("services")["services"]]
+#     print('servicesservices', services)
+#     # services.append("impresaone2")    # REMOVED
+#
+#     for service in services:
+#         logger = logging.getLogger(service)
+#         logger.setLevel(numeric_level)
+#
+#         # Set up RotatingFileHandler
+#         # TODO: USE THIS FROM ENV_CONFIG
+#         log_file_path = f"/tmp/base4project/{service}.log"
+#
+#         # First ensure the directory exists
+#         os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
+#
+#         # Then check if file exists, if not create it
+#         if not os.path.exists(log_file_path):
+#             # Create empty file
+#             open(log_file_path, 'w').close()
+#
+#         rotating_file_handler = RotatingFileHandler(log_file_path, maxBytes=10 * 1024 * 1024, backupCount=1)  # 10 MB
+#         formatter = logging.Formatter("%(asctime)s - %(filename)s:%(lineno)d - %(levelname)s - %(message)s", "%Y-%m-%d %H:%M:%S")
+#         rotating_file_handler.setFormatter(formatter)
+#
+#         # Set up StreamHandler
+#         stream_handler = logging.StreamHandler()
+#         stream_handler.setFormatter(formatter)
+#
+#         # Clear existing handlers and add new ones
+#         logger.handlers.clear()
+#         logger.addHandler(rotating_file_handler)
+#         logger.addHandler(stream_handler)
+#
+#         # Prevent propagation to root logger
+#         logger.propagate = False
 
 
 def exception_traceback_logging(logger: logging.Logger) -> Callable:
