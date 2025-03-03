@@ -111,7 +111,8 @@ class BaseServiceV2[ModelType]:
             request: UniversalTableGetRequest,
             profile_schema: pydantic.BaseModel,
             _request: Request,
-            post_process_method=None
+            post_process_method=None,
+            ignore_tenant=False
     ) -> List | Dict | UniversalTableResponse:
         """
         Get all items from the table
@@ -195,7 +196,9 @@ class BaseServiceV2[ModelType]:
 
         d = find_field_in_q(filter, 'id_tenant')
         if not d and 'id_tenant' in self.model.schema_loc_dict:
-            _filters &= Q(id_tenant=self.me.id_tenant)
+
+            if not ignore_tenant:
+                _filters &= Q(id_tenant=self.me.id_tenant)
 
         d = find_field_in_q(filters, 'is_deleted')
         if not d and 'is_deleted' in self.model.schema_loc_dict:
