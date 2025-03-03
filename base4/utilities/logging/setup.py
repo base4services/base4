@@ -12,6 +12,7 @@ from fastapi import HTTPException, status
 from base4 import configuration
 
 import contextlib
+from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
 
 @contextlib.contextmanager
 def temporary_console_logging(service):
@@ -138,6 +139,99 @@ def get_logger():
     else:
         logger = "base4project"
     return logging.getLogger(logger)
+
+
+def print_logging_config():
+
+    import pprint
+    # Get root logger
+    root = logging.getLogger()
+
+    # Print basic info about root logger
+    print(f"Root logger level: {logging.getLevelName(root.level)}")
+
+    # Print handlers information
+    print("\nHandlers:")
+    for i, handler in enumerate(root.handlers):
+        print(f"\nHandler {i + 1}:")
+        print(f"  Type: {type(handler).__name__}")
+        print(f"  Level: {logging.getLevelName(handler.level)}")
+
+        # If it's a file handler, print the filename
+        if hasattr(handler, 'baseFilename'):
+            print(f"  File: {handler.baseFilename}")
+
+        # Print formatter details
+        if handler.formatter:
+            print(f"  Format: {handler.formatter._fmt}")
+            print(f"  DateFormat: {handler.formatter.datefmt}")
+
+    # Print effective logging config if available
+    try:
+        print("\nLogging config dictionary:")
+        config_dict = logging.Logger.manager.loggerDict
+        pprint.pprint(config_dict)
+    except:
+        print("Could not retrieve logging config dictionary")
+
+
+
+
+def inspect_logging_config():
+    # Get all configured loggers
+    loggers = [logging.getLogger()]  # Start with root logger
+    loggers.extend([logging.getLogger(name) for name in logging.Logger.manager.loggerDict])
+
+    for logger in loggers:
+        print(f"\n{'=' * 50}")
+        print(f"LOGGER: {logger.name if logger.name else 'root'}")
+        print(f"Level: {logging.getLevelName(logger.level)}")
+        print(f"Propagate: {logger.propagate}")
+        print(f"Disabled: {logger.disabled}")
+
+        if not logger.handlers and logger.propagate:
+            print("No handlers directly attached. Uses parent handlers.")
+
+        for i, handler in enumerate(logger.handlers):
+            print(f"\n  HANDLER {i + 1}: {type(handler).__name__}")
+            print(f"  Level: {logging.getLevelName(handler.level)}")
+
+            # File handler details
+            if isinstance(handler, logging.FileHandler):
+                print(f"  Target: FILE")
+                print(f"  Path: {handler.baseFilename}")
+                print(f"  Mode: {handler.mode}")
+                print(f"  Encoding: {handler.encoding}")
+
+                if isinstance(handler, RotatingFileHandler):
+                    print(f"  Max Bytes: {handler.maxBytes}")
+                    print(f"  Backup Count: {handler.backupCount}")
+
+                if isinstance(handler, TimedRotatingFileHandler):
+                    print(f"  Rotation: {handler.when}")
+                    print(f"  Interval: {handler.interval}")
+
+            # Stream handler details
+            elif isinstance(handler, logging.StreamHandler):
+                import sys
+                stream_name = "stderr" if handler.stream == sys.stderr else "stdout" if handler.stream == sys.stdout else "custom stream"
+                print(f"  Target: STREAM ({stream_name})")
+
+            # Try to detect Redis handlers (common pattern in 3rd party handlers)
+            elif 'redis' in type(handler).__name__.lower():
+                print(f"  Target: REDIS (detected from class name)")
+                # Try to extract connection info if available
+                for attr in ['host', 'port', 'db', 'key', 'channel']:
+                    if hasattr(handler, attr):
+                        print(f"  Redis {attr}: {getattr(handler, attr)}")
+
+            else:
+                print(f"  Target: OTHER")
+
+            # Formatter details
+            if handler.formatter:
+                print(f"  Format: {handler.formatter._fmt}")
+                print(f"  DateFormat: {handler.formatter.datefmt or 'default'}")
 
 
 if __name__ == "__main__":
