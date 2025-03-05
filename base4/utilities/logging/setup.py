@@ -17,6 +17,16 @@ import yaml
 import base4.utilities.files as paths
 import logging.config
 
+def log_json_to_pipe(d, parent_key=''):
+    items = []
+    for k, v in d.items():
+        new_key = f"{parent_key}.{k}" if parent_key else k
+        if isinstance(v, dict):
+            items.extend(log_json_to_pipe(v, new_key).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
+
 @contextlib.contextmanager
 def temporary_console_logging(service):
     logger = logging.getLogger(service)
