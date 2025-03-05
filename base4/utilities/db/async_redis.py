@@ -188,7 +188,7 @@ def get_redis():
         get_redis.fake_redis = AsyncRedisFake()
         return get_redis.fake_redis
 
-    return StrictRedis(decode_responses=False, host=os.getenv('DB_REDIS_HOST', 'localhost'), port=os.getenv('DB_REDIS_PORT', 6379))
+    return StrictRedis(decode_responses=False, host=os.getenv('DB_REDIS_HOST', 'redis'), port=os.getenv('DB_REDIS_PORT', 6379))
 
 
 def get_sync_redis():
@@ -200,7 +200,7 @@ def get_sync_redis():
         get_sync_redis.redis = fakeredis.FakeRedis()
         return get_sync_redis.redis
 
-    get_sync_redis.redis = redis.Redis(host=os.getenv('DB_REDIS_HOST', 'localhost'), port=os.getenv('DB_REDIS_PORT', 6379))
+    get_sync_redis.redis = redis.Redis(host=os.getenv('DB_REDIS_HOST', 'redis'), port=os.getenv('DB_REDIS_PORT', 6379))
     return get_sync_redis.redis
 
 
