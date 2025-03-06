@@ -360,7 +360,8 @@ class BaseServiceV2[ModelType]:
 
         _header = profile_schema.header(request, summary, response_format=request.response_format)
 
-        return UniversalTableResponse(data=_data, header=_header)
+        r = UniversalTableResponse(data=_data, header=_header)
+        return r
 
     @staticmethod
     async def _build(model, item):

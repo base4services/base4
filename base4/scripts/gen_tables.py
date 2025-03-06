@@ -38,6 +38,7 @@ def gen_profile(table, profile_name, profile, model_definition):
     column2width = {}
     column2justify = {}
     column2title = {}
+    column2mapping = {}
 
     meta = {}
 
@@ -95,9 +96,29 @@ def gen_profile(table, profile_name, profile, model_definition):
         res += f'\t{field_name} : {field_type}\n'
         order.append(field_name)
 
+        column2mapping[field_name] = _field[field_name]['mapping'] if 'mapping' in _field[field_name] else None
+
+    # res += f'\n\t@staticmethod\n'
+    # res += f'\tdef order():\n'
+    # res += f'\t\treturn {order}\n\n'
+    # res += f'\n\t@staticmethod\n'
+    # res += f'\tdef sortable(field:str):\n'
+
+    res += f'\n\t@staticmethod\n'
+    res += f'\tdef websockets():\n'
+    if 'websockets' in profile:
+        res += f'\t\treturn {profile["websockets"]}\n\n'
+    else:
+        res += f'\t\treturn None\n\n'
+
+    res += f'\n\t@staticmethod\n'
+    res += f'\tdef column2mapping():\n'
+    res += f'\t\treturn {column2mapping}\n\n'
+
     res += f'\n\t@staticmethod\n'
     res += f'\tdef order():\n'
     res += f'\t\treturn {order}\n\n'
+
     res += f'\n\t@staticmethod\n'
     res += f'\tdef sortable(field:str):\n'
 

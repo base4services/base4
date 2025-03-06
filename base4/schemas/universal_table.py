@@ -51,6 +51,7 @@ class Column(pydantic.BaseModel):
     display_name: Optional[str] = None
     align_text: Optional[Literal['start', 'end', 'center']] = 'start'
     color: Optional[str] = None
+    mapping: Optional[Any] = None
 
 
 class Summary(pydantic.BaseModel):
@@ -63,6 +64,7 @@ class Summary(pydantic.BaseModel):
 
 class Header(pydantic.BaseModel):
     additional: Optional[Dict[str, Any]] = None
+    websockets: Optional[Any] = None
     columns: List[Column]
     summary: Summary
     response_format: Literal['table', 'objects', 'key-value'] = 'objects'
@@ -114,10 +116,13 @@ class UniversalTableResponseBaseSchema(pydantic.BaseModel):
     @classmethod
     def header(cls, request: UniversalTableGetRequest, summary: Summary, response_format: Literal['objects', 'table', 'key-value'] = 'objects'):
 
-        res = Header(columns=[], summary=summary, response_format=response_format)
+        res = Header(columns=[], summary=summary, response_format=response_format,
+                     websockets=cls.websockets())
+
         widths = cls.column2width()
         justify = cls.column2justify()
         titles = cls.column2title()
+        mapping = cls.column2mapping()
 
         for field in cls.order():
             try:
@@ -132,6 +137,7 @@ class UniversalTableResponseBaseSchema(pydantic.BaseModel):
                     widths=widths[field] if field in widths else None,
                     align_text=justify[field] if field in justify else 'start',
                     display_name=titles[field],
+                    mapping=mapping[field] if field in mapping else None
                 )
                 res.columns.append(column)
             except Exception as e:
