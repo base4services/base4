@@ -430,7 +430,7 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
                         else:
                             try:
                                 self.session = decode_token(token)
-                            except Exception:
+                            except Exception as e:
                                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                                     detail={"code": "INVALID_SESSION", "parameter": "token", "message": f"error decoding token 1"})
 
