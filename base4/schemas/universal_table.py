@@ -51,7 +51,7 @@ class Column(pydantic.BaseModel):
     display_name: Optional[str] = None
     align_text: Optional[Literal['start', 'end', 'center']] = 'start'
     color: Optional[str] = None
-    mapping: Optional[Any] = None
+    # mapping: Optional[Any] = None
 
 
 class Summary(pydantic.BaseModel):
