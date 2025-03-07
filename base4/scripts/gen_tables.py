@@ -4,8 +4,12 @@ import os
 import yaml
 
 
-def gen_profile(table, profile_name, profile, model_definition):
-    schema_name = f'{table.capitalize()}{profile_name.capitalize()}Schema'
+def gen_profile(table, profile_name, profile, model_definition, obj_name = None):
+
+    if not obj_name:
+        obj_name = table
+
+    schema_name = f'{obj_name.capitalize()}{profile_name.capitalize()}Schema'
 
     model_columns = {}
 
@@ -177,7 +181,7 @@ def gen_profile(table, profile_name, profile, model_definition):
     return res
 
 
-def generate(svc_name, fname, model_fname):
+def generate(svc_name, fname, model_fname, obj_name):
     with open(model_fname, 'rt') as f:
         model_definition = yaml.safe_load(f)
     with open(fname, 'rt') as f:
@@ -207,10 +211,10 @@ from base4.schemas.universal_table import UniversalTableResponseBaseSchema
             try:
                 mod_def = model_definition[model_name]
             except Exception as e:
-                print("USE ONE OF ",model_definition.keys())
+                print("USE ONE OF ", model_definition.keys())
                 raise
             try:
-                res += gen_profile(svc_name, profile_name, profile, mod_def)
+                res += gen_profile(svc_name, profile_name, profile, mod_def, obj_name)
             except Exception as e:
                 raise
             ...
@@ -221,8 +225,18 @@ from base4.schemas.universal_table import UniversalTableResponseBaseSchema
     return res
 
 
-def save(svc_name, input_yaml, model_input_yaml, gen_fname):
-    res = generate(svc_name, input_yaml, model_input_yaml)
+def save(svc_name, input_yaml, model_input_yaml, gen_fname, obj_name=None):
+
+    if not obj_name:
+        obj_name = svc_name
+
+    print("SAVE", svc_name, input_yaml, model_input_yaml, gen_fname, obj_name)
+
+    # print("GEN FNAME", gen_fname)
+    # if 'users_table' in gen_fname:
+    #     breakpoint()
+
+    res = generate(svc_name, input_yaml, model_input_yaml, obj_name)
 
     os.system(f'rm -rf {gen_fname}')
 
@@ -237,3 +251,12 @@ def save(svc_name, input_yaml, model_input_yaml, gen_fname):
 
     # with open(gen_fname, 'rt') as f:
     #     print(f.read())
+
+
+if __name__ == '__main__':
+    save('tenants',
+         '/Users/igor/work/impresa/cloudhotel-v2/src/services/tenants/yaml_sources/users_table.yaml',
+         '/Users/igor/work/impresa/cloudhotel-v2/src/services/tenants/yaml_sources/tenants_model.yaml',
+         '/Users/igor/work/impresa/cloudhotel-v2/src/services/tenants/schemas/generated_users_table.py',
+         'users',
+         )
