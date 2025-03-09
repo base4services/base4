@@ -22,10 +22,10 @@ def log_json_to_pipe(d, parent_key=''):
     for k, v in d.items():
         new_key = f"{parent_key}.{k}" if parent_key else k
         if isinstance(v, dict):
-            items.extend(log_json_to_pipe(v, new_key).items())
+            items.extend(log_json_to_pipe(v, new_key))
         else:
-            items.append((new_key, v))
-    return dict(items)
+            items.append(f"{new_key}={v}")
+    return "|".join(items)
 
 @contextlib.contextmanager
 def temporary_console_logging(service):
