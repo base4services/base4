@@ -16,8 +16,11 @@ from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
 import yaml
 import base4.utilities.files as paths
 import logging.config
+import json
 
 def log_json_to_pipe(d, parent_key=''):
+    if not isinstance(d, dict):
+        d = json.loads(d)
     items = []
     for k, v in d.items():
         new_key = f"{parent_key}.{k}" if parent_key else k
