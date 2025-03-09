@@ -19,6 +19,8 @@ import logging.config
 import json
 
 def log_json_to_pipe(d, parent_key=''):
+    if  isinstance(d, str):
+        return d
 
     if not isinstance(d, dict):
         d = json.loads(d)
