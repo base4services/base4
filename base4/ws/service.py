@@ -23,13 +23,19 @@ logger = get_logger()
 
 MAIN_CHANNELS = ['hotels']
 
+def cors_check(origin):
+    for domain in SIO_ALLOWED_ORIGINS:
+        if 'localhost' in origin:
+            return True
+        elif origin.endswith(domain):
+            return True
 
 class BaseSocketServer(object):
     def __init__(self):
         self.sio = socketio.AsyncServer(
             json=json,
             async_handlers=True,
-            cors_allowed_origins=SIO_ALLOWED_ORIGINS,
+            cors_allowed_origins=cors_check,
             async_mode='asgi',
             logger=True,
             always_connect=False,
