@@ -17,19 +17,22 @@ from base4.utilities.ws import extract_domain, sio_client_manager
 SIO_ALLOWED_ORIGINS = os.getenv('SOCKETIO_ALLOWED_ORIGINS').split(',')
 SIO_ADMIN_PORT = os.getenv('SOCKETIO_ADMIN_PORT')
 SIO_REDIS_PORT = int(os.getenv('SOCKETIO_REDIS_PORT', '6379'))
-print(SIO_ALLOWED_ORIGINS)
 
 logger = get_logger()
 
 MAIN_CHANNELS = ['hotels']
 
+def cors_check(origin):
+    return origin in SIO_ALLOWED_ORIGINS or any(
+        'localhost' in origin or origin.endswith(domain) for domain in SIO_ALLOWED_ORIGINS
+    )
 
 class BaseSocketServer(object):
     def __init__(self):
         self.sio = socketio.AsyncServer(
             json=json,
             async_handlers=True,
-            cors_allowed_origins=SIO_ALLOWED_ORIGINS,
+            cors_allowed_origins=cors_check,
             async_mode='asgi',
             logger=True,
             always_connect=False,
