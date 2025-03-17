@@ -34,9 +34,9 @@ async def emit(event, data=None, room=None, connection=None):
 
     # TODO: Napraviti TEST WS, ako ne nadjemo neki bolji nacin da testiram WS, moze ovaj emit da upisuje u neki redis queue i da ga iz testa samo tamo citamo
 
-    print("\n"*2)
-    print("PUBL TO WS ", event, data, room)
-    print("\n"*2)
+#    print("\n"*2)
+#    print("PUBL TO WS ", event, data, room)
+#    print("\n"*2)
 
     if connection:
         return await connection.emit(event=event, data=data, room=room if room else None)
