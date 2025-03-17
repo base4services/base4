@@ -1,3 +1,4 @@
+import inspect
 import asyncio
 import logging
 import os
@@ -19,19 +20,39 @@ import logging.config
 import json
 
 def log_json_to_pipe(d, parent_key=''):
-    if  isinstance(d, str):
-        return d
 
-    if not isinstance(d, dict):
-        d = json.loads(d)
-    items = []
-    for k, v in d.items():
-        new_key = f"{parent_key}.{k}" if parent_key else k
-        if isinstance(v, dict):
-            items.extend(log_json_to_pipe(v, new_key))
-        else:
-            items.append(f"{new_key}={v}")
-    return "|".join(items)
+    def lj2p(d, parent_key):
+
+        items = []
+        for k, v in d.items():
+            new_key = f"{parent_key}.{k}" if parent_key else k
+            if isinstance(v, dict):
+                items.extend(lj2p(v, new_key))
+            else:
+                items.append(f"{new_key}={v}")
+
+        return items if parent_key else "|".join(items)
+
+
+    if isinstance(d, dict):
+        
+        a = lj2p(d, parent_key)
+        return a
+ 
+    return str(d)       
+        
+#    # expecting dict, but sometimes string can be sent
+#    if  isinstance(d, str):
+#        try:
+#            # if this string is valid json, convert it to dict and log as dict
+#            d=json.loads(d)
+#            return lj2p(d, parent_key)
+#        except Exception as e:
+#            
+#            # othervise just log as given string
+#            return d
+#    return lj2p(d, parent_key)
+
 
 @contextlib.contextmanager
 def temporary_console_logging(service):
@@ -43,6 +64,21 @@ def temporary_console_logging(service):
         yield
     finally:
         logger.removeHandler(handler)
+
+def get_parent_logger():
+    # Get the caller's module (the module that imported common.py)
+    frame = inspect.currentframe().f_back
+    calling_module = inspect.getmodule(frame)
+    
+    if calling_module:
+        # Get the logger from the caller's namespace
+        for name, logger in calling_module.__dict__.items():
+            if isinstance(logger, logging.Logger):
+                return logger
+    
+    # Fallback to root logger if no logger found in parent module
+    return logging.getLogger()
+    
 
 def setup_logging():
     config_path: str = paths.config() / 'logging.yaml'

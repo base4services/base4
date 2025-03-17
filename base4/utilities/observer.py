@@ -34,6 +34,7 @@ class Observer:
                 continue
 
             try:
+                self.log.info(f"HANDLING MESSAGE WITH {self.handle_message}")
                 await self.handle_message(message[1])
                 ...
             except Exception as e:
