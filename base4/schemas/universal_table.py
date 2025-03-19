@@ -48,6 +48,7 @@ class Column(pydantic.BaseModel):
     sortable: Optional[bool] = False
     filterable: Optional[bool | Dict] = False
     type: Optional[str] = 'string'
+    lov: Optional[str] = None
     display_name: Optional[str] = None
     align_text: Optional[Literal['start', 'end', 'center']] = 'start'
     color: Optional[str] = None

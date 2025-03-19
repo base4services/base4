@@ -159,6 +159,7 @@ def gen_profile(table, profile_name, profile, model_definition, obj_name = None)
         k = list(i.keys())[0]
         if 'type' in i[k] and i[k]['type']:
             m[k] = i[k]['type']
+
     res += f'\t\tm = {m}\n\n'
     res += f'\t\treturn m.get(field)\n\n'
 
