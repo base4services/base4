@@ -89,6 +89,22 @@ def setup_logging():
     # Initialize logging config
     logging.config.dictConfig(config['logging'])
 
+
+def log_debug_json(log, anchor, data, isolate=True):
+
+    if isolate:
+        log.debug('\n'*5)
+        log.debug('-'*80)
+
+    log.debug(f"ANCHOR: {anchor}")
+    log.debug('\n'+json.dumps(data, indent=4, ensure_ascii=False,default=str))
+
+    if isolate:
+        log.debug('-'*80)
+        log.debug('\n'*5)
+
+
+
 # def setup_logging() -> None:
 #     """
 #     Set up logging for each d_service defined in the configuration.
