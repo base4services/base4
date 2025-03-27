@@ -124,7 +124,10 @@ def yaml_to_env(yaml_cfg, app_run_mode: str = None):
             env_file.write(f"{key.upper()}={value}\n")
         env_file.write("DB_TEST=test_${DB_PREFIX}\n")
         for p in flat_config['db_postgres_databases'].split(','):
-            env_file.write("DB_%s=${DB_PREFIX}\n" % (p.upper(),))
+            if os.getenv('DB_USE_SEPARATED_DATABASES', None) == 'true':
+                env_file.write("DB_%s=${DB_PREFIX}_%s\n" % (p.upper(),p.upper()))
+            else:
+                env_file.write("DB_%s=${DB_PREFIX}\n" % (p.upper(),))
 
         env_file.write(f"DATABASES=({' '.join(["$DB_"+i.upper() for i in flat_config['db_postgres_databases'].split(',')])})")
 
