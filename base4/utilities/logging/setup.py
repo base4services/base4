@@ -21,6 +21,7 @@ import json
 
 def log_json_to_pipe(d, parent_key=''):
 
+
     def lj2p(d, parent_key):
 
         items = []
@@ -35,11 +36,11 @@ def log_json_to_pipe(d, parent_key=''):
 
 
     if isinstance(d, dict):
-        
+
         a = lj2p(d, parent_key)
         return a
- 
-    return str(d)       
+
+    return str(d)
         
 #    # expecting dict, but sometimes string can be sent
 #    if  isinstance(d, str):

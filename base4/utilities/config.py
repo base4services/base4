@@ -48,7 +48,15 @@ def yaml_to_obj(d, parent_key='', sep='_'):
 
 def yaml_to_env(yaml_cfg, app_run_mode: str = None):
 
-    from base4.utilities.app_run_modes import app_run_modes
+    app_environment = os.getenv('RUNNING_APP_ENVIRONMENT', None)
+
+    env_keys = set()
+
+    if not app_environment:
+        sys.exit('APPLICATION_ENVIRONMENT environment variable not set')
+
+
+    from base4.utilities.app_run_modes import app_run_modes, app_environments
 
     if app_run_mode in (None, 'default'):
         app_run_mode = os.getenv('APPLICATION_RUN_MODE', None)
@@ -78,14 +86,27 @@ def yaml_to_env(yaml_cfg, app_run_mode: str = None):
             if key == 'db_postgres_databases':
                 continue
 
-            if '[' in key:
-                ...
+            # if 'dev-igor' in key:
+            #     breakpoint()
 
-            if f'[{app_run_mode}]' in key:
+            if f'[{app_run_mode}|{app_environment}]' in key:
+                key = key.replace(f'[{app_run_mode}|{app_environment}]', '')
+
+            elif f'[{app_run_mode}]' in key:
                 key = key.replace(f'[{app_run_mode}]', '')
+
+
             else:
                 cont=False
+
                 for opt in app_run_modes:
+
+                    for opt2 in app_environments:
+                        if f'[{opt}|{opt2}]' in key:
+                            cont = True
+                            # breakpoint()
+                            break
+
                     if f'[{opt}]' in key:
                         cont = True
                         break
@@ -94,6 +115,11 @@ def yaml_to_env(yaml_cfg, app_run_mode: str = None):
 
             if '[' in key or ']' in key:
                 sys.exit(f'Invalid key: {key}. Keys should not contain "[" or "]"')
+
+            if key.upper() in env_keys:
+                continue
+
+            env_keys.add(key.upper())
 
             env_file.write(f"{key.upper()}={value}\n")
         env_file.write("DB_TEST=test_${DB_PREFIX}\n")

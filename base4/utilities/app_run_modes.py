@@ -7,3 +7,12 @@ app_run_modes = [
     'macos-monolith'               # All services running in a single monolithic process
 ]
 
+app_environments = [
+    'ch',
+    'prod',
+    'stage',
+    'stage2',
+    'dev',
+    'dev-igor',
+    'dev-sloba'
+]
