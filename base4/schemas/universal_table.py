@@ -40,6 +40,8 @@ class UniversalTableGetRequest(pydantic.BaseModel):
     page: Optional[int] = 1
     per_page: Optional[int] = 100
 
+    default_timezone_for_naive_datetime: Optional[None|str] = 'Europe/Belgrade'
+
 
 class Column(pydantic.BaseModel):
     field: str
@@ -88,7 +90,8 @@ class UniversalTableResponseBaseSchema(pydantic.BaseModel):
             is_datetime = isinstance(_value, datetime.datetime)
             if is_datetime:
                 if tortoise.timezone.is_aware(_value):
-                    _value = tortoise.timezone.make_naive(_value, timezone='Europe/Belgrade')
+                    # _value = tortoise.timezone.make_naive(_value, timezone='Europe/Belgrade')
+                    _value = tortoise.timezone.make_naive(_value, timezone=request.default_timezone_for_naive_datetime)
                 _value = str(_value)
 
             return _value
