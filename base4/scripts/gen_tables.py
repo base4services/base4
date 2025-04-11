@@ -95,6 +95,16 @@ def gen_profile(table, profile_name, profile, model_definition):
         res += f'\t{field_name} : {field_type}\n'
         order.append(field_name)
 
+    if 'bulk_actions' in profile and profile['bulk_actions'] and 'enabled' in profile['bulk_actions'] and profile['bulk_actions']['enabled']:
+        res += f'\n\t@staticmethod\n'
+        res += f'\tdef bulk_actions():\n'
+        res += f'\t\treturn {profile["bulk_actions"]}\n\n'
+    else:
+        res += f'\n\t@staticmethod\n'
+        res += f'\tdef bulk_actions():\n'
+        res += f'\t\treturn None\n\n'
+
+
     res += f'\n\t@staticmethod\n'
     res += f'\tdef order():\n'
     res += f'\t\treturn {order}\n\n'

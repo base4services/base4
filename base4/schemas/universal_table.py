@@ -55,11 +55,18 @@ class Summary(pydantic.BaseModel):
     total_pages: int
 
 
+class BulkActions(pydantic.BaseModel):
+    enabled: Optional[bool|None] = None
+    method: Optional[None|Literal['POST','PUT','PATCH','GET']] = None
+    url: Optional[None|str] = None
+
 class Header(pydantic.BaseModel):
     columns: List[Column]
     summary: Summary
     response_format: Literal['table', 'objects', 'key-value'] = 'objects'
     # response_format: Optional[Literal['table', 'objects']] = 'objects'
+
+    bulk_actions: Optional[None | BulkActions] = None
 
 
 class UniversalTableResponse(pydantic.BaseModel):
@@ -96,10 +103,11 @@ class UniversalTableResponseBaseSchema(pydantic.BaseModel):
     @classmethod
     def header(cls, request: UniversalTableGetRequest, summary: Summary, response_format: Literal['objects', 'table', 'key-value'] = 'objects'):
 
-        res = Header(columns=[], summary=summary, response_format=response_format)
+        res = Header(columns=[], summary=summary, response_format=response_format, bulk_actions=cls.bulk_actions())
         widths = cls.column2width()
         justify = cls.column2justify()
         titles = cls.column2title()
+
 
         for field in cls.order():
             try:

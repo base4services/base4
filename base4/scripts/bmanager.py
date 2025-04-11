@@ -43,14 +43,18 @@ def gen4svc(svc_name, location, gen=None):
             project_root + f'/{location}/schemas/generated_{svc_name}_schema.py',
         )
 
-    # todo, sredi ovo
-    # if 'tables' in gen:
-    #     gen_tables.save(
-    #         svc_name,
-    #         project_root + f'/{location}/yaml_sources/{object_name}_table.yaml',
-    #         project_root + f'/{location}/yaml_sources/{object_name}_model.yaml',
-    #         project_root + f'/{location}/schemas/generated_universal_tables_schema_for_{svc_name}.py',
-    #     )
+    # todo, - videti kako je na tenants-merge ovo reseno
+    # ideja je da jedan servis moze imati vise fajlova za tabele a ne samo jedan
+    # zato ne sme da bude svc_name
+    #
+
+    if 'tables' in gen:
+        gen_tables.save(
+            svc_name,
+            project_root + f'/{location}/yaml_sources/{svc_name}_table.yaml',
+            project_root + f'/{location}/yaml_sources/{svc_name}_model.yaml',
+            project_root + f'/{location}/schemas/generated_universal_tables_schema_for_{svc_name}.py',
+        )
 
 
 def get_service_names():
@@ -352,3 +356,9 @@ def compile_yaml(yaml_file: str, service_name: str, gen_type: str):
     Compile config/gen.yaml
     """
     _compile_yaml(yaml_file, service_name, gen_type)
+#
+# for debugging purposes
+
+# if __name__=="__main__":
+#     _compile_yaml(yaml_file='gen.yaml', service_name='attachments', gen_type='tables')
+#
