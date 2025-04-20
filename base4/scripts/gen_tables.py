@@ -43,6 +43,7 @@ def gen_profile(table, profile_name, profile, model_definition, obj_name = None)
     column2justify = {}
     column2title = {}
     column2mapping = {}
+    virtual = set()
 
     meta = {}
 
@@ -79,6 +80,10 @@ def gen_profile(table, profile_name, profile, model_definition, obj_name = None)
                 filterable.add(field_name)
             if 'widths' in _field[field_name]:
                 widths = _field[field_name]['widths']
+
+            if 'virtual' in _field[field_name]:
+                virtual.add(field_name)
+
 
         justify = 'start'
         if 'justify' in _field[field_name] and _field[field_name]['justify']:
@@ -128,6 +133,13 @@ def gen_profile(table, profile_name, profile, model_definition, obj_name = None)
 
     sortable = str(list(sortable)).replace('[', '{').replace(']', '}')
     res += f'\t\treturn field in {sortable}\n\n'
+
+    res += f'\n\t@staticmethod\n'
+    res += f'\tdef virtual(field:str):\n'
+
+    sortable = str(list(virtual)).replace('[', '{').replace(']', '}')
+    res += f'\t\treturn field in {sortable}\n\n'
+
 
     res += f'\n\t@staticmethod\n'
     res += f'\tdef order_map():\n'

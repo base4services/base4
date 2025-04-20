@@ -55,7 +55,6 @@ def yaml_to_env(yaml_cfg, app_run_mode: str = None):
     if not app_environment:
         sys.exit('APPLICATION_ENVIRONMENT environment variable not set')
 
-
     from base4.utilities.app_run_modes import app_run_modes, app_environments
 
     if app_run_mode in (None, 'default'):

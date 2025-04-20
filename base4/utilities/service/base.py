@@ -534,7 +534,10 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
                 return response
 
             # Call API handler without cache
-            response = await func(self, **request.path_params)
+            try:
+                response = await func(self, **request.path_params)
+            except Exception as e:
+                raise e
             return response
 
         return wrapper

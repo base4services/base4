@@ -417,6 +417,6 @@ def compile_yaml(yaml_file: str, service_name: str, gen_type: str):
 
 
 if __name__ == '__main__':
-    # _compile_yaml('gen.yaml','hotels','schemas')
-    compile_env()
+    _compile_yaml('gen.yaml','hotels','tables')
+    # compile_env()
 ...

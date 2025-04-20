@@ -312,14 +312,23 @@ class BaseServiceV2[ModelType]:
         # extract window of items in response format
 
         async def ps_build(item, post_process_method=None):
+
+            add_meta = {}
+
             if post_process_method:
-                await post_process_method(item)
+                add_meta = await post_process_method(item)
+
             res = profile_schema.build(item, self.schema, request)
 
             if request.meta and profile_schema.meta():
                 meta = {}
+
                 for key in profile_schema.meta()['__meta']:
                     meta[key] = eval(profile_schema.meta()['__meta'][key])
+
+                if add_meta:
+                    meta.update(add_meta)
+
                 res['meta'] = meta
                 # res['meta'] = {'id': item.id, 'link': {'url': f'/admin/ticket/v2/{item.id}'}}
 

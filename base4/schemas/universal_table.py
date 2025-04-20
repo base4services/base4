@@ -86,6 +86,13 @@ class UniversalTableResponseBaseSchema(pydantic.BaseModel):
 
         def _process_if_time(field: str):
             nonlocal model_item
+
+            if field not in model_loc:
+                return None
+
+            if not hasattr(model_item, model_loc[field]):
+                return None
+
             _value = eval(f'model_item.{model_loc[field]}')
             is_datetime = isinstance(_value, datetime.datetime)
             if is_datetime:
