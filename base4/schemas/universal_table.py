@@ -91,7 +91,11 @@ class UniversalTableResponseBaseSchema(pydantic.BaseModel):
                 return None
 
             if not hasattr(model_item, model_loc[field]):
-                return None
+                if hasattr(model_item, 'cache11') and 'cache11.' in model_loc[field]:
+                    if not hasattr(model_item.cache11, model_loc[field].split('cache11.')[-1]):
+                        return None
+                else:
+                    return None
 
             _value = eval(f'model_item.{model_loc[field]}')
             is_datetime = isinstance(_value, datetime.datetime)
