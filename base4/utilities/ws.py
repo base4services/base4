@@ -14,6 +14,8 @@ SIO_REDIS_PORT = os.getenv('SOCKETIO_REDIS_PORT')
 def sio_client_manager(write_only=False):
     return socketio.AsyncRedisManager(f'redis://%s:%s/0' % (SIO_REDIS_HOST, SIO_REDIS_PORT), write_only=write_only)
 
+def sync_sio_client_manager(write_only=False):
+    return socketio.RedisManager(f'redis://%s:%s/0' % (SIO_REDIS_HOST, SIO_REDIS_PORT), write_only=write_only)
 
 def extract_domain(host):
     try:
@@ -40,4 +42,18 @@ async def emit(event, data=None, room=None, connection=None):
 
     if connection:
         return await connection.emit(event=event, data=data, room=room if room else None)
+
     return await sio_connection.emit(event=event, data=data, room=room if room else None)
+
+sync_sio_connection = sync_sio_client_manager(write_only=False)
+def sync_emit(event, data=None, room=None, connection=None):
+    if os.getenv('TEST_MODE'):
+        return
+
+    if data:
+        data = json.loads(json.dumps(data,ensure_ascii=False, default=str))
+
+    if connection:
+        return connection.emit(event=event, data=data, room=room if room else None)
+
+    return sync_sio_connection.emit(event=event, data=data, room=room if room else None)
