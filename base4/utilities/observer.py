@@ -30,8 +30,10 @@ class Observer:
         while True:
             self.log.info('waiting for task')
             message = self.redis_client.brpop([self.channel], self.timeout)
+            print('/')
             if not message:
                 continue
+            print(message)
 
             try:
                 self.log.info(f"HANDLING MESSAGE WITH {self.handle_message}")
