@@ -9,6 +9,7 @@ import tortoise.fields
 import tortoise.timezone
 from fastapi import HTTPException, Response
 from fastapi.requests import Request
+from tortoise.filters import json_filter
 from tortoise.queryset import Q
 from tortoise.transactions import in_transaction
 
@@ -249,6 +250,14 @@ class BaseServiceV2[ModelType]:
             filters &= Q(*_jfq_list, join_type='AND')
             # filters = Q(filters, Q(*_jfq_list), join_type='AND')
 
+        ###
+        if request.json_filters:
+            if 'is_deleted' not in request.json_filters:
+               filters &= Q(is_deleted=False)
+        else:
+            filters &= Q(is_deleted=False)
+
+        #TODO: SREDITI I ZA TENANTA.
 
         if request.search:
 
