@@ -161,14 +161,20 @@ class BaseService[ModelType]:
 
         # if deleted not presented in filters, add it as deleted=False
 
-        if not filters:
-            # TODO: Tenant
-            filters = Q(is_deleted=False)
-        else:
-            filters = eval(filters)
-            d = find_field_in_q(filters, 'is_deleted')
-            if not d:
-                filters &= Q(is_deleted=False)
+
+        try:
+            if not filters:
+                # TODO: Tenant
+                filters = Q(is_deleted=False)
+            else:
+                filters = eval(filters)
+                d = find_field_in_q(filters, 'is_deleted')
+                if not d:
+                    filters &= Q(is_deleted=False)
+        except Exception as e:
+            ...
+            # ako nema is_deleted u tabeli !!!
+
 
         if hasattr(self, 'specific_table_filtering'):
             try:
