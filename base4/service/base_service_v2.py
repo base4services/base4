@@ -201,13 +201,15 @@ class BaseServiceV2[ModelType]:
             if not ignore_tenant:
                 _filters &= Q(id_tenant=self.me.id_tenant)
 
-        d = find_field_in_q(filters, 'is_deleted')
-        if not d and 'is_deleted' in self.model.schema_loc_dict:
-            _filters &= Q(is_deleted=False)
+        if hasattr(self.model, 'is_deleted'):
+            d = find_field_in_q(filters, 'is_deleted')
+            if not d and 'is_deleted' in self.model.schema_loc_dict:
+                _filters &= Q(is_deleted=False)
 
-        d = find_field_in_q(filters, 'is_valid')
-        if not d and 'is_valid' in self.model.schema_loc_dict:
-            _filters &= Q(is_valid=True)
+        if hasattr(self.model, 'is_valid'):
+            d = find_field_in_q(filters, 'is_valid')
+            if not d and 'is_valid' in self.model.schema_loc_dict:
+                _filters &= Q(is_valid=True)
 
         #TODO: Ovde sam promeni ostvari, mozda popadaju neki testovi
         # svakako treba testirati / napraviti testove ako ne postoje
@@ -251,11 +253,12 @@ class BaseServiceV2[ModelType]:
             # filters = Q(filters, Q(*_jfq_list), join_type='AND')
 
         ###
-        if request.json_filters:
-            if 'is_deleted' not in request.json_filters:
-               filters &= Q(is_deleted=False)
-        else:
-            filters &= Q(is_deleted=False)
+        if hasattr(self.model, 'is_deleted'):
+            if request.json_filters:
+                if 'is_deleted' not in request.json_filters:
+                   filters &= Q(is_deleted=False)
+            else:
+                filters &= Q(is_deleted=False)
 
         #TODO: SREDITI I ZA TENANTA.
 
