@@ -402,6 +402,8 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
                 if upload_max_files and len(files) > upload_max_files:
                     raise HTTPException(status_code=400, detail=f"Too many files uploaded. Maximum allowed is {upload_max_files}.")
 
+            socket_id = request.headers.get("X-Socket-ID", None)
+
             if not is_public and not is_local_request(request):
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
@@ -455,7 +457,9 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
                                             role=rdb_session['role'],
                                             id_tenant=rdb_session['id_tenant'],
                                             id_parent_tenant=rdb_session['id_parent_tenant'],
-                                            id_session=rdb_session['session'])
+                                            id_session=rdb_session['session'],
+                                            id_socket_session=socket_id
+                                            )
 
                         if getattr(self.session, 'expired', False):
                             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"code": "SESSION_EXPIRED", "parameter": "token", "message": f"your session has expired"})
