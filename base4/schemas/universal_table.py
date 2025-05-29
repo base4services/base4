@@ -1,3 +1,4 @@
+import uuid
 from typing import Any, Dict, List, Literal, Optional
 import datetime
 
@@ -19,7 +20,7 @@ class UniversalTableGetRequest(pydantic.BaseModel):
     filters: Optional[None | str] = None
     json_filters: Optional[None | str] = None
 
-    #TODO: ukinuti
+    # TODO: ukinuti
 
     v3_filters: Optional[None | Any] = None
 
@@ -40,7 +41,7 @@ class UniversalTableGetRequest(pydantic.BaseModel):
     page: Optional[int] = 1
     per_page: Optional[int] = 100
 
-    default_timezone_for_naive_datetime: Optional[None|str] = 'Europe/Belgrade'
+    default_timezone_for_naive_datetime: Optional[None | str] = 'Europe/Belgrade'
 
 
 class Column(pydantic.BaseModel):
@@ -65,6 +66,20 @@ class Summary(pydantic.BaseModel):
     total_pages: int
 
 
+class MenuItem(pydantic.BaseModel):
+    code: Optional[str] = None
+    command: Optional[Literal['MODAL_DIALOG', 'OPEN', 'COPYTOCLIPBOARD']] = None
+    icon: Optional[str] = None
+    name: Optional[str] = None
+    url: Optional[str] = None
+    method: Optional[str] = None
+
+
+class Menus(pydantic.BaseModel):
+    action_menus: Optional[Dict[str, List[MenuItem]] | None] = None
+    # action_menus: Optional[Dict[str, List[MenuItem]]|None] = None
+
+
 class Header(pydantic.BaseModel):
     additional: Optional[Dict[str, Any]] = None
     websockets: Optional[Any] = None
@@ -72,6 +87,9 @@ class Header(pydantic.BaseModel):
     summary: Summary
     response_format: Literal['table', 'objects', 'key-value'] = 'objects'
     # response_format: Optional[Literal['table', 'objects']] = 'objects'
+
+    options: Optional[Dict[str, Any] | None] = None
+    menus: Optional[Menus | None] = None
 
 
 class UniversalTableResponse(pydantic.BaseModel):
