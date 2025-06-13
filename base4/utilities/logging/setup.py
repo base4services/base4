@@ -6,6 +6,7 @@ import sys
 from functools import wraps
 from logging.handlers import RotatingFileHandler
 from typing import Any, Callable, Type
+import signal
 
 import tortoise
 from fastapi import HTTPException, status
@@ -79,7 +80,27 @@ def get_parent_logger():
     
     # Fallback to root logger if no logger found in parent module
     return logging.getLogger()
-    
+
+
+def reload_logging_signal_handler(signum, frame):
+    """Handle SIGUSR2 to reload ALL logging configuration"""
+    try:
+        print("Reloading ALL loggers...")
+
+        all_loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
+        all_loggers.append(logging.getLogger())  # Root logger
+
+        for logger in all_loggers:
+            for handler in logger.handlers[:]:
+                handler.close()
+                logger.removeHandler(handler)
+
+        logging.getLogger().handlers.clear()
+
+        print("All loggers reloaded successfully!")
+
+    except Exception as e:
+        print(f"Error reloading loggers: {e}")
 
 def setup_logging():
     config_path: str = paths.config() / 'logging.yaml'
@@ -90,6 +111,10 @@ def setup_logging():
     # Initialize logging config
     logging.config.dictConfig(config['logging'])
 
+    if not hasattr(setup_logging, '_sigusr2_registered'):
+        # Registruj handler samo prvi put
+        signal.signal(signal.SIGUSR2, reload_logging_signal_handler)
+        setup_logging._sigusr2_registered = True
 
 def log_debug_json(log, anchor, data, isolate=True):
 
