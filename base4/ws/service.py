@@ -23,6 +23,8 @@ logger = get_logger()
 MAIN_CHANNELS = ['hotels']
 
 def cors_check(origin):
+    if '*' in SIO_ALLOWED_ORIGINS:
+        return '*'
     return origin in SIO_ALLOWED_ORIGINS or any(
         'localhost' in origin or origin.endswith(domain) for domain in SIO_ALLOWED_ORIGINS
     )
