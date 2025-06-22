@@ -468,12 +468,12 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
                         ...
                         func_name = f'{generate_class_aliases(type(self).__name__)}_{func.__name__}'
 
-                        print(f"DEBUG:999 {class_path=, func_name=}")
+                        print(f"DEBUG:999 {class_path=}, {func_name=}")
 
                         full_api_handler_class_path = f"{class_path}.{func_name}"
                         api_module_name = full_api_handler_class_path.split(".", 2)[1]
 
-                        print(f"DEBUG:999 {full_api_handler_class_path=, api_module_name=}")
+                        print(f"DEBUG:999 {full_api_handler_class_path=}, {api_module_name=}")
 
                         api_handler = API_HANDLERS.get(api_module_name)
 
