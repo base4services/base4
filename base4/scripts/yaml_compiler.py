@@ -127,6 +127,10 @@ def update_config_ac():
             if '__' not in service:
                 try:
                     for api_handler_file in os.listdir(f"{project_root}/src/services/{service}/api"):
+
+                        if '~' in api_handler_file:
+                            continue
+
                         if '__' not in api_handler_file:
                             # print('\t processing api handler:', api_handler_file)
                             module = importlib.import_module(f'services.{service}.api.{api_handler_file[:-3]}')
