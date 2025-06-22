@@ -475,6 +475,8 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
 
                         print(f"DEBUG:999 {full_api_handler_class_path=}, {api_module_name=}")
 
+                        print(f"DEBUG:999 {API_HANDLERS=}")
+
                         api_handler = API_HANDLERS.get(api_module_name)
 
                         print(f"DEBUG:999 {api_handler=}")
