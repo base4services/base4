@@ -468,20 +468,20 @@ def api(cache: int = 0, is_authorized: bool = True, accesslog: bool = True,
                         ...
                         func_name = f'{generate_class_aliases(type(self).__name__)}_{func.__name__}'
 
-                        print(f"DEBUG:999 {class_path=}, {func_name=}")
+                        # print(f"DEBUG:999 {class_path=}, {func_name=}")
 
                         full_api_handler_class_path = f"{class_path}.{func_name}"
                         api_module_name = full_api_handler_class_path.split(".", 2)[1]
 
-                        print(f"DEBUG:999 {full_api_handler_class_path=}, {api_module_name=}")
+                        # print(f"DEBUG:999 {full_api_handler_class_path=}, {api_module_name=}")
 
-                        print(f"DEBUG:999 {json.dumps(API_HANDLERS,indent=1)}")
+                        # print(f"DEBUG:999 {json.dumps(API_HANDLERS,indent=1)}")
 
-                        print(f"DEBUG:999 api_module_name in API_HANDLERS: {api_module_name in API_HANDLERS}")
+                        # print(f"DEBUG:999 api_module_name in API_HANDLERS: {api_module_name in API_HANDLERS}")
 
                         api_handler = API_HANDLERS.get(api_module_name)
 
-                        print(f"DEBUG:999 {api_handler=}")
+                        # print(f"DEBUG:999 {api_handler=}")
 
                         if api_handler is None:
                             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail={"code": "INTERNAL_SERVER_ERROR", "detail": "missing api_handler"})

@@ -122,17 +122,17 @@ def update_config_ac():
     
     new_api_handlers = {}
     for service in os.listdir(f"{project_root}/src/services"):
-        print('processing service:', service)
+        # print('processing service:', service)
         if os.path.isdir(f"{project_root}/src/services/{service}"):
             if '__' not in service:
                 try:
                     for api_handler_file in os.listdir(f"{project_root}/src/services/{service}/api"):
                         if '__' not in api_handler_file:
-                            print('\t processing api handler:', api_handler_file)
+                            # print('\t processing api handler:', api_handler_file)
                             module = importlib.import_module(f'services.{service}.api.{api_handler_file[:-3]}')
                             for api_handler in inspect.getmembers(module):
-                                print('\t\t processing api handler:', api_handler[0])
-                                
+                                # print('\t\t processing api handler:', api_handler[0])
+
                                 if hasattr(api_handler[1], 'router'):
                                     obj = api_handler[1]
                                     method_pfx = generate_class_aliases(obj.__class__.__name__)
