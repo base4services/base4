@@ -133,7 +133,7 @@ def update_config_ac():
                                     obj = api_handler[1]
                                     method_pfx = generate_class_aliases(obj.__class__.__name__)
                                     if method_pfx == '':
-                                        raise Exception(f"Class name '{obj.__class__.__name__}' is not valid. It must contain at least one uppercase letter.")
+                                        raise Exception(f"Class name '{obj.__class__.__name__}' is not valid. It must contain at least one uppercase letter.; modul4import services.{service}.api.{api_handler_file[:-3]}")
 
                                     methods = {
                                         f"{method_pfx}_{method_name}": f"{obj.__module__}.{obj.__class__.__name__}.{method_name}"
