@@ -14,5 +14,6 @@ app_environments = [
     'stage2',
     'dev',
     'dev-igor',
-    'dev-sloba'
+    'dev-sloba',
+    'dev-filip'
 ]
