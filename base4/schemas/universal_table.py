@@ -103,7 +103,11 @@ class UniversalTableResponseBaseSchema(pydantic.BaseModel):
     @classmethod
     def header(cls, request: UniversalTableGetRequest, summary: Summary, response_format: Literal['objects', 'table', 'key-value'] = 'objects'):
 
-        res = Header(columns=[], summary=summary, response_format=response_format, bulk_actions=cls.bulk_actions())
+        bulk_actions = None
+        if hasattr(cls, 'bulk_actions'):
+            bulk_actions = cls.bulk_actions()
+
+        res = Header(columns=[], summary=summary, response_format=response_format, bulk_actions=bulk_actions)
         widths = cls.column2width()
         justify = cls.column2justify()
         titles = cls.column2title()
