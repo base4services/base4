@@ -33,19 +33,18 @@ logger = get_logger()
 sio_connection = sio_client_manager(write_only=True)
 
 
-
 class BaseService[ModelType]:
 
     def __init__(
-        self,
-        schema: Type[SchemaType],
-        model: Type[ModelType],
-        conn_name: str,
-        c11: Type[C11Type] = None,
-        c1n: Type[C1NType] = None,
-        uid_prefix='?',
-        uid_total_length=10,
-        uid_alphabet='WERTYUPASFGHJKLZXCVNM2345679',
+            self,
+            schema: Type[SchemaType],
+            model: Type[ModelType],
+            conn_name: str,
+            c11: Type[C11Type] = None,
+            c1n: Type[C1NType] = None,
+            uid_prefix='?',
+            uid_total_length=10,
+            uid_alphabet='WERTYUPASFGHJKLZXCVNM2345679',
     ):
         self.schema = schema
         self.model = model
@@ -98,7 +97,7 @@ class BaseService[ModelType]:
     ...
 
     async def get_all(
-        self, request: UniversalTableGetRequest, profile_schema: pydantic.BaseModel, _request: Request, post_process_method=None
+            self, request: UniversalTableGetRequest, profile_schema: pydantic.BaseModel, _request: Request, post_process_method=None
     ) -> List | Dict | UniversalTableResponse:
         """
         Get all items from the table
@@ -419,12 +418,12 @@ class BaseService[ModelType]:
         return {'value': getattr(item, field)}
 
     async def update_if_exists_on_create(
-        self,
-        logged_user_id: uuid.UUID,
-        payload: SchemaType,
-        request: Request,
-        update_if_exists_key_fields: List[str] = None,
-        update_if_exists_value_fields: List[Any] = None,
+            self,
+            logged_user_id: uuid.UUID,
+            payload: SchemaType,
+            request: Request,
+            update_if_exists_key_fields: List[str] = None,
+            update_if_exists_value_fields: List[Any] = None,
     ):
         BaseServiceUtils.validate_update_if_exists_params(update_if_exists_key_fields, update_if_exists_value_fields)
 
@@ -449,15 +448,15 @@ class BaseService[ModelType]:
             return await self.update(logged_user_id, item.id, payload, request, return_db_item=True)
 
     async def create(
-        self,
-        logged_user_id: uuid.UUID,
-        payload: SchemaType,
-        request: Request,
-        update_if_exists: bool = False,
-        update_if_exists_key_fields: List[str] = None,
-        update_if_exists_value_fields: List[Any] = None,
-        conn=None,
-        return_db_object=False,
+            self,
+            logged_user_id: uuid.UUID,
+            payload: SchemaType,
+            request: Request,
+            update_if_exists: bool = False,
+            update_if_exists_key_fields: List[str] = None,
+            update_if_exists_value_fields: List[Any] = None,
+            conn=None,
+            return_db_object=False,
     ):
 
         # !Removing transaction (TODO: Fix this bug)
@@ -538,11 +537,11 @@ class BaseService[ModelType]:
         }
 
     async def validate(
-        self,
-        logged_user_id: uuid.UUID,
-        item_id: uuid.UUID,
-        request: Request,
-        quiet: bool = False,
+            self,
+            logged_user_id: uuid.UUID,
+            item_id: uuid.UUID,
+            request: Request,
+            quiet: bool = False,
     ):
 
         item = await self.get_single_model(item_id, request)
@@ -586,15 +585,15 @@ class BaseService[ModelType]:
         await BaseServicePreAndPostUtils.update_pre_save_hook(service_instance=self, payload=payload, request=request, item=model_item)
 
         if (
-            updated := await BaseServiceUtils.update_db_entity_instance(
-                model_loc=model_loc,
-                payload=payload,
-                db_item=model_item,
-                schem_item=schem_item,
-                service_instance=self,
-                request=request,
-                logged_user_id=logged_user_id,
-            )
+                updated := await BaseServiceUtils.update_db_entity_instance(
+                    model_loc=model_loc,
+                    payload=payload,
+                    db_item=model_item,
+                    schem_item=schem_item,
+                    service_instance=self,
+                    request=request,
+                    logged_user_id=logged_user_id,
+                )
         ) != {}:
             await model_item.save()
 
@@ -620,18 +619,26 @@ class BaseService[ModelType]:
 
         res = {'id': str(item_id), 'updated': updated, 'action': 'updated' if updated else 'no_changes'}
 
-        if (
-            post_commit_update_result := await BaseServicePreAndPostUtils.update_post_save_hook(
-                service_instance=self,
-                payload=payload,
-                request=request,
-                item=model_item,
-                updated=updated,
-            )
-        ) is not None:
-            # TODO ?!? smisli nesto univerzalnije
-            res['item'] = post_commit_update_result
+        post_commit_update_result_wrapped = await BaseServicePreAndPostUtils.update_post_save_hook(
+            service_instance=self,
+            payload=payload,
+            request=request,
+            item=model_item,
+            updated=updated,
+        )
+        if isinstance(post_commit_update_result_wrapped, tuple) and len(post_commit_update_result_wrapped) == 2:
+            wrap = post_commit_update_result_wrapped[1]
+            post_commit_update_result = post_commit_update_result_wrapped[0]
+        else:
+            post_commit_update_result = post_commit_update_result_wrapped
+            wrap = True
 
+        if post_commit_update_result_wrapped is not None:
+            # TODO ?!? smisli nesto univerzalnije
+            if wrap:
+                res['item'] = post_commit_update_result
+            else:
+                return post_commit_update_result
         return res
 
     async def delete(self, logged_user_id: uuid.UUID, item_id: uuid.UUID, request: Request):
@@ -653,7 +660,6 @@ class BaseService[ModelType]:
         import shared.ipc as ipc  # DO NOT REMOVE THIS IMPORT, IT IS USED BY EVAL FUNCTION
 
         # lookups = lookups_module.Lookups
-
 
         updated = set()
         for c in citem.mk_cache_rules:
@@ -751,9 +757,7 @@ class BaseService[ModelType]:
                         continue
 
                 try:
-                    #                    breakpoint()
                     new_value = await eval(c['ipc'])
-                    ...
                 except Exception as e:
                     new_value = None
                     raise
@@ -793,4 +797,3 @@ class BaseService[ModelType]:
 
         if updated:
             await citem.save(using_db=conn)
-
