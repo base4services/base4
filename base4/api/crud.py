@@ -21,13 +21,20 @@ def create_endpoints(
     router: APIRouter,
     endpoints: Dict[str, Dict[str, Type]],
     service_name: str,
-    singular_object_name: str,
-    plural_object_name: str,
+    # singular_object_name: str,
+    # plural_object_name: str,
     default_table_profile: str = 'default',
     functions: set = None,
     verify_token_method: Any = verify_token,
     verify_token_per_method: Optional[Dict[str, Any]] = None,
+    **kwargs
 ):
+    singular_object_name: str = kwargs.get('singular_object_name')
+    plural_object_name: str = kwargs.get('plural_object_name')
+    if not singular_object_name:
+        raise ValueError('Required parameter `singular_object_name` or delete if from __init__ of the method')
+    if not plural_object_name:
+        raise ValueError('Required parameter `plural_object_name` or delete if from __init__ of the method')
     for path, config in endpoints.items():
         service_class: Type[BaseService] = cast(Type[BaseService], config['service'])
         schema_class = config['schema']
@@ -43,12 +50,13 @@ def create_endpoints(
             async def get_single(
                 _id: uuid.UUID,
                 request: Request,
-                service_class=service_class,
-                schema_class=schema_class,
+                # service_class=service_class,
+                # schema_class=schema_class,
                 _session: DecodedToken = Depends(the_verify_token_method),
+                decoded_token: DecodedToken = Depends(the_verify_token_method),
             ):
                 service = service_class()
-                res = await service.get_single(_id, request)
+                res = await service.get_single(_id, request, _session)
                 return res
 
         if not functions or 'get_single_field' in functions:

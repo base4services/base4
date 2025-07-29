@@ -64,7 +64,6 @@ def decode_token(token: str) -> DecodedToken:
     return DecodedToken(
         user_id=decoded_payload['id_user'],
         tenant_id=decoded_payload['id_tenant'],
-        #        tenant_id='3acd0b70-6bdd-4519-8b8b-851f0114c89c', #decoded_payload['id_tenant']
         expire_at=datetime.fromtimestamp(exp, tz=timezone.utc),
         expired=int(time.time()) > exp,
     )

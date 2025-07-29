@@ -438,6 +438,10 @@ def api(roles: Optional[List[str]] = None, cache: int = 0, exposed: bool = True,
 def route(router: APIRouter, prefix: str):
 	def decorator(cls):
 		instance = cls(router)
+		try:
+			cls.router = router
+		except Exception as exc:
+			raise Exception(f"Failed to set router to cls, exc: {exc}")
 		app.include_router(router, prefix=prefix)
 		return instance
 	return decorator

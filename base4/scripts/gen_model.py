@@ -143,6 +143,7 @@ def gen_models(fname):
 #
 # FILE GENERATED ON: {datetime.datetime.now()}
     
+import datetime
 import tortoise
 from tortoise import fields
 from base4.models.base import *

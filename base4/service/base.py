@@ -37,13 +37,16 @@ class BaseService[ModelType]:
 
     def __init__(
             self,
+            conn_name: str,
+
             schema: Type[SchemaType],
             model: Type[ModelType],
-            conn_name: str,
+
             c11: Type[C11Type] = None,
             c1n: Type[C1NType] = None,
-            uid_prefix='?',
+
             uid_total_length=10,
+            uid_prefix='?',
             uid_alphabet='WERTYUPASFGHJKLZXCVNM2345679',
     ):
         self.schema = schema
@@ -56,12 +59,11 @@ class BaseService[ModelType]:
         self.conn_name = conn_name
         self.sio_connection = sio_connection
 
-        # type(field), type(field) == field_type),
         def find_field_types(_model, field_type, related_name):
             return [
                 field_name
                 for field_name, field in _model._meta.fields_map.items()
-                if isinstance(field, field_type) and getattr(field, 'related_name', None) == related_name
+                if isinstance(field, field_type) and getattr(field, 'related_name') == related_name
             ]
 
         self.c11_related_to = None
@@ -69,35 +71,37 @@ class BaseService[ModelType]:
 
         self.base_table_name = self.model.Meta.table
 
-        try:
-            if self.c11:
-                one_to_one_fields = find_field_types(self.c11, tortoise.fields.relational.OneToOneFieldInstance, 'cache11')
 
-                if len(one_to_one_fields) != 1:
-                    raise Exception(f"Expected exactly one OneToOneField in {self.c11.__name__} model.")
+        if self.c11:
+            one_to_one_fields = find_field_types(
+                self.c11,
+                tortoise.fields.relational.OneToOneFieldInstance,
+                'cache11'
+            )
 
-                self.c11_related_to = one_to_one_fields[0]
+            if len(one_to_one_fields) != 1:
+                raise Exception(f"Expected exactly one OneToOneField in {self.c11.__name__} model.")
 
-            if self.c1n:
-                many_to_many_fields = find_field_types(self.c1n, tortoise.fields.relational.ManyToManyFieldInstance, 'cache1n')
-                if not many_to_many_fields:
-                    many_to_many_fields = find_field_types(self.c1n, tortoise.fields.relational.ForeignKeyFieldInstance, 'cache1n')
+            self.c11_related_to = one_to_one_fields[0]
 
-                if len(many_to_many_fields) != 1:
-                    raise Exception(f"Expected exactly one ManyToManyField in {self.c1n.__name__} model.")
+        if self.c1n:
+            many_to_many_fields = find_field_types(
+                self.c1n,
+                tortoise.fields.relational.ManyToManyFieldInstance,
+                'cache1n'
+            )
+            if not many_to_many_fields:
+                many_to_many_fields = find_field_types(self.c1n, tortoise.fields.relational.ForeignKeyFieldInstance,
+                                                       'cache1n')
 
-                self.c1n_related_to = many_to_many_fields[0]
+            if len(many_to_many_fields) != 1:
+                raise Exception(f"Expected exactly one ManyToManyField in {self.c1n.__name__} model.")
 
-        except Exception as e:
-            print(e)
-            raise
-
-        ...
-
-    ...
+            self.c1n_related_to = many_to_many_fields[0]
 
     async def get_all(
-            self, request: UniversalTableGetRequest, profile_schema: pydantic.BaseModel, _request: Request, post_process_method=None
+            self, request: UniversalTableGetRequest, profile_schema: pydantic.BaseModel, _request: Request,
+            post_process_method=None
     ) -> List | Dict | UniversalTableResponse:
         """
         Get all items from the table
@@ -113,21 +117,25 @@ class BaseService[ModelType]:
         request.response_format = 'objects'
 
         if request.per_page < 1:
-            raise HTTPException(status_code=400, detail={"code": "INVALID_PARAMETER", "parameter": "per_page", "message": "per_page must be greater than 0"})
+            raise HTTPException(status_code=400, detail={"code": "INVALID_PARAMETER", "parameter": "per_page",
+                                                         "message": "per_page must be greater than 0"})
 
         if request.page < 1:
-            raise HTTPException(status_code=400, detail={"code": "INVALID_PARAMETER", "parameter": "page", "message": "page must be greater than 0"})
+            raise HTTPException(status_code=400, detail={"code": "INVALID_PARAMETER", "parameter": "page",
+                                                         "message": "page must be greater than 0"})
 
         if request.response_format == 'key-value':
             if not request.key_value_response_format_key:
                 raise HTTPException(
                     status_code=400,
-                    detail={"code": "INVALID_PARAMETER", "message": "key_value_response_format_key must be set when response_format is key-value"},
+                    detail={"code": "INVALID_PARAMETER",
+                            "message": "key_value_response_format_key must be set when response_format is key-value"},
                 )
 
         if request.only_data and request.response_format != 'objects':
             raise HTTPException(
-                status_code=400, detail={"code": "INVALID_PARAMETER", "message": "parameter only_data can be used only with objects response_format"}
+                status_code=400, detail={"code": "INVALID_PARAMETER",
+                                         "message": "parameter only_data can be used only with objects response_format"}
             )
 
         # setup prefetch_related if needed
@@ -152,7 +160,8 @@ class BaseService[ModelType]:
                 filters = transform_filter_param_to_Q(request.filters)
             except Exception as e:
                 raise HTTPException(
-                    status_code=400, detail={"code": "INVALID_PARAMETER", "parameter": "filters", "message": f"Invalid filter parameters {request.filters}"}
+                    status_code=400, detail={"code": "INVALID_PARAMETER", "parameter": "filters",
+                                             "message": f"Invalid filter parameters {request.filters}"}
                 )
 
         # if deleted not presented in filters, add it as deleted=False
@@ -235,7 +244,8 @@ class BaseService[ModelType]:
             items = await query.all()
 
         except Exception as e:
-            raise HTTPException(status_code=500, detail={"code": "INTERNAL_SERVER_ERROR", "debug": debug_info(str(e)), "message": "Internal server error."})
+            raise HTTPException(status_code=500, detail={"code": "INTERNAL_SERVER_ERROR", "debug": debug_info(str(e)),
+                                                         "message": "Internal server error."})
 
         # extract window of items in response format
 
@@ -298,14 +308,12 @@ class BaseService[ModelType]:
         """
 
         model_loc = {}
-        try:
-            schema_class_loc = model.schema_class_loc()
 
-            if hasattr(model, 'model_loc'):
-                model_loc = model.model_loc()
+        schema_class_loc = model.schema_class_loc()
 
-        except Exception as e:
-            raise
+        if hasattr(model, 'model_loc'):
+            model_loc = model.model_loc()
+
 
         res = {}
 
@@ -381,7 +389,10 @@ class BaseService[ModelType]:
 
         return res
 
-    async def get_single(self, item_id: uuid.UUID, request: Request) -> SchemaType:
+    async def get_single(self,
+                         item_id: uuid.UUID,
+                         request: Request,
+                         _session=None) -> SchemaType:
         """
         Get single item from the table
 
@@ -435,7 +446,8 @@ class BaseService[ModelType]:
         #
 
         item = await self.model.filter(
-            **{update_if_exists_key_fields[i]: update_if_exists_value_fields[i] for i in range(len(update_if_exists_key_fields))}
+            **{update_if_exists_key_fields[i]: update_if_exists_value_fields[i] for i in
+               range(len(update_if_exists_key_fields))}
         ).get_or_none()
 
         if item:
@@ -493,16 +505,20 @@ class BaseService[ModelType]:
 
         m2m_relations = {}
 
-        await BaseServicePreAndPostUtils.create_pre_save_hook(service_instance=self, payload=payload, request=request, body=body)
+        await BaseServicePreAndPostUtils.create_pre_save_hook(service_instance=self, payload=payload, request=request,
+                                                              body=body)
 
         try:
             item = await BaseServiceDbUtils.db_operations(
-                base_service_instance=self, request=request, body=body, payload=payload, logged_user_id=logged_user_id, m2m_relations=m2m_relations, _conn=conn
+                base_service_instance=self, request=request, body=body, payload=payload, logged_user_id=logged_user_id,
+                m2m_relations=m2m_relations, _conn=conn
             )
         except Exception as e:
             raise
 
-        post_commit_result = await BaseServicePreAndPostUtils.create_post_save_hook(service_instance=self, payload=payload, request=request, item=item)
+        post_commit_result = await BaseServicePreAndPostUtils.create_post_save_hook(service_instance=self,
+                                                                                    payload=payload, request=request,
+                                                                                    item=item)
 
         await self.validate(logged_user_id, item.id, request, quiet=True)
 
@@ -546,7 +562,8 @@ class BaseService[ModelType]:
 
         item = await self.get_single_model(item_id, request)
         if not item:
-            raise HTTPException(status_code=404, detail={'code': 'NOT_FOUND', 'message': f"{self.base_table_name} with sent id doesn't exist."})
+            raise HTTPException(status_code=404, detail={'code': 'NOT_FOUND',
+                                                         'message': f"{self.base_table_name} with sent id doesn't exist."})
 
         if not item.is_valid:
             item.is_valid = True
@@ -554,12 +571,14 @@ class BaseService[ModelType]:
 
         return {'valid': True}
 
-    async def create_or_update(self, logged_user_id: uuid.UUID, key_id: List[Any], payload: SchemaType, request: Request, response: Response) -> Dict[str, Any]:
+    async def create_or_update(self, logged_user_id: uuid.UUID, key_id: List[Any], payload: SchemaType,
+                               request: Request, response: Response) -> Dict[str, Any]:
 
         key_id_dict = {}
         for key in key_id:
             if not hasattr(payload, key) or not getattr(payload, key):
-                raise HTTPException(status_code=400, detail={"code": "INVALID_PARAMETER", "parameter": key, "message": f"Missing parameter {key}"})
+                raise HTTPException(status_code=400, detail={"code": "INVALID_PARAMETER", "parameter": key,
+                                                             "message": f"Missing parameter {key}"})
 
             key_id_dict[key] = getattr(payload, key)
 
@@ -572,7 +591,8 @@ class BaseService[ModelType]:
         res = await self.update(logged_user_id, existing.id, payload, request)
         return res
 
-    async def update(self, logged_user_id: uuid.UUID, item_id: uuid.UUID, payload: SchemaType, request: Request, return_db_item=False):
+    async def update(self, logged_user_id: uuid.UUID, item_id: uuid.UUID, payload: SchemaType, request: Request,
+                     return_db_item=False):
 
         model_item = await self.get_single_model(item_id, request)
 
@@ -582,7 +602,8 @@ class BaseService[ModelType]:
 
         payload.last_updated_by = logged_user_id
 
-        await BaseServicePreAndPostUtils.update_pre_save_hook(service_instance=self, payload=payload, request=request, item=model_item)
+        await BaseServicePreAndPostUtils.update_pre_save_hook(service_instance=self, payload=payload, request=request,
+                                                              item=model_item)
 
         if (
                 updated := await BaseServiceUtils.update_db_entity_instance(
@@ -609,7 +630,8 @@ class BaseService[ModelType]:
                 # TODO: Update cache for c1n
 
             await BaseServiceUtils.update_updated_fields(
-                request=request, model_item=model_item, updated=updated, schem_item=schem_item, service_instance=self, logged_user_id=logged_user_id
+                request=request, model_item=model_item, updated=updated, schem_item=schem_item, service_instance=self,
+                logged_user_id=logged_user_id
             )
 
             await self.update_activity_log(model_item, request, updated)

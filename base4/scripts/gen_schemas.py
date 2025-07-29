@@ -203,7 +203,9 @@ def gen_schemas(fname):
 # FILE GENERATED ON: {datetime.datetime.now()}
 
     
-import uuid, datetime
+import datetime
+from uuid import UUID
+import uuid
 
 from pydantic import BaseModel, field_validator, EmailStr
 from typing import List, Dict, Optional, AnyStr, Literal, Any
