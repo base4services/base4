@@ -141,16 +141,16 @@ def gen_models(fname):
 # THE gen_model.py SCRIPT TO GENERATE THIS FILE. DO NOT EDIT DIRECTLY
 # AS IT CAN BE OVERWRITTEN. 
 #
-# FILE GENERATED ON: {datetime.datetime.now()}
+# FILE GENERATED ON: {datetime.datetime.now()} 
     
 import tortoise
 from tortoise import fields
 from base4.models.base import *
 from tortoise.models import Model
 from tortoise.fields import CASCADE, RESTRICT
+import datetime
 
 '''
-
     for tbl_name in list(model_definition.keys()):
         res += gen_model(model_definition[tbl_name], tbl_name)
 

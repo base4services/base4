@@ -60,6 +60,7 @@ class Header(pydantic.BaseModel):
     summary: Summary
     response_format: Literal['table', 'objects', 'key-value'] = 'objects'
     # response_format: Optional[Literal['table', 'objects']] = 'objects'
+    bulk_actions: Optional[Dict[str, Any]] = None
 
 
 class UniversalTableResponse(pydantic.BaseModel):
@@ -118,5 +119,9 @@ class UniversalTableResponseBaseSchema(pydantic.BaseModel):
                 res.columns.append(column)
             except Exception as e:
                 raise
+
+        # Add bulk_actions if the schema has it defined
+        if hasattr(cls, 'bulk_actions'):
+            res.bulk_actions = cls.bulk_actions()
 
         return res

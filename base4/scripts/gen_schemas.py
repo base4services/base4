@@ -1,5 +1,6 @@
 import datetime
 import os
+from builtins import PythonFinalizationError
 
 import yaml
 
@@ -203,19 +204,18 @@ def gen_schemas(fname):
 # FILE GENERATED ON: {datetime.datetime.now()}
 
     
-import uuid, datetime
-
-from pydantic import BaseModel, field_validator
-from typing import List, Dict, Optional, AnyStr, Literal, Any
-
-from fastapi.requests import Request
-
-from base4.schemas.base import Base, NOT_SET
+import datetime
+import uuid
+from uuid import UUID
+from typing import Any, AnyStr, Dict, List, Literal, Optional
 
 from base4.project_specifics import lookups_module as Lookups
+from base4.schemas.base import NOT_SET, Base
+from fastapi.requests import Request
+from pydantic import BaseModel, EmailStr, field_validator
 
 '''
-    # REMOVED
+
     '''
     from pydantic import root_validator
         @root_validator(pre=True)
