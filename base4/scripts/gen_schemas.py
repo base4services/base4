@@ -204,6 +204,7 @@ def gen_schemas(fname):
 
     
 import uuid, datetime
+from uuid import UUID
 
 from pydantic import BaseModel, field_validator, EmailStr
 from typing import List, Dict, Optional, AnyStr, Literal, Any
