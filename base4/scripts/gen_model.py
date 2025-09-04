@@ -144,6 +144,7 @@ def gen_models(fname):
 # FILE GENERATED ON: {datetime.datetime.now()}
     
 import tortoise
+import datetime
 from tortoise import fields
 from base4.models.base import *
 from tortoise.models import Model
