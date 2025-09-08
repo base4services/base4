@@ -104,6 +104,15 @@ def gen_profile(table, profile_name, profile, model_definition):
         res += f'\tdef bulk_actions():\n'
         res += f'\t\treturn None\n\n'
 
+    if 'actions' in profile and profile['actions']:
+        res += f'\n\t@staticmethod\n'
+        res += f'\tdef actions():\n'
+        res += f'\t\treturn {profile["actions"]}\n\n'
+    else:
+        res += f'\n\t@staticmethod\n'
+        res += f'\tdef actions():\n'
+        res += f'\t\treturn None\n\n'
+
 
     res += f'\n\t@staticmethod\n'
     res += f'\tdef order():\n'

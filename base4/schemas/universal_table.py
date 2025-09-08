@@ -106,6 +106,8 @@ class UniversalTableResponseBaseSchema(pydantic.BaseModel):
         bulk_actions = None
         if hasattr(cls, 'bulk_actions'):
             bulk_actions = cls.bulk_actions()
+        if hasattr(cls, 'actions'):
+            bulk_actions = cls.actions()
 
         res = Header(columns=[], summary=summary, response_format=response_format, bulk_actions=bulk_actions)
         widths = cls.column2width()
