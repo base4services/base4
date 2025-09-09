@@ -189,6 +189,11 @@ def gen_schema(tbl, tbl_name):
             res += f'\n\tasync def post_get(svc, item: Any, request: Request):\n'
             res += f'\t\treturn await svc.{tbl["__post_get"]}(item=item, request=request)\n'
 
+        if '__post_get_all' in tbl:
+            res += f'\n\t@staticmethod\n'
+            res += f'\n\tasync def post_get_all(svc, data, request: Request):\n'
+            res += f'\t\treturn await svc.{tbl["__post_get_all"]}(data=data, request=request)\n'
+
     return res
 
 

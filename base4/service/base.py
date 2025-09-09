@@ -279,6 +279,16 @@ class BaseService[ModelType]:
             except Exception as e:
                 raise
 
+        if hasattr(self.schema, 'post_get_all'):
+            try:
+                data_before_processing = _data
+                _data = await self.schema.post_get_all(svc=self, data=_data, request=request)
+                if not _data:
+                    _data = data_before_processing
+                    print("Post get all returned None or empty, using data before processing")
+            except Exception as e:
+                raise
+
         if request.only_data:
             return _data
 
