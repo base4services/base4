@@ -112,6 +112,8 @@ class UniversalTableResponseBaseSchema(pydantic.BaseModel):
     def header(cls, request: UniversalTableGetRequest, summary: Summary, response_format: Literal['objects', 'table', 'key-value'] = 'objects'):
 
         bulk_actions = None
+        actions = None
+
         if hasattr(cls, 'bulk_actions'):
             bulk_actions = cls.bulk_actions()
         if hasattr(cls, 'actions'):
