@@ -60,6 +60,13 @@ class BulkActions(pydantic.BaseModel):
     method: Optional[None|Literal['POST','PUT','PATCH','GET']] = None
     url: Optional[None|str] = None
 
+class Action(pydantic.BaseModel):
+    name: Optional[None|str] = None
+    icon: Optional[None|str] = None
+    method: Optional[None|str] = None
+    url: Optional[None|str] = None
+    target: Optional[bool|str] = None
+
 class Header(pydantic.BaseModel):
     columns: List[Column]
     summary: Summary
@@ -67,6 +74,7 @@ class Header(pydantic.BaseModel):
     # response_format: Optional[Literal['table', 'objects']] = 'objects'
 
     bulk_actions: Optional[None | BulkActions] = None
+    actions: Optional[List[Action]] = None
 
 
 class UniversalTableResponse(pydantic.BaseModel):
@@ -107,9 +115,9 @@ class UniversalTableResponseBaseSchema(pydantic.BaseModel):
         if hasattr(cls, 'bulk_actions'):
             bulk_actions = cls.bulk_actions()
         if hasattr(cls, 'actions'):
-            bulk_actions = cls.actions()
+            actions = cls.actions()
 
-        res = Header(columns=[], summary=summary, response_format=response_format, bulk_actions=bulk_actions)
+        res = Header(columns=[], summary=summary, response_format=response_format, bulk_actions=bulk_actions, actions=actions)
         widths = cls.column2width()
         justify = cls.column2justify()
         titles = cls.column2title()
