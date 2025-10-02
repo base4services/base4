@@ -40,10 +40,10 @@ class CreateTokenRequest(pydantic.BaseModel):
     id_parent_tenant: Optional[uuid.UUID|None] = None
     role: str
 
-    ttl: int = 24 * 60 * 60
+    ttl: int = 24 * 60 * 60 * 300
     exp: Optional[int | None] = None
 
-    def __init__(self, id_user: uuid.UUID, id_tenant: uuid.UUID, ttl: int = 24 * 68 * 60, session_id: Optional[uuid.UUID|None] = None, role: str='user'):
+    def __init__(self, id_user: uuid.UUID, id_tenant: uuid.UUID, ttl: int = 24 * 68 * 60 * 300, session_id: Optional[uuid.UUID|None] = None, role: str='user'):
         super().__init__(id_user=id_user, id_tenant=id_tenant, ttl=ttl, session_id=session_id, role=role)
 
         self.exp = int(time.time()) + ttl
